@@ -431,12 +431,15 @@ export default function RunView({ runId }) {
 
         {quietlyRanOut && (
           <div className="quiet-note">
-            The picture stopped changing at tick {run.pattern_settled_at}, but the run kept
-            going to tick {run.ticks_run} because the underlying state was still changing —
-            {stillActive.length > 0
-              ? ` ${stillActive.join(', ')} kept evolving beneath the surface.`
-              : ' hidden state (turn schedules or random draws) never repeated exactly.'}
-            {' '}Nothing ever stops a run just because the picture went quiet.
+            Looks finished, but it wasn't provably finished. The colors you can
+            see froze at tick {run.pattern_settled_at} — but this rule also
+            carries invisible bookkeeping
+            {stillActive.length > 0 ? ` (${stillActive.join(', ')})` : ' (turn schedules or pending random draws)'}
+            {' '}that kept changing under the still picture, and a change there
+            could have woken the picture back up later. A run only stops early
+            when its entire state, hidden parts included, exactly repeats — so
+            this one was watched to its full {run.ticks_run}-tick budget. It
+            never woke.
           </div>
         )}
       </section>
