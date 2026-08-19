@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { getRule, rerunRule } from '../api'
+import { getRule, getRuleBySlug, rerunRule, setRuleTitle, addFavorite, removeFavorite } from '../api'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
+import { useAuth } from '../lib/firebase'
 
 function Fold({ title, text }) {
   const [open, setOpen] = useState(false)
@@ -15,24 +16,61 @@ function Fold({ title, text }) {
   )
 }
 
-export default function RuleView({ ruleId }) {
+export default function RuleView({ ruleId, slug }) {
+  const { user } = useAuth()
   const [rule, setRule] = useState(null)
   const [error, setError] = useState(null)
   const [rerunning, setRerunning] = useState(false)
+  const [editingTitle, setEditingTitle] = useState(false)
+  const [titleDraft, setTitleDraft] = useState('')
+  const [savingTitle, setSavingTitle] = useState(false)
+  const [favBusy, setFavBusy] = useState(false)
 
   useEffect(() => {
     setRule(null)
-    getRule(ruleId).then(setRule, setError)
-  }, [ruleId])
+    const load = slug ? getRuleBySlug(slug) : getRule(ruleId)
+    load.then(setRule, setError)
+  }, [ruleId, slug])
 
-  useDocumentTitle(rule ? `rule #${rule.id} — ASR` : null)
+  useDocumentTitle(rule ? `${rule.title || `rule #${rule.id}`} — ASR` : null)
 
   const rerun = () => {
     setRerunning(true)
-    rerunRule(ruleId).then(
+    rerunRule(rule.id).then(
       (fresh) => { window.location.hash = `#/runs/${fresh.id}` },
       (bad) => { setError(bad); setRerunning(false) },
     )
+  }
+
+  const canEditTitle = rule && (!rule.has_owner || rule.mine)
+
+  const startEditingTitle = () => {
+    setTitleDraft(rule.title || '')
+    setEditingTitle(true)
+  }
+  const saveTitle = async () => {
+    setSavingTitle(true)
+    try {
+      const fresh = await setRuleTitle(rule.id, titleDraft.trim() || null)
+      setRule((old) => ({ ...old, ...fresh }))
+      setEditingTitle(false)
+    } catch (bad) {
+      setError(bad)
+    } finally {
+      setSavingTitle(false)
+    }
+  }
+
+  const toggleFavorite = async () => {
+    setFavBusy(true)
+    try {
+      const result = rule.favorited ? await removeFavorite(rule.id) : await addFavorite(rule.id)
+      setRule((old) => ({ ...old, favorited: result.favorited }))
+    } catch (bad) {
+      setError(bad)
+    } finally {
+      setFavBusy(false)
+    }
   }
 
   if (error) return <div className="error-note">something went wrong: {String(error)}</div>
@@ -44,7 +82,28 @@ export default function RuleView({ ruleId }) {
   return (
     <div className="rule-view">
       <div className="library-head">
-        <h1>rule #{rule.id}</h1>
+        {editingTitle ? (
+          <span className="row" style={{ gap: 6 }}>
+            <input
+              type="text" value={titleDraft} maxLength={120} autoFocus
+              onChange={(e) => setTitleDraft(e.target.value)}
+              placeholder="give this rule a name"
+              style={{ width: 260 }}
+            />
+            <button className="primary" onClick={saveTitle} disabled={savingTitle}>save</button>
+            <button onClick={() => setEditingTitle(false)} disabled={savingTitle}>cancel</button>
+          </span>
+        ) : (
+          <span className="row" style={{ gap: 8 }}>
+            <h1>{rule.title || `rule #${rule.id}`}</h1>
+            {rule.title && <span className="sub mono">#{rule.id}</span>}
+            {canEditTitle && (
+              <button className="linkish" onClick={startEditingTitle} title="give this rule a display name">
+                {rule.title ? 'rename' : '+ add a name'}
+              </button>
+            )}
+          </span>
+        )}
         <span className={`chip status-${rule.status}`}>
           <span className="dot" />
           {rule.status}{rule.failed_check ? `: ${rule.failed_check}` : ''}
@@ -55,6 +114,11 @@ export default function RuleView({ ruleId }) {
           </span>
         )}
         <span style={{ flex: 1 }} />
+        {user && (
+          <button onClick={toggleFavorite} disabled={favBusy} title={rule.favorited ? 'remove from favorites' : 'favorite this rule'}>
+            {rule.favorited ? '★ favorited' : '☆ favorite'}
+          </button>
+        )}
         {rule.status === 'ok' && (
           <button onClick={rerun} disabled={rerunning}>
             {rerunning ? 'running…' : 'run again, new seed'}

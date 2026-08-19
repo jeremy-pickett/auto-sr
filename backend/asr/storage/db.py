@@ -110,6 +110,16 @@ CREATE TABLE IF NOT EXISTS rejections(
 
 CREATE INDEX IF NOT EXISTS rules_by_status_shape ON rules(status, requested_shape);
 CREATE INDEX IF NOT EXISTS runs_by_rule_canonical ON runs(rule_id, is_canonical);
+
+-- A brand-new table, never existed before -- CREATE TABLE IF NOT
+-- EXISTS is exactly the right idempotent mechanism here, unlike a
+-- column added to a table that already exists (see _ensure_columns).
+CREATE TABLE IF NOT EXISTS favorites(
+    user_uid TEXT NOT NULL,
+    rule_id INTEGER NOT NULL REFERENCES rules(id),
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (user_uid, rule_id)
+);
 """
 
 
@@ -131,8 +141,13 @@ def _ensure_columns(conn) -> None:
         )
     if "spark" not in existing:
         conn.execute("ALTER TABLE rules ADD COLUMN spark TEXT")
+    if "title" not in existing:
+        conn.execute("ALTER TABLE rules ADD COLUMN title TEXT")
+    if "slug" not in existing:
+        conn.execute("ALTER TABLE rules ADD COLUMN slug TEXT")
     conn.execute("CREATE INDEX IF NOT EXISTS rules_by_owner ON rules(owner_uid)")
     conn.execute("CREATE INDEX IF NOT EXISTS rules_by_visibility ON rules(visibility)")
+    conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS rules_by_slug ON rules(slug)")
     conn.commit()
 
 

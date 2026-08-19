@@ -10,7 +10,7 @@ import { useAuth } from './lib/firebase'
 
 // Tiny hash router: #/ (landing), #/library, #/mine, #/runs/3,
 // #/runs/3?tick=150 (a permalink to a specific tick), #/rules/3,
-// #/invent, #/catalog
+// #/r/:slug (a titled rule's clean URL), #/invent, #/catalog
 function parseRoute() {
   const raw = window.location.hash.replace(/^#\/?/, '')
   const [path, query] = raw.split('?')
@@ -25,6 +25,7 @@ function parseRoute() {
     }
   }
   if (head === 'rules' && id) return { view: 'rule', id: Number(id) }
+  if (head === 'r' && id) return { view: 'rule', slug: id }
   if (head === 'invent') return { view: 'invent' }
   if (head === 'catalog') return { view: 'catalog' }
   return { view: 'landing' }
@@ -62,7 +63,7 @@ export default function App() {
         {route.view === 'library' && <Library />}
         {route.view === 'mine' && <Library mine />}
         {route.view === 'run' && <RunView runId={route.id} initialTick={route.tick} />}
-        {route.view === 'rule' && <RuleView ruleId={route.id} />}
+        {route.view === 'rule' && <RuleView ruleId={route.id} slug={route.slug} />}
         {route.view === 'invent' && <Invent />}
         {route.view === 'catalog' && <Catalog />}
       </main>

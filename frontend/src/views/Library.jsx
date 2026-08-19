@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { listRules, getSummary } from '../api'
+import { listRules, getSummary, addFavorite, removeFavorite } from '../api'
 import { RunThumbnail } from '../lib/RunThumbnail.jsx'
 import { getHiddenIds, hideRule, unhideRule } from '../lib/hidden'
 import { useAuth } from '../lib/firebase'
@@ -19,20 +19,32 @@ function BehaviorChip({ run }) {
   )
 }
 
-function RuleCard({ rule, hidden, onToggleHidden }) {
+function RuleCard({ rule, hidden, onToggleHidden, signedIn, onFavoriteChange }) {
   const run = rule.canonical_run
+  const [favBusy, setFavBusy] = useState(false)
+  const detailHref = rule.slug ? `#/r/${rule.slug}` : `#/rules/${rule.id}`
   const open = () => {
     // A playable rule opens its canonical run; a broken one opens its
     // details — the failure is part of the library too.
-    window.location.hash = run ? `#/runs/${run.id}` : `#/rules/${rule.id}`
+    window.location.hash = run ? `#/runs/${run.id}` : detailHref
   }
   const details = (event) => {
     event.stopPropagation()
-    window.location.hash = `#/rules/${rule.id}`
+    window.location.hash = detailHref
   }
   const toggleHidden = (event) => {
     event.stopPropagation()
     onToggleHidden(rule.id)
+  }
+  const toggleFavorite = async (event) => {
+    event.stopPropagation()
+    setFavBusy(true)
+    try {
+      const result = rule.favorited ? await removeFavorite(rule.id) : await addFavorite(rule.id)
+      onFavoriteChange(rule.id, result.favorited)
+    } finally {
+      setFavBusy(false)
+    }
   }
   return (
     <div
@@ -42,13 +54,18 @@ function RuleCard({ rule, hidden, onToggleHidden }) {
     >
       <div className="row" style={{ justifyContent: 'space-between' }}>
         <span className="id">
-          rule #{rule.id}{' '}
+          {rule.title ? <strong>{rule.title}</strong> : `rule #${rule.id}`}{' '}
           <button className="linkish" onClick={details}>details</button>{' '}
           <button className="linkish" onClick={toggleHidden}>
             {hidden ? 'unhide' : 'hide'}
           </button>
         </span>
         <span className="row" style={{ gap: 6 }}>
+          {signedIn && (
+            <button className="linkish" onClick={toggleFavorite} disabled={favBusy} title="favorite">
+              {rule.favorited ? '★' : '☆'}
+            </button>
+          )}
           {rule.visibility === 'private' && <span className="chip private">🔒 private</span>}
           <span className={`chip status-${rule.status}`}>
             <span className="dot" />
@@ -88,7 +105,8 @@ export default function Library({ mine = false } = {}) {
   const [data, setData] = useState(null)
   const [summary, setSummary] = useState(null)
   const [error, setError] = useState(null)
-  const [filters, setFilters] = useState({ status: '', behavior: '', concept: '', flagged: false })
+  const [filters, setFilters] = useState({ status: '', behavior: '', concept: '', flagged: false, favorited: false })
+  const [sort, setSort] = useState('newest')
   const [page, setPage] = useState(1)
   const [hiddenIds, setHiddenIds] = useState(() => getHiddenIds())
   const [showHidden, setShowHidden] = useState(false)
@@ -108,13 +126,22 @@ export default function Library({ mine = false } = {}) {
       behavior: filters.behavior,
       concept: filters.concept,
       flagged: filters.flagged || undefined,
+      favorited: filters.favorited || undefined,
+      sort,
       mine: mine || undefined,
       page,
     }).then(setData, setError)
-  }, [filters, page, mine, authLoading, signedOut])
+  }, [filters, sort, page, mine, authLoading, signedOut])
 
   const toggleHidden = (id) => {
     setHiddenIds(hiddenIds.has(id) ? unhideRule(id) : hideRule(id))
+  }
+
+  const onFavoriteChange = (id, favorited) => {
+    setData((old) => ({
+      ...old,
+      rules: old.rules.map((r) => (r.id === id ? { ...r, favorited } : r)),
+    }))
   }
 
   // Concept choices come from what the current page of rules mentions.
@@ -133,7 +160,7 @@ export default function Library({ mine = false } = {}) {
     setPage(1)
     setFilters((old) => ({
       ...old,
-      [key]: key === 'flagged' ? event.target.checked : event.target.value,
+      [key]: key === 'flagged' || key === 'favorited' ? event.target.checked : event.target.value,
     }))
   }
 
@@ -193,6 +220,12 @@ export default function Library({ mine = false } = {}) {
               <input type="checkbox" checked={filters.flagged} onChange={set('flagged')} />
               flagged only
             </label>
+            {user && (
+              <label>
+                <input type="checkbox" checked={filters.favorited} onChange={set('favorited')} />
+                favorited only
+              </label>
+            )}
             <label>
               <input
                 type="checkbox"
@@ -200,6 +233,13 @@ export default function Library({ mine = false } = {}) {
                 onChange={(event) => setShowHidden(event.target.checked)}
               />
               show hidden{hiddenIds.size ? ` (${hiddenIds.size})` : ''}
+            </label>
+            <label>
+              sort
+              <select value={sort} onChange={(e) => { setPage(1); setSort(e.target.value) }}>
+                <option value="newest">newest</option>
+                <option value="most_liked">most favorited</option>
+              </select>
             </label>
           </div>
 
@@ -218,6 +258,8 @@ export default function Library({ mine = false } = {}) {
                   rule={rule}
                   hidden={hiddenIds.has(rule.id)}
                   onToggleHidden={toggleHidden}
+                  signedIn={!!user}
+                  onFavoriteChange={onFavoriteChange}
                 />
               ))}
             </div>

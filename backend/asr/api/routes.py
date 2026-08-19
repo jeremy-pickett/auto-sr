@@ -44,11 +44,13 @@ def _rule_hidden_from(visibility: str, owner_uid: str | None, user: dict | None)
     return visibility == "private" and (user is None or user["uid"] != owner_uid)
 
 
-def _rule_summary(row, user: dict | None = None) -> dict:
+def _rule_summary(row, user: dict | None = None, favorited_ids: set | None = None) -> dict:
     return {
         "id": row["id"],
         "created_at": row["created_at"],
         "description": row["description"],
+        "title": row["title"],
+        "slug": row["slug"],
         "spark": row["spark"],
         "status": row["status"],
         "failed_check": row["failed_check"],
@@ -66,6 +68,44 @@ def _rule_summary(row, user: dict | None = None) -> dict:
         # A server-computed membership flag, never the raw owner_uid --
         # no reason to hand one user's opaque identifier to another.
         "mine": bool(user) and row["owner_uid"] == user["uid"],
+        # Lets the frontend tell "nobody owns this, anyone may title it"
+        # apart from "someone else owns this" without ever learning who.
+        "has_owner": row["owner_uid"] is not None,
+        "favorited": bool(favorited_ids) and row["id"] in favorited_ids,
+    }
+
+
+_SLUG_KEEP = "abcdefghijklmnopqrstuvwxyz0123456789-"
+
+
+def _slugify(text: str) -> str:
+    lowered = "".join(c if c.isalnum() else "-" for c in text.lower())
+    lowered = "".join(c for c in lowered if c in _SLUG_KEEP)
+    while "--" in lowered:
+        lowered = lowered.replace("--", "-")
+    return lowered.strip("-")[:60] or "rule"
+
+
+def _unique_slug(conn, base: str, rule_id: int) -> str:
+    """Append -2, -3, ... until the slug is free (ignoring this rule's
+    own current row, so re-saving the same title doesn't collide with
+    itself)."""
+    candidate = base
+    n = 2
+    while conn.execute(
+        "SELECT 1 FROM rules WHERE slug = ? AND id != ?", (candidate, rule_id)
+    ).fetchone():
+        candidate = f"{base}-{n}"
+        n += 1
+    return candidate
+
+
+def _favorited_ids(conn, user: dict | None) -> set:
+    if not user:
+        return set()
+    return {
+        row["rule_id"]
+        for row in conn.execute("SELECT rule_id FROM favorites WHERE user_uid = ?", (user["uid"],))
     }
 
 
@@ -99,6 +139,8 @@ def list_rules(
     concept: str | None = None,
     flagged: bool | None = None,
     mine: bool = Query(False),
+    favorited: bool = Query(False),
+    sort: str = Query("newest"),
     user: dict | None = Depends(get_current_user),
     conn=Depends(get_db),
 ):
@@ -116,6 +158,11 @@ def list_rules(
         clauses.append(
             "EXISTS (SELECT 1 FROM runs f WHERE f.rule_id = rules.id AND f.user_flagged = 1)"
         )
+    if favorited:
+        if user is None:
+            raise HTTPException(401, "sign in to view your favorites")
+        clauses.append("EXISTS (SELECT 1 FROM favorites fav WHERE fav.rule_id = rules.id AND fav.user_uid = ?)")
+        params.append(user["uid"])
     # The default listing is always the public/global library, no
     # matter who's asking. mine=true is the personal library --
     # everything you own, public or private -- and requires sign-in.
@@ -126,6 +173,9 @@ def list_rules(
         params.append(user["uid"])
     else:
         clauses.append("rules.visibility = 'public'")
+    order = "rules.id DESC"
+    if sort == "most_liked":
+        order = "(SELECT COUNT(*) FROM favorites lk WHERE lk.rule_id = rules.id) DESC, rules.id DESC"
     where = ("WHERE " + " AND ".join(clauses)) if clauses else ""
     base = f"""FROM rules
                LEFT JOIN runs canon
@@ -139,12 +189,13 @@ def list_rules(
                    canon.guessed_behavior, canon.guess_confidence,
                    canon.user_behavior, canon.user_flagged AS run_user_flagged
             {base}
-            ORDER BY rules.id DESC LIMIT ? OFFSET ?""",
+            ORDER BY {order} LIMIT ? OFFSET ?""",
         params + [page_size, (page - 1) * page_size],
     ).fetchall()
+    favorited_ids = _favorited_ids(conn, user)
     rules = []
     for row in rows:
-        summary = _rule_summary(row, user)
+        summary = _rule_summary(row, user, favorited_ids)
         summary["canonical_run"] = (
             {
                 "id": row["canonical_run_id"],
@@ -162,15 +213,11 @@ def list_rules(
     return {"total": total, "page": page, "page_size": page_size, "rules": rules}
 
 
-@router.get("/rules/{rule_id}")
-def get_rule(rule_id: int, user: dict | None = Depends(get_current_user), conn=Depends(get_db)):
-    row = conn.execute("SELECT * FROM rules WHERE id = ?", (rule_id,)).fetchone()
-    if row is None or _rule_hidden_from(row["visibility"], row["owner_uid"], user):
-        raise HTTPException(404, "no such rule")
+def _full_rule_detail(row, user, conn) -> dict:
     runs = conn.execute(
-        "SELECT * FROM runs WHERE rule_id = ? ORDER BY id", (rule_id,)
+        "SELECT * FROM runs WHERE rule_id = ? ORDER BY id", (row["id"],)
     ).fetchall()
-    full = _rule_summary(row, user)
+    full = _rule_summary(row, user, _favorited_ids(conn, user))
     full.update(
         {
             "reasoning": row["reasoning"],
@@ -200,6 +247,85 @@ def get_rule(rule_id: int, user: dict | None = Depends(get_current_user), conn=D
         }
     )
     return full
+
+
+@router.get("/rules/{rule_id}")
+def get_rule(rule_id: int, user: dict | None = Depends(get_current_user), conn=Depends(get_db)):
+    row = conn.execute("SELECT * FROM rules WHERE id = ?", (rule_id,)).fetchone()
+    if row is None or _rule_hidden_from(row["visibility"], row["owner_uid"], user):
+        raise HTTPException(404, "no such rule")
+    return _full_rule_detail(row, user, conn)
+
+
+@router.get("/rules/by-slug/{slug}")
+def get_rule_by_slug(slug: str, user: dict | None = Depends(get_current_user), conn=Depends(get_db)):
+    """The clean-URL lookup a title's slug resolves through
+    (#/r/:slug in the frontend). Doesn't replace the numeric #/rules/:id
+    route anywhere -- purely additive, so nothing already working
+    changes shape.
+    """
+    row = conn.execute("SELECT * FROM rules WHERE slug = ?", (slug,)).fetchone()
+    if row is None or _rule_hidden_from(row["visibility"], row["owner_uid"], user):
+        raise HTTPException(404, "no such rule")
+    return _full_rule_detail(row, user, conn)
+
+
+class RuleTitle(BaseModel):
+    title: str | None = None
+
+
+@router.patch("/rules/{rule_id}")
+def set_rule_title(
+    rule_id: int, body: RuleTitle,
+    user: dict | None = Depends(get_current_user), conn=Depends(get_db),
+):
+    """The one mutation a rule permits: a user-editable display name,
+    layered over the AI-generated description exactly the way
+    user_behavior layers over guessed_behavior -- the description
+    itself never changes. Ownerless (anonymous-generated) rules can be
+    titled by anyone, matching how they're already open to anyone for
+    running/correcting; an owned rule can only be retitled by its
+    owner, so a stranger can't rename someone else's public rule.
+    """
+    row = conn.execute("SELECT * FROM rules WHERE id = ?", (rule_id,)).fetchone()
+    if row is None or _rule_hidden_from(row["visibility"], row["owner_uid"], user):
+        raise HTTPException(404, "no such rule")
+    if row["owner_uid"] is not None and (user is None or user["uid"] != row["owner_uid"]):
+        raise HTTPException(403, "only this rule's owner can rename it")
+
+    if body.title is None or not body.title.strip():
+        conn.execute("UPDATE rules SET title = NULL, slug = NULL WHERE id = ?", (rule_id,))
+    else:
+        title = body.title.strip()[:120]
+        slug = _unique_slug(conn, _slugify(title), rule_id)
+        conn.execute("UPDATE rules SET title = ?, slug = ? WHERE id = ?", (title, slug, rule_id))
+    conn.commit()
+    fresh = conn.execute("SELECT * FROM rules WHERE id = ?", (rule_id,)).fetchone()
+    return _rule_summary(fresh, user, _favorited_ids(conn, user))
+
+
+@router.post("/rules/{rule_id}/favorite")
+def add_favorite(rule_id: int, user: dict | None = Depends(get_current_user), conn=Depends(get_db)):
+    if user is None:
+        raise HTTPException(401, "sign in to favorite a rule")
+    row = conn.execute("SELECT * FROM rules WHERE id = ?", (rule_id,)).fetchone()
+    if row is None or _rule_hidden_from(row["visibility"], row["owner_uid"], user):
+        raise HTTPException(404, "no such rule")
+    conn.execute(
+        "INSERT OR IGNORE INTO favorites(user_uid, rule_id, created_at) VALUES(?,?,?)",
+        (user["uid"], rule_id, db.now()),
+    )
+    conn.commit()
+    return {"favorited": True}
+
+
+@router.delete("/rules/{rule_id}/favorite")
+def remove_favorite(rule_id: int, user: dict | None = Depends(get_current_user), conn=Depends(get_db)):
+    if user is None:
+        raise HTTPException(401, "sign in to favorite a rule")
+    conn.execute("DELETE FROM favorites WHERE user_uid = ? AND rule_id = ?", (user["uid"], rule_id))
+    conn.commit()
+    return {"favorited": False}
 
 
 # Kept in sync by hand with frontend/src/lib/palette.js's KIND_COLORS --

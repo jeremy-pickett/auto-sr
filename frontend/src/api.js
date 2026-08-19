@@ -28,6 +28,18 @@ export const listRules = (params = {}) => {
 
 export const getRule = (id) => authorizedFetch(`/rules/${id}`).then(asJson)
 
+export const getRuleBySlug = (slug) => authorizedFetch(`/rules/by-slug/${slug}`).then(asJson)
+
+export const setRuleTitle = (id, title) =>
+  authorizedFetch(`/rules/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title }),
+  }).then(asJson)
+
+export const addFavorite = (id) => authorizedFetch(`/rules/${id}/favorite`, { method: 'POST' }).then(asJson)
+export const removeFavorite = (id) => authorizedFetch(`/rules/${id}/favorite`, { method: 'DELETE' }).then(asJson)
+
 export const rerunRule = (id, seed) =>
   authorizedFetch(`/rules/${id}/runs`, {
     method: 'POST',
