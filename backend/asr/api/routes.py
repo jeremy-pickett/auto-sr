@@ -111,6 +111,20 @@ def _unique_slug(conn, base: str, rule_id: int) -> str:
     return candidate
 
 
+def _apply_title(conn, rule_id: int, title: str | None) -> None:
+    """The shared title+slug write, used by both PATCH /rules/{id} and
+    naming a rule at the moment it's invented. A blank/None title is a
+    no-op here (the row already defaults to title=NULL) -- clearing an
+    *existing* title is PATCH /rules/{id}'s job specifically.
+    """
+    if not title or not title.strip():
+        return
+    cleaned = title.strip()[:120]
+    slug = _unique_slug(conn, _slugify(cleaned), rule_id)
+    conn.execute("UPDATE rules SET title = ?, slug = ? WHERE id = ?", (cleaned, slug, rule_id))
+    conn.commit()
+
+
 def _favorited_ids(conn, user: dict | None) -> set:
     if not user:
         return set()
@@ -350,11 +364,9 @@ def set_rule_title(
 
     if body.title is None or not body.title.strip():
         conn.execute("UPDATE rules SET title = NULL, slug = NULL WHERE id = ?", (rule_id,))
+        conn.commit()
     else:
-        title = body.title.strip()[:120]
-        slug = _unique_slug(conn, _slugify(title), rule_id)
-        conn.execute("UPDATE rules SET title = ?, slug = ? WHERE id = ?", (title, slug, rule_id))
-    conn.commit()
+        _apply_title(conn, rule_id, body.title)
     fresh = conn.execute("SELECT * FROM rules WHERE id = ?", (rule_id,)).fetchone()
     return _rule_summary(
         fresh, user, _favorited_ids(conn, user),

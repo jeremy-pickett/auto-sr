@@ -39,6 +39,7 @@ export default function Invent() {
   const [failure, setFailure] = useState(null)
   const [visibility, setVisibility] = useState('public')
   const [spark, setSpark] = useState('')
+  const [title, setTitle] = useState('')
   const startedRef = useRef(false)
 
   const start = async () => {
@@ -50,7 +51,7 @@ export default function Invent() {
     try {
       await generateRule(
         (name, data) => setEvents((log) => [...log, [name, data]]),
-        { visibility, spark: spark.trim() }
+        { visibility, spark: spark.trim(), title: title.trim() }
       )
     } catch (error) {
       setFailure(String(error))
@@ -76,6 +77,20 @@ export default function Invent() {
           reruns — proposes one rule, implements it, and every outcome lands
           in the library. Failure is data too.
         </p>
+        <div className="row" style={{ gap: 16, marginBottom: 12, flexWrap: 'wrap' }}>
+          <label className="row" style={{ color: 'var(--muted)', fontSize: 12, gap: 6 }}>
+            name
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              disabled={working}
+              maxLength={120}
+              placeholder="give it a name — optional, you can add one later too"
+              style={{ width: 260 }}
+            />
+          </label>
+        </div>
         {user && (
           <div className="row" style={{ gap: 16, marginBottom: 12, flexWrap: 'wrap' }}>
             <label className="row" style={{ color: 'var(--muted)', fontSize: 12, gap: 6 }}>
@@ -157,7 +172,7 @@ export default function Invent() {
 
       {complete && complete.status === 'ok' && (
         <div className="panel done-note">
-          <h3>it works</h3>
+          <h3>{title.trim() ? title.trim() : 'it works'}</h3>
           <div className="done-result">
             <RunThumbnail
               run={{ id: complete.run_id, ticks_run: complete.ticks_run }}

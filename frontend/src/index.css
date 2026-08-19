@@ -261,6 +261,7 @@ code, .mono { font-family: var(--font-mono); }
 }
 .rule-card .meta { display: flex; gap: 6px; flex-wrap: wrap; }
 .rule-card .id { color: var(--muted); font-size: 11.5px; font-family: var(--font-mono); }
+.rule-card .rule-title { color: var(--ink); font-size: 14.5px; font-weight: 650; }
 
 .pager {
   display: flex;

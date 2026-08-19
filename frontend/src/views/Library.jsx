@@ -53,8 +53,16 @@ function RuleCard({ rule, hidden, onToggleHidden, signedIn, onFavoriteChange }) 
       style={run ? undefined : { opacity: 0.8 }}
     >
       <div className="row" style={{ justifyContent: 'space-between' }}>
-        <span className="id">
-          {rule.title ? <strong>{rule.title}</strong> : `rule #${rule.id}`}{' '}
+        <span>
+          {rule.title ? (
+            <>
+              <span className="rule-title">{rule.title}</span>{' '}
+              <span className="id">#{rule.id}</span>
+            </>
+          ) : (
+            <span className="id">rule #{rule.id}</span>
+          )}
+          {' '}
           <button className="linkish" onClick={details}>details</button>{' '}
           <button className="linkish" onClick={toggleHidden}>
             {hidden ? 'unhide' : 'hide'}

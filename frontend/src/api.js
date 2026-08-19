@@ -71,10 +71,11 @@ export const patchRun = (id, corrections) =>
 // A body is sent only when there's something to say (private, or a
 // spark) — keeps the ordinary request exactly the bare, bodyless POST
 // it's always been.
-export async function generateRule(onEvent, { visibility, spark } = {}) {
+export async function generateRule(onEvent, { visibility, spark, title } = {}) {
   const body = {}
   if (visibility === 'private') body.visibility = visibility
   if (spark) body.spark = spark
+  if (title) body.title = title
   const response = await authorizedFetch('/rules/generate', {
     method: 'POST',
     ...(Object.keys(body).length

@@ -20,6 +20,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from asr.api.auth import get_current_user
+from asr.api.routes import _apply_title
 from asr.generation.pipeline import clean_spark, generate_rule
 from asr.storage import db
 
@@ -35,15 +36,23 @@ class GenerateRequest(BaseModel):
     # .clean_spark does the real cleaning/64-char enforcement; this is
     # only a coarse, cheap pre-limit against a genuinely huge payload).
     spark: str | None = Field(default=None, max_length=256)
+    # Naming a rule at the moment it's invented, not just afterward --
+    # _apply_title (routes.py) does the real cleaning/slug generation,
+    # same as PATCH /rules/{id}. No auth gate: an anonymous request
+    # can only ever produce an ownerless rule, and ownerless rules are
+    # already titlable by anyone (see set_rule_title's docstring).
+    title: str | None = Field(default=None, max_length=256)
 
 
-def _run_pipeline(database_path: str, events: queue.Queue, owner_uid, visibility, spark) -> None:
+def _run_pipeline(database_path: str, events: queue.Queue, owner_uid, visibility, spark, title) -> None:
     conn = db.connect(database_path)
     try:
-        generate_rule(
+        payload = generate_rule(
             conn, lambda name, data: events.put((name, data)),
             owner_uid=owner_uid, visibility=visibility, spark=spark,
         )
+        if title and payload.get("rule_id") is not None:
+            _apply_title(conn, payload["rule_id"], title)
     except Exception as failed:  # noqa: BLE001 - the stream must always end
         # The browser only sees the tail; the server log keeps the
         # whole story so a transient API failure is diagnosable later.
@@ -77,10 +86,12 @@ def generate(
     if spark and user is None:
         raise HTTPException(400, "sign in to add a spark")
 
+    title = body.title if body else None
+
     events: queue.Queue = queue.Queue()
     worker = threading.Thread(
         target=_run_pipeline,
-        args=(request.app.state.database_path, events, owner_uid, visibility, spark),
+        args=(request.app.state.database_path, events, owner_uid, visibility, spark, title),
         daemon=True,
     )
     worker.start()
