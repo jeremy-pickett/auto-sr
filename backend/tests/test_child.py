@@ -85,7 +85,9 @@ class Rule:
         return make_cells(np.zeros((height, width), dtype=np.uint8))
 
     def step(self, cells):
-        raise ValueError("this rule is deliberately broken")
+        # Raising needs no builtin: an unknown property blows up in the
+        # Cells attribute lookup with a distinctive message.
+        return cells.deliberately_broken
 """
 
 
@@ -96,4 +98,4 @@ def test_a_crashing_rule_surfaces_its_traceback():
             BLOWS_UP, declaration, seed=1, width=6, height=6,
             max_ticks=10, tick_timeout_seconds=1.0, memory_limit_mb=4096,
         )
-    assert "deliberately broken" in str(caught.value)
+    assert "deliberately_broken" in str(caught.value)

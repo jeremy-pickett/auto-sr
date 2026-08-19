@@ -6,6 +6,7 @@
 from fastapi import FastAPI
 
 from asr.api.routes import router
+from asr.api.stream import router as generation_router
 from asr.config import settings
 from asr.storage.reconstruct import ReconstructionCache
 
@@ -16,6 +17,7 @@ def create_app(database_path: str | None = None) -> FastAPI:
     # The cache budget is in bytes, not runs (REQ-11.2.1).
     app.state.cache = ReconstructionCache(settings.run_cache_budget_mb * 1024 * 1024)
     app.include_router(router)
+    app.include_router(generation_router)
     return app
 
 

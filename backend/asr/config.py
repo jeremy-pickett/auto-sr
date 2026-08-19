@@ -38,6 +38,7 @@ class Settings:
     lineage_chance: float
     run_cache_budget_mb: int
     anthropic_model: str
+    shape_model: str
     database_path: str
 
 
@@ -52,5 +53,7 @@ settings = Settings(
     lineage_chance=_float("LINEAGE_CHANCE", 0.0),
     run_cache_budget_mb=_int("RUN_CACHE_BUDGET_MB", 512),
     anthropic_model=_text("ANTHROPIC_MODEL", "claude-opus-5"),
+    # The small classifier call behind observed_shape (REQ-8.2.1).
+    shape_model=_text("SHAPE_MODEL", "claude-haiku-4-5"),
     database_path=_text("DATABASE_PATH", "./library.db"),
 )

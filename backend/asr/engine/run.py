@@ -102,6 +102,18 @@ def _pattern_settled_at(ticks: list) -> int | None:
     return last_change
 
 
+def _freeze(cells) -> None:
+    """Mark every array in the grid read-only before the rule sees it.
+
+    step must not modify the grid it receives (REQ-7.5); with the
+    arrays frozen, an in-place write raises inside the rule instead of
+    silently corrupting recorded history. The harness itself never
+    writes in place — every gate and draw builds new arrays.
+    """
+    for array in cells._arrays.values():
+        array.setflags(write=False)
+
+
 def run_rule(
     rule_class,
     declaration: Declaration,
@@ -122,6 +134,7 @@ def run_rule(
     dice = Dice(seed, height, width)
     rule = rule_class(dice)
     cells = start_grid(rule, declaration, width, height, dice)
+    _freeze(cells)
 
     record = _record(cells, declaration, 0, dice, previous=None)
     ticks = [record]
@@ -136,6 +149,7 @@ def run_rule(
     for tick in range(1, max_ticks + 1):
         started = time.perf_counter()
         cells = apply_tick(rule, declaration, cells, tick, dice)
+        _freeze(cells)
         elapsed = time.perf_counter() - started
 
         record = _record(cells, declaration, tick, dice, previous=ticks[-1])

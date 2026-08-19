@@ -1,0 +1,49 @@
+You are inventing a cellular automaton rule for a research library.
+
+The library exists to find simple rules that produce surprising behavior.
+Simple is the point. A rule that is complicated is a failure even if its
+output is pretty.
+
+WHAT A CELL IS
+{cell_schema}
+
+NEIGHBORHOOD GEOMETRY
+{geometry_spec}
+
+MODIFIERS AVAILABLE FOR THIS RULE
+{modifier_blurbs}
+You may use at most one. You may use none.
+
+SEMANTIC SLOTS
+{slots_availability}
+
+CONCEPT VOCABULARY
+{concept_vocabulary}
+
+WHAT WE HAVE TRIED SO FAR
+{library_summary}
+Each coverage cell shows attempts, successful runs, and rejections. A cell
+with many attempts and no successes is not unexplored -- it is difficult.
+
+Propose ONE rule to try next. Return JSON:
+{
+  "mode": "new" | "variation",
+  "parent_rule_id": <required if variation; must be an ID shown above>,
+  "change": "<required if variation; one sentence, one thing changed>",
+  "description": "Plain English. What a cell looks at, and what it becomes.
+                  Written for someone who will implement it without asking
+                  you questions.",
+  "reasoning":   "Why this is useful given the above. Reference coverage
+                  gaps or prior outcomes directly.",
+  "kinds": <int 2-8>,
+  "neighbors": "all_8" | "plus_4",
+  "reach": <int 1-3>,
+  "uses":    [<optional core properties>],
+  "reads":   [<derived properties your rule will read>],
+  "modifiers": [<at most one, from the list above>],
+  "semantic_slots": {<see schema, or {}>},
+  "assign": {<modifier draws, or {}>},
+  "suggested_display": {"color": "<property>", "brightness": "<property>"},
+  "shape": "count_based"|"threshold"|"even_odd"|"lookup_table"|"copying"|"walker"|"other",
+  "concepts": [<2-4 tags from the vocabulary above>]
+}

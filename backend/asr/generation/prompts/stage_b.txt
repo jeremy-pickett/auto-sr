@@ -1,0 +1,43 @@
+Implement this rule as a Python class.
+
+THE RULE
+{description}
+
+DECLARED PROPERTIES
+{declared_properties}
+
+THE CONTRACT
+{plugin_contract}
+
+AVAILABLE IN YOUR NAMESPACE
+{helper_signatures}
+{dice_facade}
+{approved_numpy_surface}
+
+HARD RULES
+- No imports. numpy is bound as np, restricted to the surface above.
+- Build your starting grid with make_cells(). Cells has no constructor and
+  no arithmetic -- it is a bag of named arrays, not an array.
+- Do not modify the grid passed to step(). Copy it first.
+- step() must be deterministic. self.dice may be used ONLY in make_start(),
+  and only through the methods listed above.
+- step() may not assign to self.
+- age and changed_last_tick are read-only, and any you use must appear in
+  READS.
+- Modifier and semantic slot arrays are read-only. Declare draws in ASSIGN;
+  the harness performs them.
+- Spatial helpers take literal offsets only, and every offset must lie
+  inside your declared neighborhood. look() observes; move() displaces by
+  exactly one cell. There is no unrestricted shift.
+- No while loops. for loops only over range(n) with a literal n <= 8, or
+  over a literal tuple or list. Never loop over grid dimensions -- use the
+  helpers and whole-array operations.
+- step() may contain at most {simplicity_limit} branches, loops, and
+  comprehensions combined. Simpler is better. If your implementation is
+  near the limit, the rule is wrong, not the limit.
+- Your declared KINDS, NEIGHBORS, REACH, USES, READS, MODIFIERS,
+  SEMANTIC_SLOTS, and ASSIGN must match the values above exactly.
+
+Return exactly one complete `class Rule:` definition, including the class
+statement itself. No imports, no top-level statements outside the class, no
+prose, no markdown fences.

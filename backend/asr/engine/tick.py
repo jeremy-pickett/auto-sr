@@ -72,6 +72,10 @@ def apply_tick(rule, declaration: Declaration, cells: Cells, tick: int, dice: Di
         raise ValueError(
             f"step built {proposed._rule_owned} but the grid owns {cells._rule_owned}"
         )
+    if proposed._shape() != cells._shape():
+        raise ValueError(
+            f"step built a {proposed._shape()} grid but received {cells._shape()}"
+        )
     # The proposal carries only rule-owned arrays; the harness carries
     # everything else forward, unchanged because the rule cannot write
     # any of it (REQ-4.5).

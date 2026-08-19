@@ -1,0 +1,12 @@
+{stage_b_prompt}
+
+YOUR PREVIOUS ATTEMPT
+{previous_code}
+
+WHAT FAILED
+{failed_check}: {error_text}
+
+Fix exactly what failed and return the complete corrected `class Rule:`
+definition. Same format as before: no imports, no top-level statements
+outside the class, no prose, no markdown fences. This is the only repair
+attempt.

@@ -101,3 +101,22 @@ documents/                 the spec, this file
   (REQ-13.2), REQ-13.11 quiet-but-alive messaging, REQ-0.3 credit line.
   Grid chunks fetched 250 ticks at a time with prefetch. 104 tests;
   `npm run build` clean.
+- **Phase 5 (2026-08-19):** generation pipeline. `contract/namespace.py`
+  (exact §7.9 allowlists; `load.py` now executes all rule source —
+  fixtures included — under the restricted builtins and NumPy proxy),
+  `contract/validator.py` (REQ-7.8 steps 1–3: structure, every static
+  check, declaration match incl. READS), runtime input-mutation
+  enforcement (run loop freezes every grid array before the rule sees
+  it, so REQ-7.5 violations raise in the child), prompt templates as
+  files (`generation/prompts/`), `catalog.py` (availability gating,
+  ≤1 non-always modifier per generation), `context.py` (coverage map
+  with three counts, Stage A context in budget, fixed 8-word concept
+  vocabulary; `/library/summary` now shares this one implementation),
+  `shape.py` (static inference, small-model fallback via new
+  `SHAPE_MODEL` setting, default claude-haiku-4-5), `pipeline.py`
+  (A→B→C with one repair, full provenance, canonical run), and
+  `api/stream.py` (SSE from POST, REQ-11.4 event sequence). Tests:
+  14 bad rules (REQ-15.5, one per rejection path), namespace, pipeline
+  against a fake model, REQ-8.6 canonical-only coverage. 136 tests.
+  Milestone hit live: claude-opus-5 invented a 4-kind cyclic-succession
+  rule, it validated, ran 200×200, classified `repeats`/high.

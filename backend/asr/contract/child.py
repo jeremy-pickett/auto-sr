@@ -37,8 +37,11 @@ def run_in_child(
     max_ticks: int,
     tick_timeout_seconds: float,
     memory_limit_mb: int,
+    on_tick=None,
 ) -> RunResult:
-    """Execute a run in a killable child process and stream it back."""
+    """Execute a run in a killable child process and stream it back.
+    `on_tick` (parent-side) receives each TickRecord as it arrives —
+    the generation stream's progress feed."""
     context = multiprocessing.get_context("spawn")
     receiver, sender = context.Pipe(duplex=False)
     child = context.Process(
@@ -78,6 +81,8 @@ def run_in_child(
             kind, payload = receiver.recv()
             if kind == "tick":
                 ticks.append(payload)
+                if on_tick:
+                    on_tick(payload)
                 # After tick 0 the per-tick budget applies, plus slack
                 # for serialization.
                 patience = tick_timeout_seconds + 1.0

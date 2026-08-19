@@ -1,17 +1,14 @@
 """Loading rule source into its execution namespace (REQ-6.1, REQ-7.2).
 
 Rule source — generated or fixture — is a single `class Rule:` that
-uses only pre-bound names: np, make_cells, the spatial helpers bound to
-its declaration, and the HEADING constants. This module builds that
-namespace and loads the class.
-
-Phase 5 note: the namespace will switch to the restricted builtins and
-NumPy proxy of section 7.9 (language-contract enforcement, not a
-sandbox). The shape stays the same.
+uses only pre-bound names: the approved NumPy surface as np (REQ-7.9),
+make_cells, the spatial helpers bound to its declaration, and the
+HEADING constants. Restricted builtins keep the source inside the
+contract's language — enforcement of the contract, not a sandbox
+(REQ-3.10).
 """
 
-import numpy as np
-
+from asr.contract.namespace import approved_numpy, restricted_builtins
 from asr.engine.cells import make_cells
 from asr.engine.declaration import Declaration
 from asr.engine.geometry import HEADING
@@ -20,7 +17,9 @@ from asr.engine.helpers import bind_helpers
 
 def build_namespace(declaration: Declaration) -> dict:
     namespace = {
-        "np": np,
+        "__builtins__": restricted_builtins(),
+        "__name__": "generated_rule",  # class creation reads this for __module__
+        "np": approved_numpy,
         "make_cells": make_cells,
         "HEADING": HEADING,
     }

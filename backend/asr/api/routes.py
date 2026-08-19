@@ -343,67 +343,13 @@ def get_modifier_catalog(conn=Depends(get_db)):
 @router.get("/library/summary")
 def library_summary(conn=Depends(get_db)):
     """Totals, the coverage map, and the rejection tally (REQ-8.2,
-    REQ-8.8). Coverage counts canonical runs only (REQ-8.6).
+    REQ-8.8). One implementation, shared with Stage A context: the
+    coverage counts canonical runs only (REQ-8.6).
     """
-    totals = {"rules": 0, "broken": 0, "behaviors": {}}
-    coverage = {}
+    from asr.generation import context
 
-    def cell_key(kinds, neighbors, reach, shape, modifier, slots_used):
-        return f"{kinds}|{neighbors}|{reach}|{shape}|{modifier}|{int(slots_used)}"
-
-    for row in conn.execute(
-        """SELECT rules.kinds, rules.neighbors, rules.reach,
-                  rules.requested_shape, rules.modifiers_json,
-                  rules.semantic_slots_json, rules.status,
-                  canon.guessed_behavior
-           FROM rules
-           LEFT JOIN runs canon
-             ON canon.rule_id = rules.id AND canon.is_canonical = 1"""
-    ):
-        totals["rules"] += 1
-        if row["status"] == "broken":
-            totals["broken"] += 1
-        modifiers = json.loads(row["modifiers_json"])
-        key = cell_key(
-            row["kinds"], row["neighbors"], row["reach"],
-            row["requested_shape"] or "other",
-            modifiers[0] if modifiers else "none",
-            json.loads(row["semantic_slots_json"]) != {},
-        )
-        cell = coverage.setdefault(
-            key, {"attempts": 0, "successes": 0, "rejections": 0, "outcomes": {}}
-        )
-        cell["attempts"] += 1
-        if row["guessed_behavior"]:
-            cell["successes"] += 1
-            cell["outcomes"][row["guessed_behavior"]] = (
-                cell["outcomes"].get(row["guessed_behavior"], 0) + 1
-            )
-            totals["behaviors"][row["guessed_behavior"]] = (
-                totals["behaviors"].get(row["guessed_behavior"], 0) + 1
-            )
-
-    rejection_tally = {}
-    for row in conn.execute(
-        """SELECT failed_check, COUNT(*) AS n, kinds, neighbors, reach,
-                  requested_shape, modifier_in_scope
-           FROM rejections GROUP BY failed_check, kinds, neighbors, reach,
-                  requested_shape, modifier_in_scope"""
-    ):
-        rejection_tally[row["failed_check"]] = (
-            rejection_tally.get(row["failed_check"], 0) + row["n"]
-        )
-        if row["kinds"] is not None:
-            key = cell_key(
-                row["kinds"], row["neighbors"], row["reach"],
-                row["requested_shape"] or "other",
-                row["modifier_in_scope"] or "none",
-                False,  # the rejections table does not record slot use
-            )
-            cell = coverage.setdefault(
-                key, {"attempts": 0, "successes": 0, "rejections": 0, "outcomes": {}}
-            )
-            cell["attempts"] += row["n"]
-            cell["rejections"] += row["n"]
-
-    return {"totals": totals, "coverage": coverage, "rejections": rejection_tally}
+    return {
+        "totals": context.totals(conn),
+        "coverage": context.coverage_map(conn),
+        "rejections": context.rejection_tally(conn),
+    }
