@@ -138,7 +138,11 @@ export default function Landing() {
             <footer>
               — Stephen Wolfram, whose <em>ruliology</em> — his word for the
               study of simple rules and their consequences — inspired this
-              project
+              project. From{' '}
+              <a href="https://www.youtube.com/watch?v=5_O-kSzWdu4" target="_blank" rel="noopener noreferrer">
+                the interview
+              </a>{' '}
+              that started it.
             </footer>
           </blockquote>
         </div>

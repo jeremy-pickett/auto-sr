@@ -1,3 +1,5 @@
+Source: https://www.youtube.com/watch?v=5_O-kSzWdu4
+
 I had long been interested in kind of, what fundamentally is there underneath physics? What is the sort of foundational things that create our physical universe? What rules could those be? I at first thought when the rules are simple enough, the behavior one will get will always be correspondingly simple. But I started doing actual computer experiments to find out what really happens. It's kind of like you get to take the computer like a telescope, turn it at the sky and see what you see. What I saw was really very remarkable. At first, I didn't quite believe it. Even when the rules by which you're operating are very simple, the behavior of the system can be very complicated. I'm Stephen Wolfram. I've been motivated for a long time by understanding the significance of the paradigm of computation, both in its practical applications in technology and its implications for kind of deep conceptual issues in thinking about the world.
 
 The limits of theoretical physics
