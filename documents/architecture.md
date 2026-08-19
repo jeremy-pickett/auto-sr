@@ -120,3 +120,15 @@ documents/                 the spec, this file
   against a fake model, REQ-8.6 canonical-only coverage. 136 tests.
   Milestone hit live: claude-opus-5 invented a 4-kind cyclic-succession
   rule, it validated, ran 200×200, classified `repeats`/high.
+- **Phase 6 (2026-08-19):** full UI. `views/Invent.jsx` consumes the
+  generation stream via streaming `fetch()` + `ReadableStream` (never
+  EventSource, REQ-11.4.1): stage lamps (inventing → implementing →
+  validating → running) with breathing active state, the proposal shown
+  as it lands, validation failures and the repair attempt surfaced,
+  tick progress, and the outcome panel for ok / broken / failed.
+  `views/RuleView.jsx` (#/rules/:id): description, reasoning, source,
+  error text for broken rules, runs list, rerun, and full provenance —
+  hashes, model, and the rendered prompts + raw responses behind folds.
+  Library cards click through to the canonical run (or details when
+  broken) with a separate details link; Invent wired into nav and the
+  library header button.

@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react'
 import Library from './views/Library.jsx'
 import RunView from './views/RunView.jsx'
+import RuleView from './views/RuleView.jsx'
 import Catalog from './views/Catalog.jsx'
+import Invent from './views/Invent.jsx'
 
-// Tiny hash router: #/ (library), #/runs/3, #/catalog
+// Tiny hash router: #/ (library), #/runs/3, #/rules/3, #/invent, #/catalog
 function parseRoute() {
   const hash = window.location.hash.replace(/^#\/?/, '')
   const [head, id] = hash.split('/')
   if (head === 'runs' && id) return { view: 'run', id: Number(id) }
+  if (head === 'rules' && id) return { view: 'rule', id: Number(id) }
+  if (head === 'invent') return { view: 'invent' }
   if (head === 'catalog') return { view: 'catalog' }
   return { view: 'library' }
 }
@@ -29,7 +33,8 @@ export default function App() {
           Autonomous Semantic Ruliology
         </a>
         <nav>
-          <a href="#/" className={route.view !== 'catalog' ? 'active' : ''}>Library</a>
+          <a href="#/" className={['library', 'run', 'rule'].includes(route.view) ? 'active' : ''}>Library</a>
+          <a href="#/invent" className={route.view === 'invent' ? 'active' : ''}>Invent</a>
           <a href="#/catalog" className={route.view === 'catalog' ? 'active' : ''}>Modifiers</a>
         </nav>
         <span className="spacer" />
@@ -38,6 +43,8 @@ export default function App() {
       <main className="page">
         {route.view === 'library' && <Library />}
         {route.view === 'run' && <RunView runId={route.id} />}
+        {route.view === 'rule' && <RuleView ruleId={route.id} />}
+        {route.view === 'invent' && <Invent />}
         {route.view === 'catalog' && <Catalog />}
       </main>
 

@@ -19,16 +19,25 @@ function BehaviorChip({ run }) {
 function RuleCard({ rule }) {
   const run = rule.canonical_run
   const open = () => {
-    if (run) window.location.hash = `#/runs/${run.id}`
+    // A playable rule opens its canonical run; a broken one opens its
+    // details — the failure is part of the library too.
+    window.location.hash = run ? `#/runs/${run.id}` : `#/rules/${rule.id}`
+  }
+  const details = (event) => {
+    event.stopPropagation()
+    window.location.hash = `#/rules/${rule.id}`
   }
   return (
     <div
       className="rule-card"
       onClick={open}
-      style={run ? undefined : { cursor: 'default', opacity: 0.75 }}
+      style={run ? undefined : { opacity: 0.8 }}
     >
       <div className="row" style={{ justifyContent: 'space-between' }}>
-        <span className="id">rule #{rule.id}</span>
+        <span className="id">
+          rule #{rule.id}{' '}
+          <button className="linkish" onClick={details}>details</button>
+        </span>
         <span className={`chip status-${rule.status}`}>
           <span className="dot" />
           {rule.status}
@@ -100,7 +109,7 @@ export default function Library() {
           </span>
         )}
         <span style={{ flex: 1 }} />
-        <button className="primary" disabled title="arrives with the generation phase">
+        <button className="primary" onClick={() => { window.location.hash = '#/invent' }}>
           ✦ Invent a rule
         </button>
       </div>
