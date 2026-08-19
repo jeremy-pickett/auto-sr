@@ -84,3 +84,20 @@ documents/                 the spec, this file
   torus loops at exactly 32 with 5 live cells throughout (REQ-14.2), slow_burn
   flips at tick 60 (REQ-15.8), rate prevents false loops (period 12 not 4),
   stochastic settle reaches frozen. 88 tests.
+- **Phase 3 (2026-08-19):** `storage/` — SQLite WAL schema per §12, tick
+  payload encoding (snapshot every `SNAPSHOT_EVERY`, sparse changed-index vs
+  dense-XOR deltas, whichever is smaller, zstd), reconstruction with derived
+  arrays rebuilt and an LRU byte-budget cache. REQ-15.4 verified across all
+  three encodings.
+- **Phase 4 (2026-08-19):** backend API (`api/app.py`, `routes.py`,
+  `framing.py` binary grid wire format REQ-11.5.1, fixture seeding via
+  `asr.seed`) and the dark-observatory frontend player: hash router
+  (Library / RunView / Catalog), canvas renderer blitting decoded binary
+  grids through `ImageData` with kind palette + age/level brightness,
+  transport (play/pause/step/scrub/speed), SVG sparklines for `variety` /
+  `cells_changed` / `kind_quiet_for` with current tick + `pattern_settled_at`
+  markers, paused-cell inspector with neighbor patch and whole-run history
+  strip, display-mapping precedence user → `SUGGESTED_DISPLAY` → kind/age
+  (REQ-13.2), REQ-13.11 quiet-but-alive messaging, REQ-0.3 credit line.
+  Grid chunks fetched 250 ticks at a time with prefetch. 104 tests;
+  `npm run build` clean.
