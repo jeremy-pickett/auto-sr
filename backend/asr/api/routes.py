@@ -12,6 +12,7 @@ import random
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from pydantic import BaseModel
 
+from asr.api.auth import get_current_user
 from asr.config import settings
 from asr.contract.child import RuleCrashed, run_in_child
 from asr.engine.classify import classify
@@ -34,7 +35,16 @@ def get_db(request: Request):
         conn.close()
 
 
-def _rule_summary(row) -> dict:
+def _rule_hidden_from(visibility: str, owner_uid: str | None, user: dict | None) -> bool:
+    """A private rule is invisible to everyone except its owner. Every
+    caller of this raises the exact same 404 message as a genuine
+    not-found, so the response never distinguishes "doesn't exist"
+    from "exists but isn't yours."
+    """
+    return visibility == "private" and (user is None or user["uid"] != owner_uid)
+
+
+def _rule_summary(row, user: dict | None = None) -> dict:
     return {
         "id": row["id"],
         "created_at": row["created_at"],
@@ -51,6 +61,10 @@ def _rule_summary(row) -> dict:
         "requested_shape": row["requested_shape"],
         "observed_shape": row["observed_shape"],
         "suggested_display": json.loads(row["suggested_display_json"]),
+        "visibility": row["visibility"],
+        # A server-computed membership flag, never the raw owner_uid --
+        # no reason to hand one user's opaque identifier to another.
+        "mine": bool(user) and row["owner_uid"] == user["uid"],
     }
 
 
@@ -83,6 +97,8 @@ def list_rules(
     behavior: str | None = None,
     concept: str | None = None,
     flagged: bool | None = None,
+    mine: bool = Query(False),
+    user: dict | None = Depends(get_current_user),
     conn=Depends(get_db),
 ):
     clauses, params = [], []
@@ -99,6 +115,16 @@ def list_rules(
         clauses.append(
             "EXISTS (SELECT 1 FROM runs f WHERE f.rule_id = rules.id AND f.user_flagged = 1)"
         )
+    # The default listing is always the public/global library, no
+    # matter who's asking. mine=true is the personal library --
+    # everything you own, public or private -- and requires sign-in.
+    if mine:
+        if user is None:
+            raise HTTPException(401, "sign in to view your personal library")
+        clauses.append("rules.owner_uid = ?")
+        params.append(user["uid"])
+    else:
+        clauses.append("rules.visibility = 'public'")
     where = ("WHERE " + " AND ".join(clauses)) if clauses else ""
     base = f"""FROM rules
                LEFT JOIN runs canon
@@ -117,7 +143,7 @@ def list_rules(
     ).fetchall()
     rules = []
     for row in rows:
-        summary = _rule_summary(row)
+        summary = _rule_summary(row, user)
         summary["canonical_run"] = (
             {
                 "id": row["canonical_run_id"],
@@ -136,14 +162,14 @@ def list_rules(
 
 
 @router.get("/rules/{rule_id}")
-def get_rule(rule_id: int, conn=Depends(get_db)):
+def get_rule(rule_id: int, user: dict | None = Depends(get_current_user), conn=Depends(get_db)):
     row = conn.execute("SELECT * FROM rules WHERE id = ?", (rule_id,)).fetchone()
-    if row is None:
+    if row is None or _rule_hidden_from(row["visibility"], row["owner_uid"], user):
         raise HTTPException(404, "no such rule")
     runs = conn.execute(
         "SELECT * FROM runs WHERE rule_id = ? ORDER BY id", (rule_id,)
     ).fetchall()
-    full = _rule_summary(row)
+    full = _rule_summary(row, user)
     full.update(
         {
             "reasoning": row["reasoning"],
@@ -180,10 +206,13 @@ class NewRun(BaseModel):
 
 
 @router.post("/rules/{rule_id}/runs")
-def rerun_rule(rule_id: int, body: NewRun, conn=Depends(get_db)):
+def rerun_rule(
+    rule_id: int, body: NewRun,
+    user: dict | None = Depends(get_current_user), conn=Depends(get_db),
+):
     """Run again with a new seed. Never canonical (REQ-8.6)."""
     row = conn.execute("SELECT * FROM rules WHERE id = ?", (rule_id,)).fetchone()
-    if row is None:
+    if row is None or _rule_hidden_from(row["visibility"], row["owner_uid"], user):
         raise HTTPException(404, "no such rule")
     if row["status"] != "ok":
         raise HTTPException(409, "a broken rule cannot run")
@@ -227,9 +256,13 @@ def rerun_rule(rule_id: int, body: NewRun, conn=Depends(get_db)):
 
 
 @router.get("/runs/{run_id}")
-def get_run(run_id: int, conn=Depends(get_db)):
-    row = conn.execute("SELECT * FROM runs WHERE id = ?", (run_id,)).fetchone()
-    if row is None:
+def get_run(run_id: int, user: dict | None = Depends(get_current_user), conn=Depends(get_db)):
+    row = conn.execute(
+        """SELECT runs.*, rules.visibility AS rule_visibility, rules.owner_uid AS rule_owner_uid
+           FROM runs JOIN rules ON rules.id = runs.rule_id WHERE runs.id = ?""",
+        (run_id,),
+    ).fetchone()
+    if row is None or _rule_hidden_from(row["rule_visibility"], row["rule_owner_uid"], user):
         raise HTTPException(404, "no such run")
     numbers = conn.execute(
         """SELECT tick, variety, cells_changed, kind_quiet_for, kind_counts_json
@@ -253,12 +286,15 @@ def get_grids(
     from_tick: int = Query(0, alias="from", ge=0),
     to_tick: int | None = Query(None, alias="to", ge=0),
     props: str = "kind",
+    user: dict | None = Depends(get_current_user),
     conn=Depends(get_db),
 ):
     row = conn.execute(
-        "SELECT ticks_run FROM runs WHERE id = ?", (run_id,)
+        """SELECT runs.ticks_run, rules.visibility AS rule_visibility, rules.owner_uid AS rule_owner_uid
+           FROM runs JOIN rules ON rules.id = runs.rule_id WHERE runs.id = ?""",
+        (run_id,),
     ).fetchone()
-    if row is None:
+    if row is None or _rule_hidden_from(row["rule_visibility"], row["rule_owner_uid"], user):
         raise HTTPException(404, "no such run")
     last = row["ticks_run"] if to_tick is None else min(to_tick, row["ticks_run"])
     if from_tick > last:
@@ -295,12 +331,15 @@ def get_grids(
 @router.get("/runs/{run_id}/cell/{y}/{x}")
 def get_cell_history(
     run_id: int, y: int, x: int, props: str = "kind", request: Request = None,
-    conn=Depends(get_db),
+    user: dict | None = Depends(get_current_user), conn=Depends(get_db),
 ):
     row = conn.execute(
-        "SELECT ticks_run, width, height FROM runs WHERE id = ?", (run_id,)
+        """SELECT runs.ticks_run, runs.width, runs.height,
+                  rules.visibility AS rule_visibility, rules.owner_uid AS rule_owner_uid
+           FROM runs JOIN rules ON rules.id = runs.rule_id WHERE runs.id = ?""",
+        (run_id,),
     ).fetchone()
-    if row is None:
+    if row is None or _rule_hidden_from(row["rule_visibility"], row["rule_owner_uid"], user):
         raise HTTPException(404, "no such run")
     if not (0 <= y < row["height"] and 0 <= x < row["width"]):
         raise HTTPException(400, "cell is outside the grid")
@@ -322,14 +361,21 @@ class RunCorrection(BaseModel):
 
 
 @router.patch("/runs/{run_id}")
-def correct_run(run_id: int, body: RunCorrection, conn=Depends(get_db)):
+def correct_run(
+    run_id: int, body: RunCorrection,
+    user: dict | None = Depends(get_current_user), conn=Depends(get_db),
+):
     """The only mutation recorded history permits (REQ-11.3): the
     user's behavior override (never overwriting the guess, REQ-9.14)
     and the interesting-flag (REQ-12.7). Neither ever enters generation
     context (REQ-8.5).
     """
-    row = conn.execute("SELECT id FROM runs WHERE id = ?", (run_id,)).fetchone()
-    if row is None:
+    row = conn.execute(
+        """SELECT runs.id, rules.visibility AS rule_visibility, rules.owner_uid AS rule_owner_uid
+           FROM runs JOIN rules ON rules.id = runs.rule_id WHERE runs.id = ?""",
+        (run_id,),
+    ).fetchone()
+    if row is None or _rule_hidden_from(row["rule_visibility"], row["rule_owner_uid"], user):
         raise HTTPException(404, "no such run")
     provided = body.model_fields_set
     if "user_behavior" in provided:
