@@ -120,12 +120,24 @@ export default function RunView({ runId }) {
   const [mapping, setMapping] = useState(null) // {color, brightness}
   const [picked, setPicked] = useState(null)
   const [showSource, setShowSource] = useState(false)
+  const [smooth, setSmooth] = useState(true)
   const [chunks, setChunks] = useState(() => new Map())
 
   const canvasRef = useRef(null)
   const pendingRef = useRef(new Set())
   const chunksRef = useRef(chunks)
   chunksRef.current = chunks
+  const runRef = useRef(run)
+  runRef.current = run
+  const tickRef = useRef(tick)
+  tickRef.current = tick
+  // Each tick is rendered once into a small offscreen canvas; playback
+  // crossfades neighboring frames with GPU-composited drawImage calls,
+  // so smooth motion costs almost nothing.
+  const framesRef = useRef(new Map())
+  const drawBlendRef = useRef(null)
+  const smoothRef = useRef(smooth)
+  smoothRef.current = smooth
 
   useEffect(() => {
     setRun(null); setRule(null); setTick(0); setPlaying(false); setPicked(null)
@@ -197,24 +209,38 @@ export default function RunView({ runId }) {
         // catches up, playback resumes smoothly instead of leaping.
         if (carried > 1) carried = 0
       }
+      // Between ticks, crossfade toward the upcoming frame ("tween"),
+      // so motion reads as continuous instead of a slideshow.
+      if (drawBlendRef.current) {
+        const fraction = smoothRef.current ? Math.min(carried, 1) : 0
+        drawBlendRef.current(tickRef.current, fraction)
+      }
       frame = requestAnimationFrame(step)
     }
     frame = requestAnimationFrame(step)
     return () => cancelAnimationFrame(frame)
   }, [playing, speed, run, propsKey])
 
-  // Draw the current tick.
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas || !run || !chunk) return
-    const { width, height } = run
-    const within = tick - chunk.firstTick
-    const colors = plane(chunk.properties[display.color], within, width, height)
+  // One tick rendered to a cached offscreen canvas.
+  const paintFrame = useCallback((t) => {
+    const frames = framesRef.current
+    const cached = frames.get(t)
+    if (cached) return cached
+    const runNow = runRef.current
+    if (!runNow) return null
+    const inChunk = chunksRef.current.get(`${propsKey}|${Math.floor(t / CHUNK)}`)
+    if (!inChunk) return null
+    const { width, height } = runNow
+    const within = t - inChunk.firstTick
+    const colors = plane(inChunk.properties[display.color], within, width, height)
     const bright =
-      display.brightness !== 'none' && chunk.properties[display.brightness]
-        ? plane(chunk.properties[display.brightness], within, width, height)
+      display.brightness !== 'none' && inChunk.properties[display.brightness]
+        ? plane(inChunk.properties[display.brightness], within, width, height)
         : null
-    const ctx = canvas.getContext('2d')
+    const off = document.createElement('canvas')
+    off.width = width
+    off.height = height
+    const ctx = off.getContext('2d')
     const image = ctx.createImageData(width, height)
     const data = image.data
     for (let i = 0; i < colors.length; i++) {
@@ -230,7 +256,46 @@ export default function RunView({ runId }) {
       data[i * 4] = r; data[i * 4 + 1] = g; data[i * 4 + 2] = b; data[i * 4 + 3] = 255
     }
     ctx.putImageData(image, 0, 0)
-  }, [run, chunk, tick, display])
+    frames.set(t, off)
+    while (frames.size > 6) frames.delete(frames.keys().next().value)
+    return off
+  }, [propsKey, display])
+
+  // Draw tick t, optionally crossfaded `frac` of the way to t+1.
+  const drawBlend = useCallback((t, frac) => {
+    const canvas = canvasRef.current
+    const runNow = runRef.current
+    if (!canvas || !runNow) return
+    const current = paintFrame(t)
+    if (!current) return
+    const ctx = canvas.getContext('2d')
+    ctx.imageSmoothingEnabled = false
+    ctx.globalAlpha = 1
+    ctx.drawImage(current, 0, 0)
+    if (frac > 0 && t < runNow.ticks_run) {
+      const upcoming = paintFrame(t + 1)
+      if (upcoming) {
+        ctx.globalAlpha = frac
+        ctx.drawImage(upcoming, 0, 0)
+        ctx.globalAlpha = 1
+      }
+    }
+  }, [paintFrame])
+
+  // Rendered frames depend on the display mapping; start fresh when it
+  // changes (or on a new run).
+  useEffect(() => {
+    framesRef.current = new Map()
+  }, [display, propsKey, runId])
+
+  drawBlendRef.current = drawBlend
+
+  // Crisp draw while paused or scrubbing; the playback loop owns the
+  // canvas while playing.
+  useEffect(() => {
+    if (playing) return
+    drawBlend(tick, 0)
+  }, [run, chunk, tick, display, playing, drawBlend])
 
   const pickCell = (event) => {
     if (!run || playing) return
@@ -326,6 +391,18 @@ export default function RunView({ runId }) {
               <option key={s.label} value={i}>{s.label} · {s.ticksPerSecond}/s</option>
             ))}
           </select>
+          <label
+            className="row"
+            style={{ color: 'var(--muted)', fontSize: 12, gap: 5 }}
+            title="crossfade between ticks instead of stepping"
+          >
+            <input
+              type="checkbox"
+              checked={smooth}
+              onChange={(e) => setSmooth(e.target.checked)}
+            />
+            smooth
+          </label>
         </div>
 
         <div className="row" style={{ width: '100%' }}>

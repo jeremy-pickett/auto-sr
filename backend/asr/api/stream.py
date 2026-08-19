@@ -10,6 +10,7 @@ events cross to the response generator through a queue.
 """
 
 import json
+import logging
 import queue
 import threading
 
@@ -20,6 +21,7 @@ from asr.generation.pipeline import generate_rule
 from asr.storage import db
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 FINAL_EVENT = "complete"
 
@@ -29,6 +31,9 @@ def _run_pipeline(database_path: str, events: queue.Queue) -> None:
     try:
         generate_rule(conn, lambda name, data: events.put((name, data)))
     except Exception as failed:  # noqa: BLE001 - the stream must always end
+        # The browser only sees the tail; the server log keeps the
+        # whole story so a transient API failure is diagnosable later.
+        logger.exception("generation pipeline failed")
         events.put((FINAL_EVENT, {"status": "error", "error": str(failed)[-500:]}))
     finally:
         conn.close()
