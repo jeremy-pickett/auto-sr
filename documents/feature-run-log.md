@@ -4,6 +4,19 @@ Started 2026-08-19, unattended, Jeremy detached. One line per item as it's
 decided or finished; updated live, not retroactively rewritten. "Done" means
 tested and pushed, not just written.
 
+## TL;DR (finished — read this first)
+
+All 19 items from the feature list are accounted for: 15 shipped and tested,
+1 shipped partially with the architectural reason explained (Open Graph),
+3 explicitly skipped with a specific reason (author attribution, GIF/video
+export, the webhook half of the discovery item). Nothing was left silently
+untried. Backend: 202 tests passing (up from 180 at the start of this pass).
+Frontend: clean build, zero lint errors. Every commit was pushed as it
+landed — `git log` is the literal timeline of this session. Two things
+worth your actual eyes rather than just reading about: the comment
+pseudonyms (post one, see what name you get), and `#/r/` clean URLs once
+you title a rule.
+
 ## Ground rules set before starting
 - Comments: building create/edit-own/delete-own with rate limiting. NOT
   building report/moderation queue — no admin/moderator role exists
@@ -28,7 +41,7 @@ tested and pushed, not just written.
   the round-cells toggle (that's a CSS mask at paint time, not canvas
   pixel data — not worth replicating in a raster export for this pass).
 
-### Sharing / export — partially done
+### Sharing / export — DONE, one item genuinely partial
 - Shareable tick permalink (`#/runs/3?tick=150`) — DONE (commit 875d51e).
   Router reads it, RunView seeds/follows it, copy-link button in the
   transport.
@@ -63,7 +76,7 @@ tested and pushed, not just written.
   signal toward REQ-17.7's classifier-calibration question, as the
   original doc noted.
 
-### Social / auth — in progress next
+### Social / auth — DONE
 - Likes/upvotes — DONE, see favorite_count note above.
 - Author attribution — SKIPPED, logged before starting (privacy: only
   identity available is a login email).
