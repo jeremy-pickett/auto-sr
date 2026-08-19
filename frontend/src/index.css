@@ -327,6 +327,23 @@ code, .mono { font-family: var(--font-mono); }
   width: 100%;
   height: auto;
 }
+/* Round cells: a CSS mask over the already-rendered canvas, not a
+   different renderer. The pixel data underneath is still one square
+   per cell (that's what keeps playback cheap at 40k cells); this just
+   punches a repeating circular hole pattern out of the final
+   composited element, sized to exactly one cell per tile via
+   --cell-cols/--cell-rows. Costs nothing per frame -- applied by the
+   compositor, not the JS render loop. */
+.grid-canvas.round-cells {
+  --cell-w: calc(100% / var(--cell-cols));
+  --cell-h: calc(100% / var(--cell-rows));
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='4.3'/%3E%3C/svg%3E");
+  mask-size: var(--cell-w) var(--cell-h);
+  mask-repeat: repeat;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='4.3'/%3E%3C/svg%3E");
+  -webkit-mask-size: var(--cell-w) var(--cell-h);
+  -webkit-mask-repeat: repeat;
+}
 .grid-shell .pick-ring {
   position: absolute;
   border: 1.5px solid var(--amber);

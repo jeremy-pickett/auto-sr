@@ -148,6 +148,7 @@ export default function RunView({ runId }) {
   const [exporting, setExporting] = useState(false)
   const [exportError, setExportError] = useState(null)
   const [smooth, setSmooth] = useState(true)
+  const [roundCells, setRoundCells] = useState(false)
   const [chunks, setChunks] = useState(() => new Map())
   const [isFullscreen, setIsFullscreen] = useState(false)
 
@@ -406,10 +407,11 @@ export default function RunView({ runId }) {
         <div className="grid-shell">
           <canvas
             ref={canvasRef}
-            className="grid-canvas"
+            className={`grid-canvas ${roundCells ? 'round-cells' : ''}`}
             width={run.width}
             height={run.height}
             onClick={pickCell}
+            style={{ '--cell-cols': run.width, '--cell-rows': run.height }}
           />
           {!picked && !playing && (
             <div className="inspect-hint">click a cell to inspect it</div>
@@ -468,6 +470,18 @@ export default function RunView({ runId }) {
               onChange={(e) => setSmooth(e.target.checked)}
             />
             smooth
+          </label>
+          <label
+            className="row"
+            style={{ color: 'var(--muted)', fontSize: 12, gap: 5 }}
+            title="round cells instead of square"
+          >
+            <input
+              type="checkbox"
+              checked={roundCells}
+              onChange={(e) => setRoundCells(e.target.checked)}
+            />
+            round
           </label>
           <button onClick={toggleFullscreen} title={isFullscreen ? 'exit fullscreen' : 'fullscreen'}>
             {isFullscreen ? '⤢' : '⛶'}
