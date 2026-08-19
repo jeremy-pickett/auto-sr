@@ -120,6 +120,16 @@ CREATE TABLE IF NOT EXISTS favorites(
     created_at TEXT NOT NULL,
     PRIMARY KEY (user_uid, rule_id)
 );
+
+CREATE TABLE IF NOT EXISTS comments(
+    id INTEGER PRIMARY KEY,
+    rule_id INTEGER NOT NULL REFERENCES rules(id),
+    user_uid TEXT NOT NULL,
+    body TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    edited_at TEXT
+);
+CREATE INDEX IF NOT EXISTS comments_by_rule ON comments(rule_id);
 """
 
 

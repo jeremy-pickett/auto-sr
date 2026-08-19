@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { getRule, getRuleBySlug, rerunRule, setRuleTitle, addFavorite, removeFavorite } from '../api'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { useAuth } from '../lib/firebase'
+import { Comments } from '../lib/Comments.jsx'
 
 function Fold({ title, text }) {
   const [open, setOpen] = useState(false)
@@ -158,6 +159,8 @@ export default function RuleView({ ruleId, slug }) {
             <h3>source</h3>
             <pre className="source-view">{rule.source_code}</pre>
           </div>
+
+          <Comments ruleId={rule.id} />
         </div>
 
         <div>

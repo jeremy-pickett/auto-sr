@@ -81,7 +81,7 @@ button.primary {
 }
 button.primary:hover { border-color: var(--cyan); box-shadow: 0 0 18px rgba(76, 201, 240, 0.25); }
 
-select, input[type='text'] {
+select, input[type='text'], input[type='email'], input[type='password'], input[type='number'], textarea {
   font: inherit;
   color: var(--ink);
   background: var(--panel);
@@ -89,6 +89,7 @@ select, input[type='text'] {
   border-radius: var(--radius-sm);
   padding: 5px 8px;
 }
+textarea { width: 100%; resize: vertical; }
 
 code, .mono { font-family: var(--font-mono); }
 
@@ -852,4 +853,38 @@ button.linkish:hover { background: none; text-decoration: underline; }
   border-top: 1px solid var(--line);
   padding-top: 16px;
   max-width: 74ch;
+}
+
+/* ---------- comments ---------- */
+
+.comment-row {
+  border-top: 1px solid var(--line);
+  padding: 10px 0;
+}
+.comment-row:first-of-type { border-top: none; padding-top: 0; }
+.comment-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.comment-author {
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+.comment-body {
+  color: var(--ink-2);
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+.comment-edit { display: flex; flex-direction: column; gap: 6px; }
+.comment-new {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }

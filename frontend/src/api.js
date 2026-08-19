@@ -111,6 +111,24 @@ export async function exportRun(runId, props) {
   return response.blob()
 }
 
+export const getComments = (ruleId) => authorizedFetch(`/rules/${ruleId}/comments`).then(asJson)
+
+export const createComment = (ruleId, body) =>
+  authorizedFetch(`/rules/${ruleId}/comments`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ body }),
+  }).then(asJson)
+
+export const editComment = (id, body) =>
+  authorizedFetch(`/comments/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ body }),
+  }).then(asJson)
+
+export const deleteComment = (id) => authorizedFetch(`/comments/${id}`, { method: 'DELETE' }).then(asJson)
+
 export const getCatalog = () => authorizedFetch('/catalog/modifiers').then(asJson)
 
 export const getSummary = () => authorizedFetch('/library/summary').then(asJson)

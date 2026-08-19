@@ -67,6 +67,29 @@ tested and pushed, not just written.
 - Likes/upvotes — DONE, see favorite_count note above.
 - Author attribution — SKIPPED, logged before starting (privacy: only
   identity available is a login email).
-- Comments — next.
+- Comments — DONE (see commit). Create/list, edit-own, delete-own, a
+  5-per-60s rate limit (in-memory, per-process -- documented as not
+  distributed-safe, fine for this single-node app). NOT built: report/
+  moderation queue, logged before starting (no admin/moderator role
+  exists anywhere in the app to review one). One design problem
+  solved along the way: a comment needs to show *some* author label,
+  but the only identity data available is a login email, and
+  publishing that was already ruled out for the same privacy reason
+  as "author attribution." Solved with a deterministic pseudonym
+  generated from the Firebase uid (e.g. "wraparound-watcher-720") --
+  consistent per person across comments, never reveals or derives
+  from the actual email, verified live end-to-end (post/list/edit/
+  delete all correct, pseudonym never contains "@").
+
+### Discovery / library — next
+- Sort by newest/most-discussed/most-looped — "newest" and
+  "most_liked" already shipped (rule naming/favorites batch);
+  "most-discussed" (needs a comment count, same shape as favorite_count)
+  and "most-looped" (ambiguous -- rerun count? total plays? -- will
+  pick an interpretation and log it) still to do.
+- RSS feed — planned, safe and self-contained.
+- Webhook for new rules — likely SKIP: real SSRF risk (arbitrary
+  destination URL) and no delivery/retry infra exists; will confirm
+  before starting.
 
 (rest updated as work proceeds)
