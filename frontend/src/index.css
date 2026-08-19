@@ -571,6 +571,21 @@ button.linkish:hover { background: none; text-decoration: underline; }
   filter: drop-shadow(0 0 10px rgba(76, 201, 240, 0.18));
 }
 
+/* ---------- invent done-note: a medium look at how it landed ---------- */
+
+.done-result { display: flex; gap: 18px; align-items: flex-start; }
+.rule-thumb-lg {
+  width: 200px;
+  height: 200px;
+  flex: none;
+  image-rendering: pixelated;
+  border-radius: 8px;
+  outline: 1px solid var(--line-2);
+  background: #182130;
+  filter: drop-shadow(0 0 18px rgba(76, 201, 240, 0.14));
+}
+@media (max-width: 640px) { .done-result { flex-direction: column; } }
+
 /* ---------- landing: the front door of the observatory ---------- */
 
 .landing { max-width: 980px; margin: 0 auto; }

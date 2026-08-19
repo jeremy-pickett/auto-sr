@@ -1,17 +1,17 @@
 // The observatory palette. Kind 0 reads as empty ground; kinds 1..7
-// take the validated categorical slots (adjacent-pair CVD >= 8.4,
-// all >= 3:1 on the #0a0e14 surface — checked with the palette
-// validator, not by eye).
+// take the validated categorical slots — brightened 2026-08-19 for
+// visibility against the dark ground (each now >= 7:1 contrast on
+// #0a0e14, pairwise separation held constant vs. the prior palette).
 
 export const KIND_COLORS = [
   '#182130', // kind 0: empty ground
-  '#3987e5', // blue
-  '#d95926', // orange
-  '#199e70', // aqua
-  '#c98500', // yellow
-  '#d55181', // magenta
-  '#008300', // green
-  '#9085e9', // violet
+  '#69a7f3', // blue
+  '#ea7e52', // orange
+  '#18dd98', // aqua
+  '#ffab07', // yellow
+  '#e77ca3', // magenta
+  '#00c000', // green
+  '#bdb6f6', // violet
 ]
 
 const rgb = (hex) => [

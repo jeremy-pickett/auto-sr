@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { generateRule } from '../api'
+import { RunThumbnail } from '../lib/RunThumbnail.jsx'
 
 // The pipeline stages as the stream reports them (REQ-13.7): the user
 // watches the machine think, including failures and the one repair.
@@ -123,15 +124,23 @@ export default function Invent() {
       {complete && complete.status === 'ok' && (
         <div className="panel done-note">
           <h3>it works</h3>
-          <p>
-            Ran {complete.ticks_run} ticks and stopped: {complete.stopped_because}.
-            Guessed behavior: <strong>{complete.behavior}</strong> ({complete.confidence}{' '}
-            confidence).
-          </p>
-          <p>
-            <a className="chip" href={`#/runs/${complete.run_id}`}>▶ watch the run</a>{' '}
-            <a className="chip" href={`#/rules/${complete.rule_id}`}>rule #{complete.rule_id} details</a>
-          </p>
+          <div className="done-result">
+            <RunThumbnail
+              run={{ id: complete.run_id, ticks_run: complete.ticks_run }}
+              className="rule-thumb-lg"
+            />
+            <div>
+              <p>
+                Ran {complete.ticks_run} ticks and stopped: {complete.stopped_because}.
+                Guessed behavior: <strong>{complete.behavior}</strong> ({complete.confidence}{' '}
+                confidence).
+              </p>
+              <p>
+                <a className="chip" href={`#/runs/${complete.run_id}`}>▶ watch the run</a>{' '}
+                <a className="chip" href={`#/rules/${complete.rule_id}`}>rule #{complete.rule_id} details</a>
+              </p>
+            </div>
+          </div>
         </div>
       )}
       {complete && complete.status === 'broken' && (
