@@ -25,6 +25,7 @@ WHAT WE HAVE TRIED SO FAR
 Each coverage cell shows attempts, successful runs, and rejections. A cell
 with many attempts and no successes is not unexplored -- it is difficult.
 
+{spark_hint}
 Propose ONE rule to try next. Return JSON:
 {
   "mode": "new" | "variation",

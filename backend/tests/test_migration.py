@@ -59,6 +59,7 @@ def test_fresh_database_has_the_new_columns(tmp_path):
     columns = {row["name"] for row in conn.execute("PRAGMA table_info(rules)")}
     assert "owner_uid" in columns
     assert "visibility" in columns
+    assert "spark" in columns
 
     rule_id = db.insert_rule(
         conn,
@@ -71,6 +72,7 @@ def test_fresh_database_has_the_new_columns(tmp_path):
     row = conn.execute("SELECT * FROM rules WHERE id=?", (rule_id,)).fetchone()
     assert row["visibility"] == "public"
     assert row["owner_uid"] is None
+    assert row["spark"] is None
     conn.close()
 
 
@@ -95,11 +97,13 @@ def test_pre_migration_database_is_upgraded_safely(tmp_path):
     columns = {row["name"] for row in conn.execute("PRAGMA table_info(rules)")}
     assert "owner_uid" in columns
     assert "visibility" in columns
+    assert "spark" in columns
 
     row = conn.execute("SELECT * FROM rules WHERE id=1").fetchone()
     assert row["description"] == "pre-existing rule"  # untouched
     assert row["visibility"] == "public"  # backfilled default
     assert row["owner_uid"] is None
+    assert row["spark"] is None
     conn.close()
 
 
@@ -111,4 +115,5 @@ def test_ensure_columns_is_idempotent(tmp_path):
     columns = [row["name"] for row in conn.execute("PRAGMA table_info(rules)")]
     assert columns.count("owner_uid") == 1
     assert columns.count("visibility") == 1
+    assert columns.count("spark") == 1
     conn.close()

@@ -56,14 +56,17 @@ export const patchRun = (id, corrections) =>
 // The generation stream (REQ-11.4). The endpoint is a POST that
 // responds text/event-stream, so this must be a streaming fetch() with
 // a ReadableStream reader — EventSource cannot POST (REQ-11.4.1).
-// A body is sent only to request private (visibility defaults to
-// public either way) — keeps the ordinary request exactly the bare,
-// bodyless POST it's always been.
-export async function generateRule(onEvent, { visibility } = {}) {
+// A body is sent only when there's something to say (private, or a
+// spark) — keeps the ordinary request exactly the bare, bodyless POST
+// it's always been.
+export async function generateRule(onEvent, { visibility, spark } = {}) {
+  const body = {}
+  if (visibility === 'private') body.visibility = visibility
+  if (spark) body.spark = spark
   const response = await authorizedFetch('/rules/generate', {
     method: 'POST',
-    ...(visibility === 'private'
-      ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ visibility }) }
+    ...(Object.keys(body).length
+      ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
       : {}),
   })
   if (!response.ok) throw new Error(`${response.status}: ${await response.text()}`)

@@ -49,6 +49,7 @@ def _rule_summary(row, user: dict | None = None) -> dict:
         "id": row["id"],
         "created_at": row["created_at"],
         "description": row["description"],
+        "spark": row["spark"],
         "status": row["status"],
         "failed_check": row["failed_check"],
         "mode": row["mode"],

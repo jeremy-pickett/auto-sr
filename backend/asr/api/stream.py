@@ -17,10 +17,10 @@ from typing import Literal
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from asr.api.auth import get_current_user
-from asr.generation.pipeline import generate_rule
+from asr.generation.pipeline import clean_spark, generate_rule
 from asr.storage import db
 
 router = APIRouter()
@@ -31,14 +31,18 @@ FINAL_EVENT = "complete"
 
 class GenerateRequest(BaseModel):
     visibility: Literal["public", "private"] = "public"
+    # A short creative hint at invention time (asr.generation.pipeline
+    # .clean_spark does the real cleaning/64-char enforcement; this is
+    # only a coarse, cheap pre-limit against a genuinely huge payload).
+    spark: str | None = Field(default=None, max_length=256)
 
 
-def _run_pipeline(database_path: str, events: queue.Queue, owner_uid, visibility) -> None:
+def _run_pipeline(database_path: str, events: queue.Queue, owner_uid, visibility, spark) -> None:
     conn = db.connect(database_path)
     try:
         generate_rule(
             conn, lambda name, data: events.put((name, data)),
-            owner_uid=owner_uid, visibility=visibility,
+            owner_uid=owner_uid, visibility=visibility, spark=spark,
         )
     except Exception as failed:  # noqa: BLE001 - the stream must always end
         # The browser only sees the tail; the server log keeps the
@@ -66,10 +70,17 @@ def generate(
     if user is None:
         visibility = "public"  # anonymous requests are always public/global
 
+    try:
+        spark = clean_spark(body.spark) if body else None
+    except ValueError as bad:
+        raise HTTPException(400, str(bad)) from None
+    if spark and user is None:
+        raise HTTPException(400, "sign in to add a spark")
+
     events: queue.Queue = queue.Queue()
     worker = threading.Thread(
         target=_run_pipeline,
-        args=(request.app.state.database_path, events, owner_uid, visibility),
+        args=(request.app.state.database_path, events, owner_uid, visibility, spark),
         daemon=True,
     )
     worker.start()

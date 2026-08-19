@@ -67,6 +67,9 @@ export default function RuleView({ ruleId }) {
             {rule.change_note && (
               <p className="sub">the change: {rule.change_note}</p>
             )}
+            {rule.spark && (
+              <p className="sub">✦ spark: "{rule.spark}"</p>
+            )}
           </div>
 
           {rule.reasoning && (

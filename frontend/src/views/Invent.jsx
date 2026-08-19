@@ -38,6 +38,7 @@ export default function Invent() {
   const [working, setWorking] = useState(false)
   const [failure, setFailure] = useState(null)
   const [visibility, setVisibility] = useState('public')
+  const [spark, setSpark] = useState('')
   const startedRef = useRef(false)
 
   const start = async () => {
@@ -49,7 +50,7 @@ export default function Invent() {
     try {
       await generateRule(
         (name, data) => setEvents((log) => [...log, [name, data]]),
-        { visibility }
+        { visibility, spark: spark.trim() }
       )
     } catch (error) {
       setFailure(String(error))
@@ -76,13 +77,27 @@ export default function Invent() {
           in the library. Failure is data too.
         </p>
         {user && (
-          <label className="row" style={{ color: 'var(--muted)', fontSize: 12, gap: 6, marginBottom: 12 }}>
-            visibility
-            <select value={visibility} onChange={(e) => setVisibility(e.target.value)} disabled={working}>
-              <option value="public">public — joins the global library</option>
-              <option value="private">private — only in your library</option>
-            </select>
-          </label>
+          <div className="row" style={{ gap: 16, marginBottom: 12, flexWrap: 'wrap' }}>
+            <label className="row" style={{ color: 'var(--muted)', fontSize: 12, gap: 6 }}>
+              visibility
+              <select value={visibility} onChange={(e) => setVisibility(e.target.value)} disabled={working}>
+                <option value="public">public — joins the global library</option>
+                <option value="private">private — only in your library</option>
+              </select>
+            </label>
+            <label className="row" style={{ color: 'var(--muted)', fontSize: 12, gap: 6 }}>
+              spark
+              <input
+                type="text"
+                value={spark}
+                onChange={(e) => setSpark(e.target.value)}
+                disabled={working}
+                maxLength={64}
+                placeholder="a hint for what it invents — optional, 64 characters"
+                style={{ width: 260 }}
+              />
+            </label>
+          </div>
         )}
         <button className="primary" onClick={start} disabled={working}>
           {working ? 'thinking…' : events.length ? '✦ Invent another' : '✦ Invent a rule'}

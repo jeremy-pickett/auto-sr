@@ -27,8 +27,8 @@ def client(tmp_path):
 def _capture_run_pipeline(monkeypatch):
     calls = []
 
-    def fake(database_path, events, owner_uid, visibility):
-        calls.append({"owner_uid": owner_uid, "visibility": visibility})
+    def fake(database_path, events, owner_uid, visibility, spark):
+        calls.append({"owner_uid": owner_uid, "visibility": visibility, "spark": spark})
         events.put(None)
 
     monkeypatch.setattr(stream_module, "_run_pipeline", fake)
@@ -39,7 +39,7 @@ def test_anonymous_generate_is_public_with_no_owner(client, monkeypatch):
     calls = _capture_run_pipeline(monkeypatch)
     resp = client.post("/rules/generate")  # exactly what the frontend sends today: no body
     assert resp.status_code == 200
-    assert calls == [{"owner_uid": None, "visibility": "public"}]
+    assert calls == [{"owner_uid": None, "visibility": "public", "spark": None}]
 
 
 def test_anonymous_cannot_request_private(client, monkeypatch):
@@ -54,7 +54,7 @@ def test_signed_in_defaults_to_public(client, monkeypatch):
     calls = _capture_run_pipeline(monkeypatch)
     resp = client.post("/rules/generate")
     assert resp.status_code == 200
-    assert calls == [{"owner_uid": "user-a", "visibility": "public"}]
+    assert calls == [{"owner_uid": "user-a", "visibility": "public", "spark": None}]
 
 
 def test_signed_in_can_request_private(client, monkeypatch):
@@ -62,7 +62,7 @@ def test_signed_in_can_request_private(client, monkeypatch):
     calls = _capture_run_pipeline(monkeypatch)
     resp = client.post("/rules/generate", json={"visibility": "private"})
     assert resp.status_code == 200
-    assert calls == [{"owner_uid": "user-a", "visibility": "private"}]
+    assert calls == [{"owner_uid": "user-a", "visibility": "private", "spark": None}]
 
 
 def test_signed_in_can_still_explicitly_choose_public(client, monkeypatch):
@@ -70,4 +70,35 @@ def test_signed_in_can_still_explicitly_choose_public(client, monkeypatch):
     calls = _capture_run_pipeline(monkeypatch)
     resp = client.post("/rules/generate", json={"visibility": "public"})
     assert resp.status_code == 200
-    assert calls == [{"owner_uid": "user-a", "visibility": "public"}]
+    assert calls == [{"owner_uid": "user-a", "visibility": "public", "spark": None}]
+
+
+def test_anonymous_cannot_add_a_spark(client, monkeypatch):
+    calls = _capture_run_pipeline(monkeypatch)
+    resp = client.post("/rules/generate", json={"spark": "wraps like a snake"})
+    assert resp.status_code == 400
+    assert calls == []
+
+
+def test_signed_in_spark_is_cleaned_and_threaded_through(client, monkeypatch):
+    client.app.dependency_overrides[get_current_user] = lambda: {"uid": "user-a", "email": None}
+    calls = _capture_run_pipeline(monkeypatch)
+    resp = client.post("/rules/generate", json={"spark": "  wraps\nlike a snake  "})
+    assert resp.status_code == 200
+    assert calls == [{"owner_uid": "user-a", "visibility": "public", "spark": "wraps like a snake"}]
+
+
+def test_signed_in_overlong_spark_is_rejected(client, monkeypatch):
+    client.app.dependency_overrides[get_current_user] = lambda: {"uid": "user-a", "email": None}
+    calls = _capture_run_pipeline(monkeypatch)
+    resp = client.post("/rules/generate", json={"spark": "x" * 65})
+    assert resp.status_code == 400
+    assert calls == []
+
+
+def test_spark_over_the_coarse_pydantic_limit_is_rejected(client, monkeypatch):
+    client.app.dependency_overrides[get_current_user] = lambda: {"uid": "user-a", "email": None}
+    calls = _capture_run_pipeline(monkeypatch)
+    resp = client.post("/rules/generate", json={"spark": "x" * 300})
+    assert resp.status_code == 422  # pydantic's own Field(max_length=256), before clean_spark runs
+    assert calls == []

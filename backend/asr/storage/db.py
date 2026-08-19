@@ -129,6 +129,8 @@ def _ensure_columns(conn) -> None:
         conn.execute(
             "ALTER TABLE rules ADD COLUMN visibility TEXT NOT NULL DEFAULT 'public'"
         )
+    if "spark" not in existing:
+        conn.execute("ALTER TABLE rules ADD COLUMN spark TEXT")
     conn.execute("CREATE INDEX IF NOT EXISTS rules_by_owner ON rules(owner_uid)")
     conn.execute("CREATE INDEX IF NOT EXISTS rules_by_visibility ON rules(visibility)")
     conn.commit()

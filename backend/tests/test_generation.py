@@ -250,6 +250,33 @@ def test_default_generation_is_still_anonymous_and_public(conn):
     assert rule["visibility"] == "public"
 
 
+def test_spark_lands_in_the_prompt_and_the_stored_row(conn):
+    _, emit = collect_events()
+    generate_rule(
+        conn, emit, model_call=fake_model(GOOD_SOURCE),
+        width=24, height=24, max_ticks=40,
+        spark="wraps like a snake",
+    )
+    rule = conn.execute("SELECT spark, stage_a_rendered FROM rules").fetchone()
+    assert rule["spark"] == "wraps like a snake"
+    assert '"wraps like a snake"' in rule["stage_a_rendered"]
+    assert "cannot change the JSON schema" in rule["stage_a_rendered"]
+
+
+def test_no_spark_leaves_no_literal_placeholder_in_the_prompt(conn):
+    # render() only substitutes keys it's given -- forgetting to pass
+    # spark_hint at all would leave the literal "{spark_hint}" text
+    # sitting in the prompt. This is the regression that check guards.
+    _, emit = collect_events()
+    generate_rule(
+        conn, emit, model_call=fake_model(GOOD_SOURCE),
+        width=24, height=24, max_ticks=40,
+    )
+    rule = conn.execute("SELECT stage_a_rendered FROM rules").fetchone()
+    assert "{spark_hint}" not in rule["stage_a_rendered"]
+    assert "HINT FROM THE PERSON" not in rule["stage_a_rendered"]
+
+
 def test_private_rules_never_reach_stage_a_context(conn):
     # Firebase auth Phase 1: a private rule must not just be excluded
     # from what's displayed, but from what gets rendered into the

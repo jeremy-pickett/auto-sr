@@ -517,6 +517,7 @@ export default function RunView({ runId }) {
         <div className="panel">
           <h3>the rule, in its own words</h3>
           <div className="description">{rule.description}</div>
+          {rule.spark && <p className="sub">✦ spark: "{rule.spark}"</p>}
           <div className="meta row" style={{ marginTop: 10 }}>
             {rule.concepts.map((c) => <span key={c} className="chip">{c}</span>)}
           </div>
