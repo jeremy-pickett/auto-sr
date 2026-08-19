@@ -117,6 +117,14 @@ def test_export_returns_the_whole_run_as_plain_json(client):
         assert kind_stack[tick] == live[tick].arrays["kind"].tolist()
 
 
+def test_preview_png_is_a_real_image_at_the_final_tick(client):
+    resp = client.get("/rules/1/preview.png")
+    assert resp.status_code == 200
+    assert resp.headers["content-type"] == "image/png"
+    assert resp.content[:8] == b"\x89PNG\r\n\x1a\n"  # the PNG file signature
+    assert client.get("/rules/999/preview.png").status_code == 404
+
+
 def test_export_respects_visibility_and_range(client):
     assert client.get("/runs/999/export").status_code == 404
     assert client.get("/runs/1/export?from=9&to=3").status_code == 400

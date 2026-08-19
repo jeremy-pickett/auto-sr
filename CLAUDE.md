@@ -15,7 +15,7 @@ All seven build phases are complete (engine → storage → API → frontend pla
 Beyond the original seven phases, **Firebase Authentication Phase 1** is complete: optional sign-in (Email/Password only — no domain/TLS yet for OAuth's redirect flow), a personal library layered on the global one, and a public/private choice at rule-creation time. Rules stay public/anonymous by default; nothing about the generation architecture changed. See `documents/architecture.md`'s phase log for the full design (schema migration, the auth dependency, per-route access checks, Stage A exclusion) and what's still out of scope (OAuth providers, per-user run corrections, TLS).
 
 - `backend/asr/` — Python package: `config.py` (env-backed settings per spec §3.9), `engine/` (Cells, geometry, bound helpers, Dice, tick, fingerprints, run loop, classifier), `contract/` (restricted namespace, Stage C validator, child-process runner), `storage/` (SQLite WAL, tick encoding, reconstruction + cache), `generation/` (prompt template files, coverage map / Stage A context, gating, pipeline), `api/` (routes, SSE stream, binary framing, `auth.py` — optional Firebase ID-token verification), `fixtures/`, `seed.py`.
-- `backend/.venv` — Python 3.12 with fastapi, uvicorn, numpy, zstandard, anthropic, pytest, google-auth, requests.
+- `backend/.venv` — Python 3.12 with fastapi, uvicorn, numpy, zstandard, anthropic, pytest, google-auth, requests, pillow (rule preview-image rendering).
 - `frontend/` — Vite + React 19 dark-observatory UI: library browser, run player, rule detail with provenance, Invent view over the generation stream, modifier catalog, Firebase Email/Password sign-in with a personal (`#/mine`) library.
 - `documents/` — the requirements spec + architecture.md.
 

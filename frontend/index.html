@@ -5,6 +5,23 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Autonomous Semantic Ruliology</title>
+
+    <!-- Open Graph / Twitter card: app-level only. This is a hash-
+         routed SPA (#/rules/3), and a browser never sends the part of
+         a URL after "#" to the server -- so the server has no way to
+         know which rule a shared link points at, and can't render
+         per-rule tags into this file. A real per-rule preview (in
+         addition to the image, which the backend can already render
+         at GET /rules/:id/preview.png) would need switching from hash
+         routes to path-based routing with server-side history-API
+         fallback, which is a bigger, separate change from anything
+         else in this pass. -->
+    <meta property="og:title" content="Autonomous Semantic Ruliology" />
+    <meta property="og:description" content="A laboratory where an AI invents cellular-automaton rules and a harness runs every one to see what happens. Some settle. Some loop. Some erupt into patterns nobody designed." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Autonomous Semantic Ruliology" />
+    <meta name="twitter:description" content="A laboratory where an AI invents cellular-automaton rules and a harness runs every one to see what happens." />
   </head>
   <body>
     <div id="root"></div>

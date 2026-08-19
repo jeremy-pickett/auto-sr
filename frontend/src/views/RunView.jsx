@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { getCellHistory, getRule, getRun, getGrids, patchRun, rerunRule, exportRun } from '../api'
 import { plane } from '../lib/decode'
 import { KIND_COLORS, KIND_RGB, ageBrightness, levelBrightness, SERIES, textOn } from '../lib/palette'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 const CHUNK = 100 // ticks per grid request: small enough to land fast
 const BEHAVIORS = ['settles', 'repeats', 'noisy', 'structured', 'unclassified']
@@ -451,6 +452,8 @@ export default function RunView({ runId, initialTick }) {
       setExporting(false)
     }
   }
+
+  useDocumentTitle(run && rule ? `run #${run.id} · rule #${rule.id} — ASR` : null)
 
   if (error) return <div className="error-note">something went wrong: {String(error)}</div>
   if (!run || !rule) return <div className="loading">loading the run…</div>

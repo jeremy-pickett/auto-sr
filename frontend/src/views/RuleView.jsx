@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getRule, rerunRule } from '../api'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 function Fold({ title, text }) {
   const [open, setOpen] = useState(false)
@@ -23,6 +24,8 @@ export default function RuleView({ ruleId }) {
     setRule(null)
     getRule(ruleId).then(setRule, setError)
   }, [ruleId])
+
+  useDocumentTitle(rule ? `rule #${rule.id} — ASR` : null)
 
   const rerun = () => {
     setRerunning(true)

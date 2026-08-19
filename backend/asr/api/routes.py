@@ -202,6 +202,55 @@ def get_rule(rule_id: int, user: dict | None = Depends(get_current_user), conn=D
     return full
 
 
+# Kept in sync by hand with frontend/src/lib/palette.js's KIND_COLORS --
+# there's no shared config between the two languages, and duplicating
+# eight hex triples isn't worth building one for. If the frontend
+# palette changes, this should too.
+_PREVIEW_PALETTE = [
+    (0x18, 0x21, 0x30), (0x95, 0xc2, 0xfa), (0xf4, 0x9e, 0x7b), (0x38, 0xf0, 0xb0),
+    (0xff, 0xbc, 0x3a), (0xf2, 0xa4, 0xc0), (0x00, 0xf3, 0x00), (0xe5, 0xe2, 0xfd),
+]
+
+
+@router.get("/rules/{rule_id}/preview.png")
+def rule_preview_image(rule_id: int, user: dict | None = Depends(get_current_user), conn=Depends(get_db)):
+    """A static PNG of the canonical run's final frame -- for Open
+    Graph/Twitter card previews and anywhere else a rule needs a
+    plain image rather than the live player. Same visibility check as
+    every other rule-scoped endpoint: a private rule's preview 404s
+    for non-owners, so a sharing platform's crawler (which never
+    carries an auth token) can never fetch one.
+    """
+    import io
+
+    import numpy as np
+    from PIL import Image
+
+    row = conn.execute("SELECT * FROM rules WHERE id = ?", (rule_id,)).fetchone()
+    if row is None or _rule_hidden_from(row["visibility"], row["owner_uid"], user):
+        raise HTTPException(404, "no such rule")
+    canon = conn.execute(
+        "SELECT id, ticks_run FROM runs WHERE rule_id = ? AND is_canonical = 1", (rule_id,)
+    ).fetchone()
+    if canon is None:
+        raise HTTPException(404, "this rule has no canonical run to preview")
+
+    stacks = reconstruct_range(conn, canon["id"], ["kind"], canon["ticks_run"], canon["ticks_run"])
+    grid = stacks["kind"][0]
+    height, width = grid.shape
+    rgb = np.zeros((height, width, 3), dtype=np.uint8)
+    for kind, color in enumerate(_PREVIEW_PALETTE):
+        rgb[grid == kind] = color
+
+    image = Image.fromarray(rgb, "RGB")
+    scale = max(1, 640 // max(width, height))
+    if scale > 1:
+        image = image.resize((width * scale, height * scale), Image.NEAREST)
+    buf = io.BytesIO()
+    image.save(buf, format="PNG")
+    return Response(content=buf.getvalue(), media_type="image/png")
+
+
 class NewRun(BaseModel):
     seed: int | None = None
 
