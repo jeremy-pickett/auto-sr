@@ -12,9 +12,11 @@ Autonomous Semantic Ruliology: a single-user, local web app where an LLM invents
 
 All seven build phases are complete (engine → storage → API → frontend player → generation pipeline → full UI → docs). `documents/architecture.md` records the layout, the decisions made with the user (dark-observatory UI, `claude-opus-5` default generator model), a calibration-notes section for the REQ-17 open items, and the phase log — keep all of it current.
 
-- `backend/asr/` — Python package: `config.py` (env-backed settings per spec §3.9), `engine/` (Cells, geometry, bound helpers, Dice, tick, fingerprints, run loop, classifier), `contract/` (restricted namespace, Stage C validator, child-process runner), `storage/` (SQLite WAL, tick encoding, reconstruction + cache), `generation/` (prompt template files, coverage map / Stage A context, gating, pipeline), `api/` (routes, SSE stream, binary framing), `fixtures/`, `seed.py`.
-- `backend/.venv` — Python 3.12 with fastapi, uvicorn, numpy, zstandard, anthropic, pytest.
-- `frontend/` — Vite + React 19 dark-observatory UI: library browser, run player, rule detail with provenance, Invent view over the generation stream, modifier catalog.
+Beyond the original seven phases, **Firebase Authentication Phase 1** is complete: optional sign-in (Email/Password only — no domain/TLS yet for OAuth's redirect flow), a personal library layered on the global one, and a public/private choice at rule-creation time. Rules stay public/anonymous by default; nothing about the generation architecture changed. See `documents/architecture.md`'s phase log for the full design (schema migration, the auth dependency, per-route access checks, Stage A exclusion) and what's still out of scope (OAuth providers, per-user run corrections, TLS).
+
+- `backend/asr/` — Python package: `config.py` (env-backed settings per spec §3.9), `engine/` (Cells, geometry, bound helpers, Dice, tick, fingerprints, run loop, classifier), `contract/` (restricted namespace, Stage C validator, child-process runner), `storage/` (SQLite WAL, tick encoding, reconstruction + cache), `generation/` (prompt template files, coverage map / Stage A context, gating, pipeline), `api/` (routes, SSE stream, binary framing, `auth.py` — optional Firebase ID-token verification), `fixtures/`, `seed.py`.
+- `backend/.venv` — Python 3.12 with fastapi, uvicorn, numpy, zstandard, anthropic, pytest, google-auth, requests.
+- `frontend/` — Vite + React 19 dark-observatory UI: library browser, run player, rule detail with provenance, Invent view over the generation stream, modifier catalog, Firebase Email/Password sign-in with a personal (`#/mine`) library.
 - `documents/` — the requirements spec + architecture.md.
 
 ## Commands
@@ -30,7 +32,7 @@ Backend (run from `backend/`):
 - `.venv/bin/python -m asr.seed` — seed reference rules + modifier catalog (idempotent)
 - `.venv/bin/python -m uvicorn asr.api.app:app` — serve the API on :8000
 
-Generation needs `ANTHROPIC_API_KEY` in `backend/.env` (never committed).
+Generation needs `ANTHROPIC_API_KEY` in `backend/.env` (never committed). Auth needs `FIREBASE_PROJECT_ID` in `backend/.env` (not secret, but kept out of version control by convention) and the matching `VITE_FIREBASE_*` values in `frontend/.env` (see `frontend/.env.example` for the full list) — neither is required for the app to run anonymously; sign-in just won't work without them.
 
 Harness tests run against the hand-written fixtures (`life`, `majority`, `walker`, plus test-only `slow_burn`), never against generated rules (REQ-15.1).
 

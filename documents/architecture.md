@@ -162,3 +162,74 @@ Update in place as numbers land.
   (standard terms appear once, in comments), every §15 REQ has a named
   test, and the PATCH is the only endpoint that mutates a stored run.
   All phases complete.
+- **Phase 8, Firebase Authentication Phase 1 (2026-08-19):** optional
+  multi-user support layered on the single-user app, deliberately
+  conservative — added, not decided by, this phase: OAuth providers,
+  per-user run corrections, TLS. By default every rule is still global
+  and anonymous, exactly as before.
+
+  Design: a two-column additive migration (`rules.owner_uid`,
+  `rules.visibility`, default `'public'`) via a new idempotent
+  `db._ensure_columns` step, since `CREATE TABLE IF NOT EXISTS` is a
+  no-op against a database that already has the table — the SCHEMA
+  string alone can't carry a change like this to an existing
+  `library.db`. `api/auth.py`'s `get_current_user` is an optional
+  FastAPI dependency verifying a Bearer ID token via `google-auth`'s
+  `verify_firebase_token` — no service-account secret, only the
+  (public) Firebase project ID; absent header is anonymous, a present
+  but invalid token is always a hard 401, never silently downgraded.
+  Every read endpoint touching a rule or its runs 404s — identical
+  wording to a genuine not-found — for a private rule's non-owner;
+  `GET /rules` defaults to public-only regardless of auth state, with
+  `mine=true` as the personal-library filter. `POST /rules/generate`
+  resolves identity in the route handler (the pipeline runs in a
+  worker thread with no `Request` to derive it from later) and accepts
+  an optional `{"visibility": "private"}` body — `Body(default=None)`,
+  not a defaulted model instance, is what keeps accepting today's bare
+  bodyless POST unchanged. `generation/context.py`'s coverage map,
+  totals, and Stage A example blocks all filter to public rules —
+  extending REQ-8.5's "user signal never enters generation context" to
+  another user's private content, verified by asserting a marked-
+  private rule's description never appears in the rendered Stage A
+  prompt text at all, not just hidden from a UI.
+
+  Frontend: `firebase` (modular JS SDK), `src/lib/firebase.js`
+  (`useAuth()` wrapping `onAuthStateChanged`; no Context — the app had
+  none and Firebase's `getAuth()` is already a singleton), the
+  Email/Password-only `AuthControl` in the topbar, a shared
+  `authorizedFetch` in `api.js` (every export now goes through it
+  rather than a bare `fetch()`, with no signature changes — anonymous
+  requests stay byte-identical), a `mine` prop reusing `Library.jsx`
+  for `#/mine` rather than forking the view, and a Public/Private
+  choice in `Invent.jsx`, shown only when signed in.
+
+  Step 0 spike (run before writing `auth.py` for real): Firebase
+  Email/Password was chosen over OAuth specifically because the
+  droplet has no domain or TLS yet — OAuth's redirect flow needs a
+  domain on Firebase's authorized-domains allowlist (bare IPs aren't
+  accepted there), while Email/Password is a direct API call with no
+  such check. Confirmed by creating a real throwaway account via the
+  Identity Toolkit REST API and feeding the token to
+  `verify_firebase_token` two ways: a real token accepted with correct
+  `aud`/`iss`/`sub` claims, a hand-tampered one rejected outright.
+
+  Verified live, not just by test: the schema migration ran against
+  the actual `library.db` (backed up first) — all 28 pre-existing
+  rules landed `visibility='public'`, `owner_uid=NULL`, unchanged. A
+  real anonymous generation ran end-to-end through the live SSE
+  endpoint and Anthropic, landing public/no-owner as before. A real
+  sign-up through the actual browser-side JS SDK (not REST) produced a
+  token that the live backend accepted over HTTP, correctly scoped
+  (`mine=true` → the new user's own, empty, list); no token still
+  401s with a sign-in prompt; a garbage token still hard-401s rather
+  than silently passing as anonymous. 26 new backend tests (162 total);
+  frontend build and lint clean.
+
+  Known limitations, carried forward deliberately: Bearer tokens
+  travel over plain HTTP until TLS exists — dev/trusted-network auth
+  only, not yet safe for a hostile network. A private generation
+  attempt that fails still nudges the shared coverage map as an
+  anonymous count (no text, no attribution) via the pre-existing
+  rejections table, which has no owner/visibility concept in this
+  phase — judged consistent with "content excluded," not a violation
+  of it, but a judgment call rather than a settled question.
