@@ -259,14 +259,19 @@ code, .mono { font-family: var(--font-mono); }
   align-items: center;
 }
 
-.grid-shell { position: relative; line-height: 0; }
+/* Shrink-to-fit (the stage centers it), so the pick-ring's percentage
+   coordinates track the canvas exactly. */
+.grid-shell { position: relative; line-height: 0; max-width: 100%; }
 .grid-canvas {
   image-rendering: pixelated;
   border-radius: 4px;
   filter: drop-shadow(0 0 22px rgba(76, 201, 240, 0.10));
   outline: 1px solid var(--line-2);
   cursor: crosshair;
-  max-width: 100%;
+  /* The automaton is the hero: fill the column, capped only by what
+     fits vertically alongside the chrome. */
+  width: min(100%, calc(100vh - 250px));
+  height: auto;
 }
 .grid-shell .pick-ring {
   position: absolute;

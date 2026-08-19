@@ -3,7 +3,7 @@ import { getCellHistory, getRule, getRun, getGrids, patchRun, rerunRule } from '
 import { plane } from '../lib/decode'
 import { KIND_COLORS, KIND_RGB, ageBrightness, levelBrightness, SERIES } from '../lib/palette'
 
-const CHUNK = 250 // matches the server's per-request tick ceiling
+const CHUNK = 100 // ticks per grid request: small enough to land fast
 const BEHAVIORS = ['settles', 'repeats', 'noisy', 'structured', 'unclassified']
 const SPEEDS = [
   { label: 'slow', ticksPerSecond: 4 },
@@ -124,6 +124,8 @@ export default function RunView({ runId }) {
 
   const canvasRef = useRef(null)
   const pendingRef = useRef(new Set())
+  const chunksRef = useRef(chunks)
+  chunksRef.current = chunks
 
   useEffect(() => {
     setRun(null); setRule(null); setTick(0); setPlaying(false); setPicked(null)
@@ -168,9 +170,14 @@ export default function RunView({ runId }) {
     if (tick - chunkIndex * CHUNK > CHUNK * 0.6) ensureChunk(chunkIndex + 1)
   }, [ensureChunk, chunkIndex, tick])
 
-  // Playback clock. Playback reads stored ticks only (REQ-13.3).
+  // Playback clock. Playback reads stored ticks only (REQ-13.3), and
+  // never runs ahead of them: if the next stretch of grids has not
+  // arrived yet, the clock holds on the last tick it can draw instead
+  // of racing blind to the end.
   useEffect(() => {
     if (!playing || !run) return
+    const arrived = (t) =>
+      chunksRef.current.has(`${propsKey}|${Math.floor(t / CHUNK)}`)
     let frame
     let last = performance.now()
     let carried = 0
@@ -181,16 +188,20 @@ export default function RunView({ runId }) {
         const advance = Math.floor(carried)
         carried -= advance
         setTick((t) => {
-          const next = Math.min(t + advance, run.ticks_run)
+          let next = Math.min(t + advance, run.ticks_run)
+          while (next > t && !arrived(next)) next -= 1
           if (next === run.ticks_run) setPlaying(false)
           return next
         })
+        // Held ticks are dropped, not banked — when the download
+        // catches up, playback resumes smoothly instead of leaping.
+        if (carried > 1) carried = 0
       }
       frame = requestAnimationFrame(step)
     }
     frame = requestAnimationFrame(step)
     return () => cancelAnimationFrame(frame)
-  }, [playing, speed, run])
+  }, [playing, speed, run, propsKey])
 
   // Draw the current tick.
   useEffect(() => {
@@ -270,7 +281,6 @@ export default function RunView({ runId }) {
             className="grid-canvas"
             width={run.width}
             height={run.height}
-            style={{ width: 'min(640px, 100%)' }}
             onClick={pickCell}
           />
           {picked && !playing && (
@@ -299,8 +309,17 @@ export default function RunView({ runId }) {
             value={tick}
             onChange={(e) => { setPlaying(false); setTick(Number(e.target.value)) }}
           />
-          <span className="tick-readout">
-            {chunk ? '' : '… '}tick {tick} / {run.ticks_run}
+          <span
+            className="tick-readout"
+            title="an ellipsis means grids are still downloading"
+          >
+            {chunk &&
+            (!playing ||
+              tick >= run.ticks_run ||
+              chunks.has(`${propsKey}|${Math.floor((tick + 1) / CHUNK)}`))
+              ? ''
+              : '… '}
+            tick {tick} / {run.ticks_run}
           </span>
           <select value={speed} onChange={(e) => setSpeed(Number(e.target.value))}>
             {SPEEDS.map((s, i) => (

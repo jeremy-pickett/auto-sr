@@ -247,6 +247,7 @@ def get_run(run_id: int, conn=Depends(get_db)):
 @router.get("/runs/{run_id}/grids")
 def get_grids(
     run_id: int,
+    request: Request,
     from_tick: int = Query(0, alias="from", ge=0),
     to_tick: int | None = Query(None, alias="to", ge=0),
     props: str = "kind",
@@ -271,9 +272,21 @@ def get_grids(
         raise HTTPException(400, f"this run has no property named {missing}")
     from asr.api.framing import frame_grids
 
+    body = frame_grids(from_tick, last, stacks)
+    headers = {}
+    # Grid stacks are huge but repetitive; wire compression cuts them
+    # ~20x and playback smoothness lives or dies on transfer time. The
+    # framing itself (REQ-11.5.1) is unchanged — the browser undoes
+    # transport encoding before the decoder ever sees the bytes.
+    if "gzip" in (request.headers.get("accept-encoding") or ""):
+        import gzip
+
+        body = gzip.compress(body, compresslevel=1)
+        headers["Content-Encoding"] = "gzip"
     return Response(
-        content=frame_grids(from_tick, last, stacks),
+        content=body,
         media_type="application/octet-stream",
+        headers=headers,
     )
 
 
