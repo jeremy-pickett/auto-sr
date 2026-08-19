@@ -5,6 +5,7 @@ import RunView from './views/RunView.jsx'
 import RuleView from './views/RuleView.jsx'
 import Catalog from './views/Catalog.jsx'
 import Invent from './views/Invent.jsx'
+import { AuthControl } from './lib/AuthControl.jsx'
 
 // Tiny hash router: #/ (landing), #/library, #/runs/3, #/rules/3,
 // #/invent, #/catalog
@@ -41,6 +42,7 @@ export default function App() {
           <a href="#/catalog" className={route.view === 'catalog' ? 'active' : ''}>Modifiers</a>
         </nav>
         <span className="spacer" />
+        <AuthControl />
       </header>
 
       <main className="page">
