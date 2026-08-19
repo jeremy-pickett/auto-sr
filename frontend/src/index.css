@@ -546,3 +546,27 @@ button.linkish {
   font-size: 11px;
 }
 button.linkish:hover { background: none; text-decoration: underline; }
+
+/* ---------- rule-card thumbnails: the run's final frame ---------- */
+
+.card-body { display: flex; gap: 12px; align-items: flex-start; }
+.rule-thumb {
+  width: 76px;
+  height: 76px;
+  flex: none;
+  image-rendering: pixelated;
+  border-radius: 6px;
+  outline: 1px solid var(--line-2);
+  background: #182130; /* the empty-ground color while loading */
+}
+.rule-thumb.never-ran {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 18px;
+}
+.rule-card:hover .rule-thumb {
+  outline-color: var(--cyan-dim);
+  filter: drop-shadow(0 0 10px rgba(76, 201, 240, 0.18));
+}

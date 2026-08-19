@@ -108,6 +108,7 @@ def list_rules(
     rows = conn.execute(
         f"""SELECT rules.*, canon.id AS canonical_run_id,
                    canon.stopped_because AS run_stopped_because,
+                   canon.ticks_run AS run_ticks_run,
                    canon.guessed_behavior, canon.guess_confidence,
                    canon.user_behavior, canon.user_flagged AS run_user_flagged
             {base}
@@ -121,6 +122,7 @@ def list_rules(
             {
                 "id": row["canonical_run_id"],
                 "stopped_because": row["run_stopped_because"],
+                "ticks_run": row["run_ticks_run"],
                 "guessed_behavior": row["guessed_behavior"],
                 "guess_confidence": row["guess_confidence"],
                 "user_behavior": row["user_behavior"],
