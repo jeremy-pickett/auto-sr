@@ -7,7 +7,7 @@ import numpy as np
 from asr.engine.cells import make_cells
 from asr.engine.declaration import Declaration
 from asr.engine.run import run_rule
-from asr.fixtures import FIXTURES, life
+from asr.fixtures import FIXTURES
 
 import slow_burn_fixture
 from toy_rules import NeverChanges
@@ -50,29 +50,15 @@ def test_every_fixture_replays_exactly_from_its_seed():
         ], name
 
 
-class PlantedGlider:
-    """Life with one glider aimed at the wrap seam (REQ-14.2)."""
-
-    KINDS = 2
-    NEIGHBORS = "all_8"
-    REACH = 1
-    USES = []
-    READS = []
-    MODIFIERS = []
-    SEMANTIC_SLOTS = {}
-    ASSIGN = {}
-
-    def __init__(self, dice):
-        self.dice = dice
+class PlantedGlider(FIXTURES["life"]):
+    """Life with one glider aimed at the wrap seam (REQ-14.2). Test
+    code may subclass; generated code may not."""
 
     def make_start(self, width, height):
         kind = np.zeros((height, width), dtype=np.uint8)
         for y, x in [(0, 1), (1, 2), (2, 0), (2, 1), (2, 2)]:
             kind[y, x] = 1
         return make_cells(kind)
-
-    def step(self, cells):
-        return life.next_generation(cells)
 
 
 def test_glider_crosses_the_wrap_boundary_intact():

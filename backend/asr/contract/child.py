@@ -6,6 +6,10 @@ must not take the server down. The child streams one message per tick;
 the parent owns the wall clock and kills the child when a tick fails to
 arrive in time, recording the run as `too_slow`.
 
+The child receives rule SOURCE, not a class, and loads it itself. That
+keeps every message picklable, which lets us use the spawn start method
+— forking a multi-threaded FastAPI worker risks deadlock.
+
 The child also self-times each tick, so a tick that finishes late (but
 finishes) reports `too_slow` deterministically without the parent's axe.
 """
@@ -25,7 +29,7 @@ class RuleCrashed(Exception):
 
 
 def run_in_child(
-    rule_class,
+    source: str,
     declaration: Declaration,
     seed: int,
     width: int,
@@ -34,18 +38,14 @@ def run_in_child(
     tick_timeout_seconds: float,
     memory_limit_mb: int,
 ) -> RunResult:
-    """Execute a run in a killable child process and stream it back.
-
-    Uses fork, so `rule_class` needs no pickling — generated rule
-    classes built by exec() travel to the child for free.
-    """
-    context = multiprocessing.get_context("fork")
+    """Execute a run in a killable child process and stream it back."""
+    context = multiprocessing.get_context("spawn")
     receiver, sender = context.Pipe(duplex=False)
     child = context.Process(
         target=_child_main,
         args=(
             sender,
-            rule_class,
+            source,
             declaration,
             seed,
             width,
@@ -60,8 +60,9 @@ def run_in_child(
     sender.close()
 
     ticks = []
-    # Tick 0 includes building the whole starting grid; be generous once.
-    patience = tick_timeout_seconds + 5.0
+    # The first message covers interpreter start-up, loading the rule,
+    # and building the whole starting grid; be generous once.
+    patience = tick_timeout_seconds + 30.0
     try:
         while True:
             if not receiver.poll(patience):
@@ -93,7 +94,7 @@ def run_in_child(
 
 def _child_main(
     sender,
-    rule_class,
+    source,
     declaration,
     seed,
     width,
@@ -105,6 +106,9 @@ def _child_main(
     limit = memory_limit_mb * 1024 * 1024
     resource.setrlimit(resource.RLIMIT_AS, (limit, limit))
     try:
+        from asr.contract.load import load_rule_class
+
+        rule_class = load_rule_class(source, declaration)
         result = run_rule(
             rule_class,
             declaration,
