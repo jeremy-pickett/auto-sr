@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { getCellHistory, getRule, getRun, getGrids, patchRun, rerunRule } from '../api'
 import { plane } from '../lib/decode'
-import { KIND_COLORS, KIND_RGB, ageBrightness, levelBrightness, SERIES } from '../lib/palette'
+import { KIND_COLORS, KIND_RGB, ageBrightness, levelBrightness, SERIES, textOn } from '../lib/palette'
 
 const CHUNK = 100 // ticks per grid request: small enough to land fast
 const BEHAVIORS = ['settles', 'repeats', 'noisy', 'structured', 'unclassified']
@@ -87,7 +87,10 @@ function CellInspector({ runId, picked, tick, kindPlane, width, height, props })
           <div
             key={i}
             className={`n ${n.me ? 'me' : ''}`}
-            style={{ background: KIND_COLORS[n.kind % KIND_COLORS.length] }}
+            style={{
+              background: KIND_COLORS[n.kind % KIND_COLORS.length],
+              color: textOn(KIND_COLORS[n.kind % KIND_COLORS.length]),
+            }}
             title={`row ${n.y}, column ${n.x}`}
           >
             {n.kind}

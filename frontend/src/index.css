@@ -224,6 +224,9 @@ code, .mono { font-family: var(--font-mono); }
   transform: translateY(-2px);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45), 0 0 24px rgba(76, 201, 240, 0.07);
 }
+.rule-card-hidden { opacity: 0.4; }
+.rule-card-hidden:hover { opacity: 0.7; }
+
 .rule-card .description {
   color: var(--ink);
   font-size: 13.5px;
@@ -235,6 +238,19 @@ code, .mono { font-family: var(--font-mono); }
 }
 .rule-card .meta { display: flex; gap: 6px; flex-wrap: wrap; }
 .rule-card .id { color: var(--muted); font-size: 11.5px; font-family: var(--font-mono); }
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 22px 0 6px;
+}
+.pager-status {
+  color: var(--muted);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
 
 /* ---------- run view ---------- */
 
