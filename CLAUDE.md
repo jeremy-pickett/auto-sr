@@ -40,6 +40,16 @@ Harness tests run against the hand-written fixtures (`life`, `majority`, `walker
 
 **Storage & transport**: runs execute to completion before playback; ticks stored as snapshot every `SNAPSHOT_EVERY` plus sparse/dense deltas, Zstandard-compressed; derived arrays (`age`, `changed_last_tick`) are reconstructed, not stored per tick — except `age` is included in snapshots. Grid payloads use the binary framing in REQ-11.5.1, never nested JSON. The generate endpoint streams `text/event-stream` from a POST, so the frontend must use streaming `fetch()` — `EventSource` cannot POST, and converting to a job model is explicitly forbidden (REQ-11.4.1).
 
+## Destructive commands — hard stop
+
+The user once lost an entire project to an accidental bulk delete. These rules exist so that never happens again.
+
+- **Never run a command that deletes or irreversibly discards files in bulk** — `rm -rf`, `rm` with a glob, `find … -delete`, `git clean`, `git reset --hard`, `git checkout/restore` over `.` or a directory, force pushes, branch deletion — without first listing exactly what will be affected and getting explicit confirmation *in that same message exchange*. A dry run (`git clean -n`, `ls` the glob) comes before the real command, every time.
+- This applies **even when the user's own message asks for the deletion**. The whole point is catching accidents: restate what's about to be destroyed and wait for a yes.
+- Prefer recoverable moves over deletes: relocate files to the session scratchpad or a `*.bak` path instead of removing them, and let cleanup happen later once nothing is missed.
+- Never `rm` anything that isn't committed or pushed. Check `git status` first; uncommitted work is unrecoverable.
+- **GitHub is the backup** (`origin` → `github.com/jeremy-pickett/auto-sr`). Push after every commit. If you're one of several instances working concurrently, stage and commit only your own files — never `git add -A` blindly.
+
 ## Hard rules that are easy to violate
 
 - **Plain language everywhere** (REQ-0.1): no mathematical jargon in code, property names, UI labels, or docs. Use the plain-English name; mention the standard term once in a comment ("wraps top to bottom" → toroidal).
