@@ -114,7 +114,11 @@ CREATE INDEX IF NOT EXISTS runs_by_rule_canonical ON runs(rule_id, is_canonical)
 
 
 def connect(path) -> sqlite3.Connection:
-    conn = sqlite3.connect(path)
+    # check_same_thread off: FastAPI may run a request's dependency
+    # setup, endpoint body, and teardown on different threadpool
+    # threads. Every request still gets its own private connection, so
+    # the connection is never used by two threads at once.
+    conn = sqlite3.connect(path, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
