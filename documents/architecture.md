@@ -65,6 +65,30 @@ documents/                 the spec, this file
   `sometimes(0.3)`. Definitions live in `engine/modifiers.py`;
   `generation/catalog.py` will consume the same specs for Stage A gating.
 
+## Calibration notes (REQ-17 open items)
+
+Hooks for the measurements the spec says to take once real data exists.
+Update in place as numbers land.
+
+- **REQ-17.1 `SNAPSHOT_EVERY=50`:** untuned. Measure: average payload
+  bytes per tick by encoding (`SELECT payload_encoding, AVG(LENGTH(payload_blob)) FROM ticks GROUP BY 1`)
+  against reconstruction latency in `reconstruct_range` before changing.
+- **REQ-17.2 `structured` detection:** REQ-9.16 row 7 is a threshold
+  heuristic, always reported low-confidence. `runs.user_behavior`
+  accumulates the labeled examples a better detector would train on.
+- **REQ-17.3 `rate` × `age`:** a cell gated off a tick still ages
+  (REQ-4.3.1, asserted in tests). Watch generated rules that read `age`
+  under `rate` for confusion before considering an `updates` counter.
+- **REQ-17.4 slot degeneration:** kill criterion is REQ-5.5.3 (80% of
+  200 slot-declaring rules where slot is determined by kind). Query
+  when the count approaches 200.
+- **REQ-17.7 classifier thresholds:** first guesses, calibrated against
+  nothing; re-derive from the first two hundred canonical runs and
+  record the revision here.
+- **REQ-17.8 `MAX_TICKS=500` cost:** with `visually_frozen` removed,
+  more runs reach `ran_out`. First data point: the first generated rule
+  (cyclic succession) looped at tick 9 — cheap. Track mean ticks_run.
+
 ## Phase log
 
 - **Phase 0 (2026-08-19):** git repo initialized (provenance needs the
@@ -132,3 +156,9 @@ documents/                 the spec, this file
   Library cards click through to the canonical run (or details when
   broken) with a separate details link; Invent wired into nav and the
   library header button.
+- **Phase 7 (2026-08-19):** README at the repo root, CLAUDE.md brought
+  up to date, the calibration-notes section above for the REQ-17 open
+  items, and the conformance spot-check: banned jargon grep clean
+  (standard terms appear once, in comments), every §15 REQ has a named
+  test, and the PATCH is the only endpoint that mutates a stored run.
+  All phases complete.

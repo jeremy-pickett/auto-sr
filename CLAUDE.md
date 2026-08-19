@@ -10,23 +10,27 @@ Autonomous Semantic Ruliology: a single-user, local web app where an LLM invents
 
 ## Current state
 
-Early build, vertical-slice sequencing (engine → storage → API → frontend player → generation pipeline). `documents/architecture.md` records the layout, the decisions made with the user (dark-observatory UI, `claude-opus-5` default generator model), and a phase log — keep it current.
+All seven build phases are complete (engine → storage → API → frontend player → generation pipeline → full UI → docs). `documents/architecture.md` records the layout, the decisions made with the user (dark-observatory UI, `claude-opus-5` default generator model), a calibration-notes section for the REQ-17 open items, and the phase log — keep all of it current.
 
-- `backend/asr/` — Python package. `config.py` (env-backed settings per spec §3.9) and `engine/` (Cells container, geometry, declaration-bound helpers, Dice facade) exist with tests; contract/, storage/, generation/, api/ are still to come.
+- `backend/asr/` — Python package: `config.py` (env-backed settings per spec §3.9), `engine/` (Cells, geometry, bound helpers, Dice, tick, fingerprints, run loop, classifier), `contract/` (restricted namespace, Stage C validator, child-process runner), `storage/` (SQLite WAL, tick encoding, reconstruction + cache), `generation/` (prompt template files, coverage map / Stage A context, gating, pipeline), `api/` (routes, SSE stream, binary framing), `fixtures/`, `seed.py`.
 - `backend/.venv` — Python 3.12 with fastapi, uvicorn, numpy, zstandard, anthropic, pytest.
-- `frontend/` — Vite + React 19 scaffold, still the stock template until Phase 4.
+- `frontend/` — Vite + React 19 dark-observatory UI: library browser, run player, rule detail with provenance, Invent view over the generation stream, modifier catalog.
 - `documents/` — the requirements spec + architecture.md.
 
 ## Commands
 
 Frontend (run from `frontend/`):
-- `npm run dev` — Vite dev server
+- `npm run dev` — Vite dev server (proxies `/rules /runs /catalog /library` to :8000)
 - `npm run build` — production build
 - `npm run lint` — oxlint (config in `.oxlintrc.json`)
 
 Backend (run from `backend/`):
 - `.venv/bin/python -m pytest` — full test suite
 - `.venv/bin/python -m pytest tests/test_helpers.py::test_move_rejects_diagonals_under_plus_4` — one test
+- `.venv/bin/python -m asr.seed` — seed reference rules + modifier catalog (idempotent)
+- `.venv/bin/python -m uvicorn asr.api.app:app` — serve the API on :8000
+
+Generation needs `ANTHROPIC_API_KEY` in `backend/.env` (never committed).
 
 Harness tests run against the hand-written fixtures (`life`, `majority`, `walker`, plus test-only `slow_burn`), never against generated rules (REQ-15.1).
 

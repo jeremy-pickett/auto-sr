@@ -22,7 +22,7 @@ def infer_shape_statically(source: str) -> str | None:
 
     called = set()
     compared = False
-    modulo = False
+    uses_remainder = False
     for node in ast.walk(tree):
         if isinstance(node, ast.Call):
             if isinstance(node.func, ast.Name):
@@ -34,13 +34,13 @@ def infer_shape_statically(source: str) -> str | None:
         ):
             compared = True
         if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Mod):
-            modulo = True
+            uses_remainder = True
         if isinstance(node, ast.Constant) and node.value == 2:
             pass
 
     if "move" in called:
         return "walker"
-    if modulo or "mod" in called:
+    if uses_remainder or "mod" in called:
         return "even_odd"
     if {"count_neighbors", "count_neighbors_where", "sum_neighbors"} & called:
         # Tallying neighbors and comparing against a cutoff is the
