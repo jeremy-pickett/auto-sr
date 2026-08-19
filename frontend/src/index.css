@@ -274,6 +274,16 @@ code, .mono { font-family: var(--font-mono); }
   gap: 14px;
   align-items: center;
 }
+/* Fullscreen swaps the ground for the page's own radial-gradient
+   background and gives the shell nearly the whole viewport, since
+   there's no side panel or page chrome competing for space anymore. */
+.stage:fullscreen {
+  justify-content: center;
+  background:
+    radial-gradient(1200px 600px at 70% -10%, #101a2b 0%, transparent 60%),
+    var(--ground);
+}
+.stage:fullscreen .grid-shell { width: min(96vw, calc(100vh - 170px)); }
 
 /* The shell carries the size (its percentage resolves against the
    stage, which is definite); the canvas fills it exactly, so the
@@ -302,6 +312,26 @@ code, .mono { font-family: var(--font-mono); }
   pointer-events: none;
   border-radius: 2px;
 }
+.grid-shell:hover .grid-canvas {
+  outline-color: var(--cyan-dim);
+  filter: drop-shadow(0 0 22px rgba(76, 201, 240, 0.10)) drop-shadow(0 0 12px rgba(76, 201, 240, 0.18));
+}
+.inspect-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  background: rgba(10, 14, 20, 0.78);
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 11.5px;
+  color: var(--ink-2);
+  pointer-events: none;
+  opacity: 0.6;
+  transition: opacity 160ms ease;
+}
+.grid-shell:hover .inspect-hint { opacity: 1; border-color: var(--cyan-dim); }
 
 .stage-head {
   width: 100%;
@@ -377,6 +407,19 @@ code, .mono { font-family: var(--font-mono); }
   color: #ffd08a;
   border-radius: var(--radius-sm);
   padding: 10px 12px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+/* A calmer register than quiet-note: a plain-language gloss on the
+   ordinary classification, not a heads-up about a surprising case. */
+.behavior-note {
+  width: 100%;
+  border: 1px solid var(--line-2);
+  background: var(--panel-2);
+  color: var(--ink-2);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
   font-size: 12.5px;
   line-height: 1.5;
 }
@@ -518,6 +561,23 @@ code, .mono { font-family: var(--font-mono); }
 .proposal .description { font-size: 15px; }
 .done-note p { color: var(--ink-2); }
 .done-note .chip { padding: 5px 12px; }
+.done-note .repair-outcome.ok { color: #8ee6b8; }
+
+.repair-status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--ink-2);
+  font-size: 12.5px;
+  padding: 8px 2px;
+}
+.repair-spinner {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 10px rgba(76, 201, 240, 0.8);
+  animation: lamp-breathe 1.2s ease-in-out infinite;
+  flex: none;
+}
 
 /* ---------- rule detail ---------- */
 

@@ -12,6 +12,28 @@ const SPEEDS = [
   { label: 'sprint', ticksPerSecond: 60 },
 ]
 
+// A short, plain-language gloss on what a guessed_behavior actually
+// means for this specific run — the same spirit as the quiet-note
+// below, just for the ordinary case instead of the surprising one.
+function behaviorNote(behavior, run) {
+  switch (behavior) {
+    case 'repeats':
+      return run.loop_length
+        ? `Settled into a loop that repeats every ${run.loop_length} ticks — from here on you're watching the same cycle over and over.`
+        : 'Settled into a cycle that repeats exactly.'
+    case 'noisy':
+      return "Kept changing the whole way through, with no freeze and no repeating cycle inside this run's tracked window. That can mean real chaos, or a cycle too long to have shown up yet."
+    case 'structured':
+      return 'Settled into an organized, non-trivial pattern — neither frozen solid nor dissolved into noise. This is the kind of result the library exists to find.'
+    case 'settles':
+      return 'Froze solid: every piece of state this rule tracks, visible and hidden, stopped changing — it can never move again from here.'
+    case 'unclassified':
+      return "The classifier couldn't confidently place this one in a bucket — worth a look with your own eyes."
+    default:
+      return null
+  }
+}
+
 function Sparkline({ name, values, tick, settledAt, color }) {
   const peak = Math.max(1, ...values)
   const step = 100 / Math.max(1, values.length - 1)
@@ -125,7 +147,9 @@ export default function RunView({ runId }) {
   const [showSource, setShowSource] = useState(false)
   const [smooth, setSmooth] = useState(true)
   const [chunks, setChunks] = useState(() => new Map())
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
+  const stageRef = useRef(null)
   const canvasRef = useRef(null)
   const pendingRef = useRef(new Set())
   const chunksRef = useRef(chunks)
@@ -149,6 +173,17 @@ export default function RunView({ runId }) {
       .then((r) => { setRun(r); return getRule(r.rule_id) })
       .then(setRule, setError)
   }, [runId])
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(document.fullscreenElement === stageRef.current)
+    document.addEventListener('fullscreenchange', onChange)
+    return () => document.removeEventListener('fullscreenchange', onChange)
+  }, [])
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) document.exitFullscreen()
+    else stageRef.current?.requestFullscreen?.()
+  }
 
   // Display mapping precedence (REQ-13.2): the user's choice, then the
   // rule's suggestion, then kind for color and age for brightness.
@@ -322,10 +357,11 @@ export default function RunView({ runId }) {
   const brightnessChoices = ['age', 'none', 'changed_last_tick', ...rule.uses]
   const stillActive = [...rule.uses, ...rule.modifiers]
   const quietlyRanOut = run.stopped_because === 'ran_out' && run.pattern_settled_at != null
+  const note = behaviorNote(shownBehavior, run)
 
   return (
     <div className="run-layout">
-      <section className="stage">
+      <section className="stage" ref={stageRef}>
         <div className="stage-head">
           <div>
             <div className="title">rule #{rule.id} · run #{run.id} {run.is_canonical ? '· canonical' : ''}</div>
@@ -343,6 +379,8 @@ export default function RunView({ runId }) {
           </div>
         </div>
 
+        {note && <div className="behavior-note">{note}</div>}
+
         <div className="grid-shell">
           <canvas
             ref={canvasRef}
@@ -351,6 +389,9 @@ export default function RunView({ runId }) {
             height={run.height}
             onClick={pickCell}
           />
+          {!picked && !playing && (
+            <div className="inspect-hint">click a cell to inspect it</div>
+          )}
           {picked && !playing && (
             <div
               className="pick-ring"
@@ -406,6 +447,9 @@ export default function RunView({ runId }) {
             />
             smooth
           </label>
+          <button onClick={toggleFullscreen} title={isFullscreen ? 'exit fullscreen' : 'fullscreen'}>
+            {isFullscreen ? '⤢' : '⛶'}
+          </button>
         </div>
 
         <div className="row" style={{ width: '100%' }}>

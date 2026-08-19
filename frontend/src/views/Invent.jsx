@@ -112,12 +112,16 @@ export default function Invent() {
 
       {failures.map(([, data], index) => (
         <div key={index} className="error-note">
-          validation failed — {data.check}: {data.error}
-          {index === 0 && failures.length === 1 && working
-            ? ' — attempting the one permitted repair…'
-            : ''}
+          {index === 0 ? 'validation failed' : 'the repair also failed'} — {data.check}: {data.error}
         </div>
       ))}
+
+      {repaired && working && !complete && failures.length === 1 && (
+        <div className="repair-status">
+          <span className="repair-spinner" />
+          attempting the one permitted repair…
+        </div>
+      )}
 
       {failure && <div className="error-note">the stream broke: {failure}</div>}
 
@@ -130,6 +134,7 @@ export default function Invent() {
               className="rule-thumb-lg"
             />
             <div>
+              {repaired && <p className="repair-outcome ok">✓ needed one repair attempt — the fix held.</p>}
               <p>
                 Ran {complete.ticks_run} ticks and stopped: {complete.stopped_because}.
                 Guessed behavior: <strong>{complete.behavior}</strong> ({complete.confidence}{' '}
@@ -147,9 +152,13 @@ export default function Invent() {
         <div className="panel done-note">
           <h3>broken — and kept</h3>
           <p>
-            The repair attempt did not save it ({complete.failed_check}). The rule,
-            its description, and the failure stay in the library as
-            generator-quality data.
+            {repaired
+              ? <>The repair attempt did not save it ({complete.failed_check}).</>
+              : <>It broke at the {complete.failed_check} stage before any repair
+                  was attempted — the one repair only covers validation
+                  failures, not a crash during the canonical run.</>}
+            {' '}The rule, its description, and the failure stay in the
+            library as generator-quality data.
           </p>
           <p>
             <a className="chip" href={`#/rules/${complete.rule_id}`}>rule #{complete.rule_id} details</a>
