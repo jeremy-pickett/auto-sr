@@ -61,10 +61,12 @@ function RuleCard({ rule, hidden, onToggleHidden, signedIn, onFavoriteChange }) 
           </button>
         </span>
         <span className="row" style={{ gap: 6 }}>
-          {signedIn && (
+          {signedIn ? (
             <button className="linkish" onClick={toggleFavorite} disabled={favBusy} title="favorite">
-              {rule.favorited ? '★' : '☆'}
+              {rule.favorited ? '★' : '☆'} {rule.favorite_count || ''}
             </button>
+          ) : (
+            rule.favorite_count > 0 && <span className="sub">★ {rule.favorite_count}</span>
           )}
           {rule.visibility === 'private' && <span className="chip private">🔒 private</span>}
           <span className={`chip status-${rule.status}`}>

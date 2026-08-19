@@ -44,7 +44,10 @@ def _rule_hidden_from(visibility: str, owner_uid: str | None, user: dict | None)
     return visibility == "private" and (user is None or user["uid"] != owner_uid)
 
 
-def _rule_summary(row, user: dict | None = None, favorited_ids: set | None = None) -> dict:
+def _rule_summary(
+    row, user: dict | None = None, favorited_ids: set | None = None,
+    favorite_counts: dict | None = None,
+) -> dict:
     return {
         "id": row["id"],
         "created_at": row["created_at"],
@@ -72,6 +75,13 @@ def _rule_summary(row, user: dict | None = None, favorited_ids: set | None = Non
         # apart from "someone else owns this" without ever learning who.
         "has_owner": row["owner_uid"] is not None,
         "favorited": bool(favorited_ids) and row["id"] in favorited_ids,
+        # Doubles as the "likes/upvotes" signal from the feature list --
+        # same underlying mechanism as favoriting (one row per user per
+        # rule), just read as a public count instead of a private flag.
+        # Building two near-identical tables for what's structurally the
+        # same thing wasn't worth it; this is the count that makes the
+        # one table cover both.
+        "favorite_count": (favorite_counts or {}).get(row["id"], 0),
     }
 
 
@@ -106,6 +116,20 @@ def _favorited_ids(conn, user: dict | None) -> set:
     return {
         row["rule_id"]
         for row in conn.execute("SELECT rule_id FROM favorites WHERE user_uid = ?", (user["uid"],))
+    }
+
+
+def _favorite_counts(conn, rule_ids) -> dict:
+    ids = list(rule_ids)
+    if not ids:
+        return {}
+    placeholders = ",".join("?" * len(ids))
+    return {
+        row["rule_id"]: row["n"]
+        for row in conn.execute(
+            f"SELECT rule_id, COUNT(*) AS n FROM favorites WHERE rule_id IN ({placeholders}) GROUP BY rule_id",
+            ids,
+        )
     }
 
 
@@ -193,9 +217,10 @@ def list_rules(
         params + [page_size, (page - 1) * page_size],
     ).fetchall()
     favorited_ids = _favorited_ids(conn, user)
+    favorite_counts = _favorite_counts(conn, (row["id"] for row in rows))
     rules = []
     for row in rows:
-        summary = _rule_summary(row, user, favorited_ids)
+        summary = _rule_summary(row, user, favorited_ids, favorite_counts)
         summary["canonical_run"] = (
             {
                 "id": row["canonical_run_id"],
@@ -217,7 +242,7 @@ def _full_rule_detail(row, user, conn) -> dict:
     runs = conn.execute(
         "SELECT * FROM runs WHERE rule_id = ? ORDER BY id", (row["id"],)
     ).fetchall()
-    full = _rule_summary(row, user, _favorited_ids(conn, user))
+    full = _rule_summary(row, user, _favorited_ids(conn, user), _favorite_counts(conn, [row["id"]]))
     full.update(
         {
             "reasoning": row["reasoning"],
@@ -301,7 +326,7 @@ def set_rule_title(
         conn.execute("UPDATE rules SET title = ?, slug = ? WHERE id = ?", (title, slug, rule_id))
     conn.commit()
     fresh = conn.execute("SELECT * FROM rules WHERE id = ?", (rule_id,)).fetchone()
-    return _rule_summary(fresh, user, _favorited_ids(conn, user))
+    return _rule_summary(fresh, user, _favorited_ids(conn, user), _favorite_counts(conn, [rule_id]))
 
 
 @router.post("/rules/{rule_id}/favorite")

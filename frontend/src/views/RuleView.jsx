@@ -114,6 +114,7 @@ export default function RuleView({ ruleId, slug }) {
           </span>
         )}
         <span style={{ flex: 1 }} />
+        {rule.favorite_count > 0 && <span className="sub">★ {rule.favorite_count} favorited this</span>}
         {user && (
           <button onClick={toggleFavorite} disabled={favBusy} title={rule.favorited ? 'remove from favorites' : 'favorite this rule'}>
             {rule.favorited ? '★ favorited' : '☆ favorite'}

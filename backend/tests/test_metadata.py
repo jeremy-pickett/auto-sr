@@ -122,6 +122,12 @@ def test_favorite_add_remove_and_filter(client):
     assert client.post(f"/rules/{client.anon_id}/favorite").status_code == 200
     body = client.get(f"/rules/{client.anon_id}").json()
     assert body["favorited"] is True
+    assert body["favorite_count"] == 1
+
+    # A public count -- visible to anyone, not just the person who set it.
+    anonymous(client)
+    assert client.get(f"/rules/{client.anon_id}").json()["favorite_count"] == 1
+    as_user(client, "user-a")
 
     listed = client.get("/rules?favorited=true").json()
     assert listed["total"] == 1

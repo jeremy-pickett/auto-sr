@@ -48,6 +48,25 @@ tested and pushed, not just written.
   document.title now reflects the open rule/run (didn't exist before,
   cheap, real UX value even though it doesn't help crawlers).
 
-### Rule naming / metadata — in progress next.
+### Rule naming / metadata — DONE (commit 75ab631 + favorite_count follow-up)
+- Title (PATCH /rules/{id}), slug generation + #/r/:slug clean URLs,
+  favoriting.
+- Note: merged "tags/favoriting" (this section) with "likes/upvotes"
+  (Social section below) into ONE mechanism. They're structurally the
+  same thing -- one row per user per rule, toggled -- so building two
+  near-identical tables/endpoints for "private bookmark" vs. "public
+  upvote" wasn't worth it. The favorites table now backs both: a
+  private favorited flag for the signed-in user, plus a public
+  favorite_count visible to everyone (added just after the main
+  commit, same session) covering the "lighter-weight public signal"
+  half of the ask. Also feeds sort=most_liked, and is a free real
+  signal toward REQ-17.7's classifier-calibration question, as the
+  original doc noted.
+
+### Social / auth — in progress next
+- Likes/upvotes — DONE, see favorite_count note above.
+- Author attribution — SKIPPED, logged before starting (privacy: only
+  identity available is a login email).
+- Comments — next.
 
 (rest updated as work proceeds)
