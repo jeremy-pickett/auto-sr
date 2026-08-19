@@ -52,6 +52,18 @@ documents/                 the spec, this file
   symmetric over the offset set, so the convention does not affect them.
 - **Draw dtypes.** `Dice.integers`/`choice` return int32; rule code casts into
   its uint8 arrays with `astype` (which is on the approved surface).
+- **ASSIGN entry format.** The spec leaves the modifier-draw declaration
+  loosely specified; we mirror the slot form (REQ-5.5.2): each entry is
+  `{"value": v, "chance": p}` — an affected cell gets `v` with probability
+  `p`, its identity value otherwise.
+- **Fixed draw order** (REQ-4.6, reproducibility): modifiers in name-sorted
+  order, then semantic slots in name-sorted order; at tick 0 all `start`
+  draws happen before all `birth` draws.
+- **Catalog `assign_when`/availability** (spec table 5.4 leaves them open):
+  `weight` birth, `stubbornness` birth, `rate` start (terrain-like — a
+  cell's schedule shouldn't change under it mid-run), all three
+  `sometimes(0.3)`. Definitions live in `engine/modifiers.py`;
+  `generation/catalog.py` will consume the same specs for Stage A gating.
 
 ## Phase log
 
@@ -60,3 +72,9 @@ documents/                 the spec, this file
   module, this document.
 - **Phase 1 (2026-08-19):** engine core — `cells.py`, `geometry.py`,
   `helpers.py`, `dice.py` with tests.
+- **Phase 2 started (2026-08-19):** `modifiers.py` (v1 catalog specs),
+  `declaration.py`, `fingerprint.py` (computational vs pattern, scheduler
+  phase, RNG state, stubbornness age clamp), `tick.py` (REQ-4.6 init
+  sequence + REQ-6.4 tick order). Still to come in Phase 2: run loop with
+  stopping precedence, classifier, child-process runner, the four fixtures,
+  REQ-15.3/15.6/15.7/15.8 and glider-wrap tests.
