@@ -1,0 +1,8 @@
+[project]
+name = "asr"
+version = "0.1.0"
+description = "Autonomous Semantic Ruliology - an LLM invents cellular automaton rules; a harness proves what they do"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,50 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## What this project is
+
+Autonomous Semantic Ruliology: a single-user, local web app where an LLM invents cellular-automaton rules (Stage A: describe in English → Stage B: implement in Python), the harness validates and runs them, and every result — including failures — accumulates in a permanent SQLite library.
+
+**`documents/asr-requirements-v3.md` is the single source of truth.** It is contract-complete and every requirement has a stable `REQ-` identifier. Read the relevant section before implementing anything; cite `REQ-` identifiers in commits and issues instead of describing behavior in prose. Section 2 records decisions with rationale so they are not re-litigated; Section 16 lists what is deliberately out of scope; Section 18 gives the priority order for foundational work (state model, randomness model, Cells contract, bound helpers, geometry, init sequence, Stage B contract, restricted namespace, runtime enforcement, transport framing — settle these before core abstractions).
+
+## Current state
+
+Early build, vertical-slice sequencing (engine → storage → API → frontend player → generation pipeline). `documents/architecture.md` records the layout, the decisions made with the user (dark-observatory UI, `claude-opus-5` default generator model), and a phase log — keep it current.
+
+- `backend/asr/` — Python package. `config.py` (env-backed settings per spec §3.9) and `engine/` (Cells container, geometry, declaration-bound helpers, Dice facade) exist with tests; contract/, storage/, generation/, api/ are still to come.
+- `backend/.venv` — Python 3.12 with fastapi, uvicorn, numpy, zstandard, anthropic, pytest.
+- `frontend/` — Vite + React 19 scaffold, still the stock template until Phase 4.
+- `documents/` — the requirements spec + architecture.md.
+
+## Commands
+
+Frontend (run from `frontend/`):
+- `npm run dev` — Vite dev server
+- `npm run build` — production build
+- `npm run lint` — oxlint (config in `.oxlintrc.json`)
+
+Backend (run from `backend/`):
+- `.venv/bin/python -m pytest` — full test suite
+- `.venv/bin/python -m pytest tests/test_helpers.py::test_move_rejects_diagonals_under_plus_4` — one test
+
+Harness tests run against the hand-written fixtures (`life`, `majority`, `walker`, plus test-only `slow_burn`), never against generated rules (REQ-15.1).
+
+## Architecture (from the spec — the shape of what gets built)
+
+**Generation pipeline** (`POST /rules/generate`, synchronous, no job queue): Stage A prompt invents a rule from a fixed-size *coverage map* (never a rule list), Stage B implements it, Stage C validates (structure → static AST checks → declaration match → load → trial run at full grid size → reproducibility → one repair attempt). Broken rules and rejections stay in the library as generator-quality data. Prompt templates live in version control as files, and fully rendered prompts are stored per rule.
+
+**Execution model**: a rule is a plugin class with declarations (`KINDS`, `NEIGHBORS`, `REACH`, `USES`, `READS`, `MODIFIERS`, …) and two methods — `make_start` (only place randomness is allowed, via the `Dice` facade) and `step` (strictly deterministic). Generated code runs in a **child process** with memory rlimit and per-tick wall-clock kill, inside a restricted namespace (allowlisted builtins and NumPy surface — this is contract enforcement, **never call it a sandbox**). The harness, not the rule, applies all modifiers (`weight`, `stubbornness`, `rate`) and performs all random draws; grids are parallel numpy arrays, never cell objects. The tick order in REQ-6.4 is part of the spec — changing it changes rule semantics.
+
+**State model** (the subtlest part — read §9.7 before touching run/stop/fingerprint code): the *computational fingerprint* (all future-relevant state: rule-owned + modifier + slot arrays, required derived arrays, scheduler phase when `rate` in scope, RNG state when births declared, exact bytes, floats never quantized) drives stopping (`frozen`/`looping`); the *pattern fingerprint* (`kind` only) is observation only. **Nothing ever stops a run because the picture went quiet** (REQ-9.8.1). Birth draws are skipped when nothing was born, which is what lets stochastic rules reach `frozen`.
+
+**Storage & transport**: runs execute to completion before playback; ticks stored as snapshot every `SNAPSHOT_EVERY` plus sparse/dense deltas, Zstandard-compressed; derived arrays (`age`, `changed_last_tick`) are reconstructed, not stored per tick — except `age` is included in snapshots. Grid payloads use the binary framing in REQ-11.5.1, never nested JSON. The generate endpoint streams `text/event-stream` from a POST, so the frontend must use streaming `fetch()` — `EventSource` cannot POST, and converting to a job model is explicitly forbidden (REQ-11.4.1).
+
+## Hard rules that are easy to violate
+
+- **Plain language everywhere** (REQ-0.1): no mathematical jargon in code, property names, UI labels, or docs. Use the plain-English name; mention the standard term once in a comment ("wraps top to bottom" → toroidal).
+- Modifier defaults must be identity values — no effect at all (REQ-5.1); every modifier gets a test that default == absent, bit-identical (REQ-15.2).
+- User signals (behavior overrides, flags, reruns) never enter Stage A generation context (REQ-8.5, REQ-8.6): coverage counts canonical runs only.
+- Additions to the `Dice` surface or the approved builtins/NumPy lists are spec changes requiring new REQ identifiers, not implementation decisions.
+- Recorded history is immutable; the only mutating endpoint on runs is `PATCH /runs/{id}` for `user_behavior`/`user_flagged`.
+- Every run is stamped with the engine git revision — identical source under different harness revisions is a different experiment (REQ-12.4.2).
