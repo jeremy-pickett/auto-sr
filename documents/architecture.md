@@ -75,6 +75,12 @@ documents/                 the spec, this file
 - **Phase 2 started (2026-08-19):** `modifiers.py` (v1 catalog specs),
   `declaration.py`, `fingerprint.py` (computational vs pattern, scheduler
   phase, RNG state, stubbornness age clamp), `tick.py` (REQ-4.6 init
-  sequence + REQ-6.4 tick order). Still to come in Phase 2: run loop with
-  stopping precedence, classifier, child-process runner, the four fixtures,
-  REQ-15.3/15.6/15.7/15.8 and glider-wrap tests.
+  sequence + REQ-6.4 tick order).
+- **Phase 2 complete (2026-08-19):** `run.py` (stopping precedence, per-tick
+  stats, pattern_settled_at), `classify.py` (REQ-9.16 rows), `contract/child.py`
+  (fork + pipe streaming, parent-owned tick timeout, RLIMIT_AS), fixtures
+  life/majority/walker + test-only slow_burn. Verified empirically: majority
+  freezes at tick 13, walker loops at exactly grid width, a glider on an 8x8
+  torus loops at exactly 32 with 5 live cells throughout (REQ-14.2), slow_burn
+  flips at tick 60 (REQ-15.8), rate prevents false loops (period 12 not 4),
+  stochastic settle reaches frozen. 88 tests.
