@@ -6,6 +6,14 @@ recent failure modes. Everything here is built from machine-derived
 outcomes only: user overrides and flags never enter generation context
 (REQ-8.5), and only canonical runs are counted — one rule, one vote
 (REQ-8.6).
+
+Every query here also excludes private rules entirely (Firebase auth
+Phase 1) -- not just from what's displayed, but from what gets
+rendered into the prompt at all, extending REQ-8.5's principle
+("user-specific signal never enters generation context") to another
+user's private content. This module is also what GET /library/summary
+serves, so the same filter keeps a private rule out of the public
+library-summary display too -- one implementation, one guarantee.
 """
 
 import json
@@ -49,7 +57,8 @@ def coverage_map(conn) -> dict:
                   rules.semantic_slots_json, canon.guessed_behavior
            FROM rules
            LEFT JOIN runs canon
-             ON canon.rule_id = rules.id AND canon.is_canonical = 1"""
+             ON canon.rule_id = rules.id AND canon.is_canonical = 1
+           WHERE rules.visibility = 'public'"""
     ):
         modifiers = json.loads(row["modifiers_json"])
         entry = cell(cell_key(
@@ -88,7 +97,7 @@ def coverage_map(conn) -> dict:
     for row in conn.execute(
         """SELECT kinds, neighbors, reach, requested_shape,
                   modifiers_json, semantic_slots_json, COUNT(*) AS n
-           FROM rules WHERE status = 'broken'
+           FROM rules WHERE status = 'broken' AND visibility = 'public'
            GROUP BY kinds, neighbors, reach, requested_shape,
                     modifiers_json, semantic_slots_json"""
     ):
@@ -112,7 +121,8 @@ def totals(conn) -> dict:
         """SELECT rules.status, canon.guessed_behavior
            FROM rules
            LEFT JOIN runs canon
-             ON canon.rule_id = rules.id AND canon.is_canonical = 1"""
+             ON canon.rule_id = rules.id AND canon.is_canonical = 1
+           WHERE rules.visibility = 'public'"""
     ):
         result["rules"] += 1
         if row["status"] == "broken":
@@ -203,6 +213,7 @@ _EXAMPLE_SELECT = """
     FROM rules
     LEFT JOIN runs canon
       ON canon.rule_id = rules.id AND canon.is_canonical = 1
+    WHERE rules.visibility = 'public'
 """
 
 
@@ -215,8 +226,11 @@ def _example_groups(conn) -> tuple:
     ).fetchall()
     notable = conn.execute(
         _EXAMPLE_SELECT
-        + """ WHERE canon.guessed_behavior = 'structured'
-                 OR canon.loop_length > 4
+        # _EXAMPLE_SELECT already has a trailing WHERE (visibility) --
+        # this is AND, not a second WHERE, and the parens are required
+        # (AND binds tighter than OR), not cosmetic.
+        + """ AND (canon.guessed_behavior = 'structured'
+                    OR canon.loop_length > 4)
               ORDER BY canon.loop_length DESC LIMIT ?""",
         (MOST_EXAMPLES_PER_GROUP,),
     ).fetchall()

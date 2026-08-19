@@ -224,6 +224,38 @@ def test_stage_a_context_stays_in_budget_and_names_examples(conn):
     assert len(text) < 12000
 
 
+def test_private_rules_never_reach_stage_a_context(conn):
+    # Firebase auth Phase 1: a private rule must not just be excluded
+    # from what's displayed, but from what gets rendered into the
+    # prompt at all -- the strongest form of the exclusion guarantee.
+    _, emit = collect_events()
+    generate_rule(
+        conn, emit, model_call=fake_model(GOOD_SOURCE),
+        width=24, height=24, max_ticks=40,
+    )
+    marker = "ZZ-PRIVATE-MARKER-do-not-leak-into-stage-a-ZZ"
+    conn.execute(
+        """UPDATE rules SET description = ? WHERE id = (
+               SELECT id FROM rules ORDER BY id DESC LIMIT 1
+           )""",
+        (marker,),
+    )
+    conn.commit()
+    private_id = conn.execute("SELECT id FROM rules ORDER BY id DESC LIMIT 1").fetchone()["id"]
+    conn.execute("UPDATE rules SET visibility = 'private' WHERE id = ?", (private_id,))
+    conn.commit()
+
+    text, shown_ids = context.library_summary_for_stage_a(conn)
+    assert marker not in text
+    assert private_id not in shown_ids
+
+    coverage = context.coverage_map(conn)
+    assert sum(cell["attempts"] for cell in coverage.values()) == 0
+
+    totals = context.totals(conn)
+    assert totals["rules"] == 0
+
+
 def test_at_most_one_modifier_is_ever_in_scope():
     for seed in range(50):
         in_scope = pick_modifiers_in_scope(random.Random(seed))
