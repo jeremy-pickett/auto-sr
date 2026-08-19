@@ -40,6 +40,7 @@ class Settings:
     anthropic_model: str
     shape_model: str
     database_path: str
+    firebase_project_id: str
 
 
 settings = Settings(
@@ -56,4 +57,8 @@ settings = Settings(
     # The small classifier call behind observed_shape (REQ-8.2.1).
     shape_model=_text("SHAPE_MODEL", "claude-haiku-4-5"),
     database_path=_text("DATABASE_PATH", "./library.db"),
+    # Not a secret -- the same value that ships in the frontend's
+    # public Firebase web config. Used only to check a verified
+    # token's audience claim (asr/api/auth.py).
+    firebase_project_id=_text("FIREBASE_PROJECT_ID", ""),
 )
