@@ -11,8 +11,11 @@ layer turns them into the SSE stream.
 """
 
 import json
+import logging
 import random as random_module
+import time
 import traceback
+import uuid
 
 from asr.config import settings
 from asr.contract.child import RuleCrashed, run_in_child
@@ -28,6 +31,8 @@ TRIAL_TICKS = 10
 TRIAL_SEED = 12345
 GENERATION_MAX_TOKENS = 16000
 TICK_PROGRESS_EVERY = 20
+
+logger = logging.getLogger(__name__)
 SPARK_MAX_LENGTH = 64
 
 
@@ -123,6 +128,17 @@ def generate_rule(
     spark: str | None = None,
 ) -> dict:
     """Run the whole pipeline once. Returns the `complete` payload."""
+    # Basic timing, not a profiler: one short id so concurrent
+    # generations' log lines can be told apart, and a wall-clock
+    # duration logged after each expensive step. Point of this is
+    # visibility if several people generate at once, not measurement
+    # precision -- see it before optimizing anything (or not).
+    gen_id = uuid.uuid4().hex[:8]
+    pipeline_started = time.perf_counter()
+
+    def log_step(label, started):
+        logger.info("gen %s: %s took %.1fms", gen_id, label, (time.perf_counter() - started) * 1000)
+
     model_call = model_call or default_model_call()
     width = width or settings.grid_width
     height = height or settings.grid_height
@@ -174,14 +190,17 @@ def generate_rule(
             served_models[stage] = actual
 
     emit("stage_a_started", {"modifiers_in_scope": modifiers_in_scope})
+    stage_started = time.perf_counter()
     try:
         stage_a_raw = model_call(stage_a_prompt)
         note_served("stage_a")
+        log_step("stage A (model call)", stage_started)
         proposal = _parse_stage_a(stage_a_raw, modifiers_in_scope, shown_ids)
     except GenerationFailed as failed:
         _record_generation_failure(conn, failed, locals().get("stage_a_raw"))
         emit("validation_failed", {"check": failed.failed_check, "error": str(failed)})
         payload = {"status": "generation_failed", "error": str(failed)}
+        log_step(f"total ({payload['status']})", pipeline_started)
         emit("complete", payload)
         return payload
 
@@ -200,8 +219,10 @@ def generate_rule(
     stage_b_prompt = _render_stage_b(conn, proposal)
 
     emit("stage_b_started", {})
+    stage_started = time.perf_counter()
     stage_b_raw = model_call(stage_b_prompt)
     note_served("stage_b")
+    log_step("stage B (model call)", stage_started)
     source = _extract_source(stage_b_raw)
     emit("stage_b_complete", {"source_lines": source.count("\n") + 1})
 
@@ -223,8 +244,10 @@ def generate_rule(
                 "error_text": failure.message,
             },
         )
+        stage_started = time.perf_counter()
         repair_raw = model_call(repair_rendered)
         note_served("repair")
+        log_step("repair (model call)", stage_started)
         source = _extract_source(repair_raw)
         emit("validating", {})
         failure = _validate(source, proposal, declaration, width, height)
@@ -268,12 +291,15 @@ def generate_rule(
             "status": "broken", "rule_id": rule_id,
             "failed_check": failure.failed_check, "error": failure.message,
         }
+        log_step(f"total ({payload['status']})", pipeline_started)
         emit("complete", payload)
         return payload
 
+    stage_started = time.perf_counter()
     observed = shape.infer_shape(
         source, ask_model=lambda prompt: model_call(prompt, settings.shape_model)
     )
+    log_step("shape inference", stage_started)
     rule_id = _store_rule(
         conn, proposal, source, provenance,
         status="ok", failed_check=None, error_text=None, observed_shape=observed,
@@ -289,13 +315,16 @@ def generate_rule(
         if record.tick % TICK_PROGRESS_EVERY == 0:
             emit("tick_progress", {"tick": record.tick, "max_ticks": max_ticks})
 
+    stage_started = time.perf_counter()
     try:
         result = run_in_child(
             source, declaration, seed, width, height, max_ticks,
             settings.tick_timeout_seconds, settings.run_memory_limit_mb,
             on_tick=report,
         )
+        log_step("canonical run (child process)", stage_started)
     except RuleCrashed as crashed:
+        log_step("canonical run (child process, crashed)", stage_started)
         # It survived ten trial ticks but died in the long run: the
         # rule stays ok-with-history? No — a crash mid-run leaves no
         # usable history, so record the rule as broken after the fact.
@@ -309,6 +338,7 @@ def generate_rule(
             "status": "broken", "rule_id": rule_id,
             "failed_check": "canonical_run", "error": str(crashed)[-500:],
         }
+        log_step(f"total ({payload['status']})", pipeline_started)
         emit("complete", payload)
         return payload
 
@@ -327,6 +357,7 @@ def generate_rule(
         "stopped_because": result.stopped_because,
         "ticks_run": result.ticks_run,
     }
+    log_step(f"total ({payload['status']})", pipeline_started)
     emit("complete", payload)
     return payload
 
