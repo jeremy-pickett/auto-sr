@@ -159,6 +159,16 @@ def test_flag_filter_finds_the_flagged_rule(client):
     assert client.get("/rules?flagged=true").json()["total"] == 1
 
 
+def test_rss_feed_lists_public_rules(client):
+    resp = client.get("/library/feed.rss")
+    assert resp.status_code == 200
+    assert resp.headers["content-type"].startswith("application/rss+xml")
+    body = resp.text
+    assert "<rss version=\"2.0\">" in body
+    assert "<item>" in body
+    assert "a walker" in body  # the seeded rule's description, escaped into the item
+
+
 def test_modifier_catalog_is_served(client):
     names = {m["name"] for m in client.get("/catalog/modifiers").json()["modifiers"]}
     assert names == {"weight", "stubbornness", "rate"}

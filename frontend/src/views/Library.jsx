@@ -68,6 +68,7 @@ function RuleCard({ rule, hidden, onToggleHidden, signedIn, onFavoriteChange }) 
           ) : (
             rule.favorite_count > 0 && <span className="sub">★ {rule.favorite_count}</span>
           )}
+          {rule.comment_count > 0 && <span className="sub">💬 {rule.comment_count}</span>}
           {rule.visibility === 'private' && <span className="chip private">🔒 private</span>}
           <span className={`chip status-${rule.status}`}>
             <span className="dot" />
@@ -241,6 +242,8 @@ export default function Library({ mine = false } = {}) {
               <select value={sort} onChange={(e) => { setPage(1); setSort(e.target.value) }}>
                 <option value="newest">newest</option>
                 <option value="most_liked">most favorited</option>
+                <option value="most_discussed">most discussed</option>
+                <option value="most_looped">longest loop</option>
               </select>
             </label>
           </div>

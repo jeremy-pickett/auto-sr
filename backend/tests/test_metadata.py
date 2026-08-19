@@ -148,3 +148,20 @@ def test_sort_most_liked(client):
     client.post(f"/rules/{client.owned_id}/favorite")
     body = client.get("/rules?sort=most_liked").json()
     assert body["rules"][0]["id"] == client.owned_id
+
+
+def test_sort_most_discussed(client):
+    as_user(client, "user-a")
+    client.post(f"/rules/{client.owned_id}/comments", json={"body": "hi"})
+    body = client.get("/rules?sort=most_discussed").json()
+    assert body["rules"][0]["id"] == client.owned_id
+
+
+def test_sort_most_looped(client):
+    # Both fixture rules are walkers with the same loop_length (they
+    # loop at the grid width) -- just confirm the sort executes and
+    # returns everything, since a real difference needs two rules with
+    # distinct loop_length, more setup than this sort option warrants.
+    resp = client.get("/rules?sort=most_looped")
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 2

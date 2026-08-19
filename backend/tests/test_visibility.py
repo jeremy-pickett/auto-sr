@@ -147,3 +147,10 @@ def test_public_rule_unaffected_by_ownership_checks(two_rules):
     assert two_rules.get(f"/rules/{rid}").status_code == 200
     assert two_rules.get(f"/runs/{run_id}").status_code == 200
     assert two_rules.patch(f"/runs/{run_id}", json={"user_flagged": True}).status_code == 200
+
+
+def test_rss_feed_never_lists_a_private_rule(two_rules):
+    anonymous(two_rules)
+    body = two_rules.get("/library/feed.rss").text
+    assert f"/rules/{two_rules.public_id}" in body
+    assert f"/rules/{two_rules.private_id}" not in body

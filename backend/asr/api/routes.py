@@ -46,7 +46,7 @@ def _rule_hidden_from(visibility: str, owner_uid: str | None, user: dict | None)
 
 def _rule_summary(
     row, user: dict | None = None, favorited_ids: set | None = None,
-    favorite_counts: dict | None = None,
+    favorite_counts: dict | None = None, comment_counts: dict | None = None,
 ) -> dict:
     return {
         "id": row["id"],
@@ -82,6 +82,7 @@ def _rule_summary(
         # same thing wasn't worth it; this is the count that makes the
         # one table cover both.
         "favorite_count": (favorite_counts or {}).get(row["id"], 0),
+        "comment_count": (comment_counts or {}).get(row["id"], 0),
     }
 
 
@@ -128,6 +129,20 @@ def _favorite_counts(conn, rule_ids) -> dict:
         row["rule_id"]: row["n"]
         for row in conn.execute(
             f"SELECT rule_id, COUNT(*) AS n FROM favorites WHERE rule_id IN ({placeholders}) GROUP BY rule_id",
+            ids,
+        )
+    }
+
+
+def _comment_counts(conn, rule_ids) -> dict:
+    ids = list(rule_ids)
+    if not ids:
+        return {}
+    placeholders = ",".join("?" * len(ids))
+    return {
+        row["rule_id"]: row["n"]
+        for row in conn.execute(
+            f"SELECT rule_id, COUNT(*) AS n FROM comments WHERE rule_id IN ({placeholders}) GROUP BY rule_id",
             ids,
         )
     }
@@ -200,6 +215,16 @@ def list_rules(
     order = "rules.id DESC"
     if sort == "most_liked":
         order = "(SELECT COUNT(*) FROM favorites lk WHERE lk.rule_id = rules.id) DESC, rules.id DESC"
+    elif sort == "most_discussed":
+        order = "(SELECT COUNT(*) FROM comments cm WHERE cm.rule_id = rules.id) DESC, rules.id DESC"
+    elif sort == "most_looped":
+        # "Most looped" reinterpreted concretely for this app's actual
+        # domain: the canonical run's loop_length, i.e. the longest
+        # repeating cycle a rule settled into -- not a generic "play
+        # count" (which isn't tracked anywhere and would need new
+        # instrumentation to add just for a sort option). Rules that
+        # never reached a detected loop sort last, not excluded.
+        order = "COALESCE(canon.loop_length, -1) DESC, rules.id DESC"
     where = ("WHERE " + " AND ".join(clauses)) if clauses else ""
     base = f"""FROM rules
                LEFT JOIN runs canon
@@ -217,10 +242,12 @@ def list_rules(
         params + [page_size, (page - 1) * page_size],
     ).fetchall()
     favorited_ids = _favorited_ids(conn, user)
-    favorite_counts = _favorite_counts(conn, (row["id"] for row in rows))
+    rule_ids = [row["id"] for row in rows]
+    favorite_counts = _favorite_counts(conn, rule_ids)
+    comment_counts = _comment_counts(conn, rule_ids)
     rules = []
     for row in rows:
-        summary = _rule_summary(row, user, favorited_ids, favorite_counts)
+        summary = _rule_summary(row, user, favorited_ids, favorite_counts, comment_counts)
         summary["canonical_run"] = (
             {
                 "id": row["canonical_run_id"],
@@ -242,7 +269,10 @@ def _full_rule_detail(row, user, conn) -> dict:
     runs = conn.execute(
         "SELECT * FROM runs WHERE rule_id = ? ORDER BY id", (row["id"],)
     ).fetchall()
-    full = _rule_summary(row, user, _favorited_ids(conn, user), _favorite_counts(conn, [row["id"]]))
+    full = _rule_summary(
+        row, user, _favorited_ids(conn, user),
+        _favorite_counts(conn, [row["id"]]), _comment_counts(conn, [row["id"]]),
+    )
     full.update(
         {
             "reasoning": row["reasoning"],
@@ -326,7 +356,10 @@ def set_rule_title(
         conn.execute("UPDATE rules SET title = ?, slug = ? WHERE id = ?", (title, slug, rule_id))
     conn.commit()
     fresh = conn.execute("SELECT * FROM rules WHERE id = ?", (rule_id,)).fetchone()
-    return _rule_summary(fresh, user, _favorited_ids(conn, user), _favorite_counts(conn, [rule_id]))
+    return _rule_summary(
+        fresh, user, _favorited_ids(conn, user),
+        _favorite_counts(conn, [rule_id]), _comment_counts(conn, [rule_id]),
+    )
 
 
 @router.post("/rules/{rule_id}/favorite")
@@ -666,3 +699,57 @@ def library_summary(conn=Depends(get_db)):
         "coverage": context.coverage_map(conn),
         "rejections": context.rejection_tally(conn),
     }
+
+
+MOST_RSS_ITEMS = 30
+
+
+@router.get("/library/feed.rss")
+def library_feed(request: Request, conn=Depends(get_db)):
+    """A plain RSS 2.0 feed of the most recently invented public
+    rules -- 'for people who want to watch the library grow passively'
+    per the feature request. Public rules only: an RSS reader carries
+    no auth token, so a private rule couldn't be fetched by its own
+    detail endpoint either -- consistent with everything else, not a
+    special case. Deliberately not building the webhook half of that
+    same feature-list item: a user-supplied delivery URL is a real
+    SSRF surface (the server would be making outbound requests to
+    wherever a caller points it) and there's no delivery/retry
+    infrastructure in this app to do it safely. Logged.
+    """
+    import datetime
+    import email.utils
+    from xml.sax.saxutils import escape
+
+    rows = conn.execute(
+        """SELECT id, title, description, created_at FROM rules
+           WHERE visibility = 'public' ORDER BY id DESC LIMIT ?""",
+        (MOST_RSS_ITEMS,),
+    ).fetchall()
+    base = str(request.base_url).rstrip("/")
+    items = []
+    for row in rows:
+        link = f"{base}/#/rules/{row['id']}"
+        title = escape(row["title"] or f"rule #{row['id']}")
+        description = escape((row["description"] or "")[:500])
+        try:
+            pub_date = email.utils.format_datetime(
+                datetime.datetime.fromisoformat(row["created_at"])
+            )
+        except ValueError:
+            pub_date = ""
+        items.append(
+            f"<item><title>{title}</title><link>{link}</link>"
+            f"<guid>{link}</guid><pubDate>{pub_date}</pubDate>"
+            f"<description>{description}</description></item>"
+        )
+    body = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<rss version="2.0"><channel>'
+        "<title>Autonomous Semantic Ruliology</title>"
+        f"<link>{base}/</link>"
+        "<description>Newly invented cellular-automaton rules, as the library grows.</description>"
+        + "".join(items)
+        + "</channel></rss>"
+    )
+    return Response(content=body, media_type="application/rss+xml")

@@ -81,15 +81,30 @@ tested and pushed, not just written.
   from the actual email, verified live end-to-end (post/list/edit/
   delete all correct, pseudonym never contains "@").
 
-### Discovery / library — next
-- Sort by newest/most-discussed/most-looped — "newest" and
-  "most_liked" already shipped (rule naming/favorites batch);
-  "most-discussed" (needs a comment count, same shape as favorite_count)
-  and "most-looped" (ambiguous -- rerun count? total plays? -- will
-  pick an interpretation and log it) still to do.
-- RSS feed — planned, safe and self-contained.
-- Webhook for new rules — likely SKIP: real SSRF risk (arbitrary
-  destination URL) and no delivery/retry infra exists; will confirm
-  before starting.
+### Discovery / library — DONE
+- Sort by newest / most favorited / most discussed / most looped —
+  all four shipped. "most_discussed" counts comments (same batched-
+  count-query shape as favorite_count, new comment_count field).
+  "most_looped" reinterpreted concretely for this app's actual domain:
+  sorts by the canonical run's loop_length (the longest repeating
+  cycle a rule settled into) rather than a generic "play count," which
+  isn't tracked anywhere and would've needed new instrumentation just
+  to back one sort option. Both counts are also shown on library
+  cards, not just sortable-but-invisible.
+- RSS feed — DONE. GET /library/feed.rss, standard RSS 2.0, public
+  rules only (an RSS reader carries no auth token, so this falls out
+  of the same visibility rule as everything else, not a special case),
+  most recent 30. Autodiscovery <link> in index.html plus a footer
+  link. Verified live against the real running server and confirmed a
+  private rule never appears in it.
+- Webhook for new rules — SKIPPED, logged before building the RSS
+  feed: a user-supplied delivery URL is a real SSRF surface (the
+  server would make outbound requests wherever a caller points it),
+  and there's no delivery/retry infrastructure in this app to do that
+  safely. RSS covers the "watch the library grow passively" need
+  without that risk.
 
-(rest updated as work proceeds)
+## All items from documents/new-features-v1.md are now accounted for
+Every item is either done, partially done with the gap explained, or
+skipped with a specific reason — see the ground rules at the top of
+this file and the sections above. Nothing was left silently untried.
