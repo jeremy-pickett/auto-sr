@@ -224,6 +224,32 @@ def test_stage_a_context_stays_in_budget_and_names_examples(conn):
     assert len(text) < 12000
 
 
+def test_owner_and_visibility_land_on_the_stored_rule(conn):
+    _, emit = collect_events()
+    generate_rule(
+        conn, emit, model_call=fake_model(GOOD_SOURCE),
+        width=24, height=24, max_ticks=40,
+        owner_uid="user-x", visibility="private",
+    )
+    rule = conn.execute("SELECT * FROM rules").fetchone()
+    assert rule["owner_uid"] == "user-x"
+    assert rule["visibility"] == "private"
+
+
+def test_default_generation_is_still_anonymous_and_public(conn):
+    # No owner_uid/visibility passed at all -- every pre-existing
+    # caller of generate_rule must keep producing today's exact
+    # anonymous/global result.
+    _, emit = collect_events()
+    generate_rule(
+        conn, emit, model_call=fake_model(GOOD_SOURCE),
+        width=24, height=24, max_ticks=40,
+    )
+    rule = conn.execute("SELECT * FROM rules").fetchone()
+    assert rule["owner_uid"] is None
+    assert rule["visibility"] == "public"
+
+
 def test_private_rules_never_reach_stage_a_context(conn):
     # Firebase auth Phase 1: a private rule must not just be excluded
     # from what's displayed, but from what gets rendered into the

@@ -95,6 +95,8 @@ def generate_rule(
     height: int | None = None,
     max_ticks: int | None = None,
     chooser=None,
+    owner_uid: str | None = None,
+    visibility: str = "public",
 ) -> dict:
     """Run the whole pipeline once. Returns the `complete` payload."""
     model_call = model_call or default_model_call()
@@ -219,6 +221,8 @@ def generate_rule(
             failed_check=failure.failed_check,
             error_text=failure.message,
             observed_shape=None,
+            owner_uid=owner_uid,
+            visibility=visibility,
         )
         _store_rejection(conn, proposal, failure.failed_check, rule_id)
         payload = {
@@ -234,6 +238,7 @@ def generate_rule(
     rule_id = _store_rule(
         conn, proposal, source, provenance,
         status="ok", failed_check=None, error_text=None, observed_shape=observed,
+        owner_uid=owner_uid, visibility=visibility,
     )
 
     # The canonical run (REQ-8.6): the rule's one vote in the coverage
@@ -503,10 +508,13 @@ def _trial_run(source, declaration, width, height):
 def _store_rule(
     conn, proposal, source, provenance, *,
     status, failed_check, error_text, observed_shape,
+    owner_uid=None, visibility="public",
 ) -> int:
     import hashlib
 
     return db.insert_rule(conn, {
+        "owner_uid": owner_uid,
+        "visibility": visibility,
         "mode": proposal["mode"],
         "parent_rule_id": proposal.get("parent_rule_id"),
         "change_note": proposal.get("change"),

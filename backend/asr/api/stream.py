@@ -13,10 +13,13 @@ import json
 import logging
 import queue
 import threading
+from typing import Literal
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Body, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
 
+from asr.api.auth import get_current_user
 from asr.generation.pipeline import generate_rule
 from asr.storage import db
 
@@ -26,10 +29,17 @@ logger = logging.getLogger(__name__)
 FINAL_EVENT = "complete"
 
 
-def _run_pipeline(database_path: str, events: queue.Queue) -> None:
+class GenerateRequest(BaseModel):
+    visibility: Literal["public", "private"] = "public"
+
+
+def _run_pipeline(database_path: str, events: queue.Queue, owner_uid, visibility) -> None:
     conn = db.connect(database_path)
     try:
-        generate_rule(conn, lambda name, data: events.put((name, data)))
+        generate_rule(
+            conn, lambda name, data: events.put((name, data)),
+            owner_uid=owner_uid, visibility=visibility,
+        )
     except Exception as failed:  # noqa: BLE001 - the stream must always end
         # The browser only sees the tail; the server log keeps the
         # whole story so a transient API failure is diagnosable later.
@@ -41,11 +51,25 @@ def _run_pipeline(database_path: str, events: queue.Queue) -> None:
 
 
 @router.post("/rules/generate")
-def generate(request: Request):
+def generate(
+    request: Request,
+    body: GenerateRequest | None = Body(default=None),
+    user: dict | None = Depends(get_current_user),
+):
+    # body defaults to None (not a GenerateRequest()) so this keeps
+    # accepting the exact request the frontend has always sent: a bare
+    # POST with no body and no Content-Type at all.
+    visibility = body.visibility if body else "public"
+    if visibility == "private" and user is None:
+        raise HTTPException(400, "sign in to create a private rule")
+    owner_uid = user["uid"] if user else None
+    if user is None:
+        visibility = "public"  # anonymous requests are always public/global
+
     events: queue.Queue = queue.Queue()
     worker = threading.Thread(
         target=_run_pipeline,
-        args=(request.app.state.database_path, events),
+        args=(request.app.state.database_path, events, owner_uid, visibility),
         daemon=True,
     )
     worker.start()
