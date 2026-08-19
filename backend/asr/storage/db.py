@@ -113,6 +113,27 @@ CREATE INDEX IF NOT EXISTS runs_by_rule_canonical ON runs(rule_id, is_canonical)
 """
 
 
+def _ensure_columns(conn) -> None:
+    """Additive-only schema evolution beyond CREATE TABLE ... IF NOT
+    EXISTS, which is a no-op on a table that already exists — editing
+    the CREATE TABLE text above does nothing for a live database, it
+    only affects brand-new ones. Each new column is guarded by a
+    PRAGMA table_info check, so this is safe and cheap to run on every
+    connect(). This function, not the CREATE TABLE text, is the source
+    of truth for schema changes made after a table's first release.
+    """
+    existing = {row["name"] for row in conn.execute("PRAGMA table_info(rules)")}
+    if "owner_uid" not in existing:
+        conn.execute("ALTER TABLE rules ADD COLUMN owner_uid TEXT")
+    if "visibility" not in existing:
+        conn.execute(
+            "ALTER TABLE rules ADD COLUMN visibility TEXT NOT NULL DEFAULT 'public'"
+        )
+    conn.execute("CREATE INDEX IF NOT EXISTS rules_by_owner ON rules(owner_uid)")
+    conn.execute("CREATE INDEX IF NOT EXISTS rules_by_visibility ON rules(visibility)")
+    conn.commit()
+
+
 def connect(path) -> sqlite3.Connection:
     # check_same_thread off: FastAPI may run a request's dependency
     # setup, endpoint body, and teardown on different threadpool
@@ -123,6 +144,7 @@ def connect(path) -> sqlite3.Connection:
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
     conn.executescript(SCHEMA)
+    _ensure_columns(conn)
     return conn
 
 
