@@ -135,7 +135,7 @@ function CellInspector({ runId, picked, tick, kindPlane, width, height, props })
   )
 }
 
-export default function RunView({ runId }) {
+export default function RunView({ runId, initialTick }) {
   const [run, setRun] = useState(null)
   const [rule, setRule] = useState(null)
   const [error, setError] = useState(null)
@@ -145,10 +145,14 @@ export default function RunView({ runId }) {
   const [mapping, setMapping] = useState(null) // {color, brightness}
   const [picked, setPicked] = useState(null)
   const [showSource, setShowSource] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
   const [exporting, setExporting] = useState(false)
   const [exportError, setExportError] = useState(null)
   const [smooth, setSmooth] = useState(true)
   const [roundCells, setRoundCells] = useState(false)
+  const [loopEnabled, setLoopEnabled] = useState(false)
+  const [loopStart, setLoopStart] = useState(0)
+  const [loopEnd, setLoopEnd] = useState(null) // null until the run loads
   const [chunks, setChunks] = useState(() => new Map())
   const [isFullscreen, setIsFullscreen] = useState(false)
 
@@ -172,10 +176,39 @@ export default function RunView({ runId }) {
   useEffect(() => {
     setRun(null); setRule(null); setTick(0); setPlaying(false); setPicked(null)
     setChunks(new Map()); pendingRef.current = new Set()
+    setLoopEnabled(false); setLoopStart(0); setLoopEnd(null)
     getRun(runId)
-      .then((r) => { setRun(r); return getRule(r.rule_id) })
+      .then((r) => {
+        setRun(r)
+        setLoopEnd(r.ticks_run)
+        // A shared permalink (#/runs/3?tick=150) opens straight to that
+        // tick instead of the start.
+        if (initialTick != null) setTick(Math.max(0, Math.min(initialTick, r.ticks_run)))
+        return getRule(r.rule_id)
+      })
       .then(setRule, setError)
+    // initialTick deliberately excluded: it should only seed the tick
+    // once when the run loads, not re-fire this whole reset whenever
+    // the URL's tick param changes (see the separate effect below for
+    // that case).
   }, [runId])
+
+  // Following a permalink to a different tick of the run already on
+  // screen (hash changes but runId doesn't, so the effect above never
+  // re-fires) — jump there directly, once.
+  useEffect(() => {
+    if (initialTick != null && run) {
+      setTick(Math.max(0, Math.min(initialTick, run.ticks_run)))
+    }
+  }, [initialTick])
+
+  // Loop range auto-suggest: if the run settled into a repeating cycle,
+  // the most recent full period is the natural default loop window.
+  const suggestLoopRange = () => {
+    if (!run || !run.loop_length) return
+    setLoopStart(Math.max(0, run.ticks_run - run.loop_length))
+    setLoopEnd(run.ticks_run)
+  }
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(document.fullscreenElement === stageRef.current)
@@ -240,10 +273,14 @@ export default function RunView({ runId }) {
       if (carried >= 1) {
         const advance = Math.floor(carried)
         carried -= advance
+        const ceiling = loopEnabled ? Math.min(loopEnd ?? run.ticks_run, run.ticks_run) : run.ticks_run
         setTick((t) => {
-          let next = Math.min(t + advance, run.ticks_run)
+          let next = Math.min(t + advance, ceiling)
           while (next > t && !arrived(next)) next -= 1
-          if (next === run.ticks_run) setPlaying(false)
+          if (next === ceiling) {
+            if (loopEnabled) next = Math.min(loopStart, ceiling)
+            else setPlaying(false)
+          }
           return next
         })
         // Held ticks are dropped, not banked — when the download
@@ -260,7 +297,7 @@ export default function RunView({ runId }) {
     }
     frame = requestAnimationFrame(step)
     return () => cancelAnimationFrame(frame)
-  }, [playing, speed, run, propsKey])
+  }, [playing, speed, run, propsKey, loopEnabled, loopStart, loopEnd])
 
   // One tick rendered to a cached offscreen canvas.
   const paintFrame = useCallback((t) => {
@@ -351,6 +388,49 @@ export default function RunView({ runId }) {
 
   const rerun = () =>
     rerunRule(rule.id).then((fresh) => { window.location.hash = `#/runs/${fresh.id}` }, setError)
+
+  // A permalink to this exact tick (#/runs/3?tick=150) — plain hash
+  // params, no backend involved; App.jsx's router reads it back out.
+  const copyTickLink = async () => {
+    const url = `${window.location.origin}${window.location.pathname}#/runs/${runId}?tick=${tick}`
+    window.location.hash = `/runs/${runId}?tick=${tick}`
+    try {
+      await navigator.clipboard.writeText(url)
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 1500)
+    } catch {
+      // Clipboard access can be denied (permissions, insecure context);
+      // the URL bar itself already reflects the link either way.
+    }
+  }
+
+  // A shareable still of the current frame — scaled up from the native
+  // grid resolution the same way the display CSS does, kept crisp
+  // (no smoothing) to match what's on screen. This captures the raw
+  // canvas pixel buffer, so it's always square cells regardless of
+  // the round-cells toggle — that toggle is a CSS mask applied at
+  // paint time, not part of the canvas's own pixel data, and
+  // replicating it in a raster export isn't worth the complexity here.
+  const exportFramePNG = () => {
+    const source = canvasRef.current
+    if (!source) return
+    const scale = Math.max(1, Math.round(800 / Math.max(source.width, source.height)))
+    const out = document.createElement('canvas')
+    out.width = source.width * scale
+    out.height = source.height * scale
+    const ctx = out.getContext('2d')
+    ctx.imageSmoothingEnabled = false
+    ctx.drawImage(source, 0, 0, out.width, out.height)
+    out.toBlob((blob) => {
+      if (!blob) return
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `run-${runId}-tick-${tick}.png`
+      a.click()
+      URL.revokeObjectURL(url)
+    }, 'image/png')
+  }
 
   // The lazy-loaded "enormous thing": every tick, uncapped, as a
   // downloaded JSON file — not fetched until asked for.
@@ -454,6 +534,9 @@ export default function RunView({ runId }) {
               : '… '}
             tick {tick} / {run.ticks_run}
           </span>
+          <button onClick={copyTickLink} title="copy a link to this exact tick">
+            {linkCopied ? '✓' : '🔗'}
+          </button>
           <select value={speed} onChange={(e) => setSpeed(Number(e.target.value))}>
             {SPEEDS.map((s, i) => (
               <option key={s.label} value={i}>{s.label} · {s.ticksPerSecond}/s</option>
@@ -483,10 +566,47 @@ export default function RunView({ runId }) {
             />
             round
           </label>
+          <label
+            className="row"
+            style={{ color: 'var(--muted)', fontSize: 12, gap: 5 }}
+            title="loop back to the start of the range instead of stopping"
+          >
+            <input
+              type="checkbox"
+              checked={loopEnabled}
+              onChange={(e) => setLoopEnabled(e.target.checked)}
+            />
+            loop
+          </label>
+          <button onClick={exportFramePNG} title="save the current frame as a PNG">
+            📷
+          </button>
           <button onClick={toggleFullscreen} title={isFullscreen ? 'exit fullscreen' : 'fullscreen'}>
             {isFullscreen ? '⤢' : '⛶'}
           </button>
         </div>
+
+        {loopEnabled && (
+          <div className="row" style={{ width: '100%', color: 'var(--muted)', fontSize: 12, gap: 8 }}>
+            loop range
+            <input
+              type="number" min="0" max={run.ticks_run} value={loopStart}
+              onChange={(e) => setLoopStart(Math.max(0, Math.min(Number(e.target.value), loopEnd ?? run.ticks_run)))}
+              style={{ width: 70 }}
+            />
+            to
+            <input
+              type="number" min="0" max={run.ticks_run} value={loopEnd ?? run.ticks_run}
+              onChange={(e) => setLoopEnd(Math.min(run.ticks_run, Math.max(Number(e.target.value), loopStart)))}
+              style={{ width: 70 }}
+            />
+            {run.loop_length && (
+              <button onClick={suggestLoopRange} title={`the last full period: ${run.loop_length} ticks`}>
+                use the settled period
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="row" style={{ width: '100%' }}>
           <label className="row" style={{ color: 'var(--muted)', fontSize: 12 }}>

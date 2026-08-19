@@ -9,13 +9,21 @@ import { AuthControl } from './lib/AuthControl.jsx'
 import { useAuth } from './lib/firebase'
 
 // Tiny hash router: #/ (landing), #/library, #/mine, #/runs/3,
-// #/rules/3, #/invent, #/catalog
+// #/runs/3?tick=150 (a permalink to a specific tick), #/rules/3,
+// #/invent, #/catalog
 function parseRoute() {
-  const hash = window.location.hash.replace(/^#\/?/, '')
-  const [head, id] = hash.split('/')
+  const raw = window.location.hash.replace(/^#\/?/, '')
+  const [path, query] = raw.split('?')
+  const [head, id] = path.split('/')
+  const params = new URLSearchParams(query || '')
   if (head === 'library') return { view: 'library' }
   if (head === 'mine') return { view: 'mine' }
-  if (head === 'runs' && id) return { view: 'run', id: Number(id) }
+  if (head === 'runs' && id) {
+    return {
+      view: 'run', id: Number(id),
+      tick: params.has('tick') ? Number(params.get('tick')) : undefined,
+    }
+  }
   if (head === 'rules' && id) return { view: 'rule', id: Number(id) }
   if (head === 'invent') return { view: 'invent' }
   if (head === 'catalog') return { view: 'catalog' }
@@ -53,7 +61,7 @@ export default function App() {
         {route.view === 'landing' && <Landing />}
         {route.view === 'library' && <Library />}
         {route.view === 'mine' && <Library mine />}
-        {route.view === 'run' && <RunView runId={route.id} />}
+        {route.view === 'run' && <RunView runId={route.id} initialTick={route.tick} />}
         {route.view === 'rule' && <RuleView ruleId={route.id} />}
         {route.view === 'invent' && <Invent />}
         {route.view === 'catalog' && <Catalog />}
