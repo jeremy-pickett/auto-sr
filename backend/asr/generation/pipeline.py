@@ -49,15 +49,35 @@ def default_model_call():
     client = anthropic.Anthropic()
 
     def call(prompt: str, model: str | None = None) -> str:
-        with client.messages.stream(
+        # The main generator opts into server-side refusal fallbacks:
+        # the safety layer occasionally declines a benign prompt, and
+        # "default" reruns the request on a stand-in model in the same
+        # call. The model that actually answered is reported back on
+        # the message and recorded per stage in provenance, so a
+        # fallback never masquerades as the configured model.
+        extra = {}
+        if model is None:
+            extra = {
+                "betas": ["server-side-fallback-2026-07-01"],
+                "fallbacks": "default",
+            }
+        with client.beta.messages.stream(
             model=model or settings.anthropic_model,
             max_tokens=GENERATION_MAX_TOKENS,
             messages=[{"role": "user", "content": prompt}],
+            **extra,
         ) as stream:
             message = stream.get_final_message()
+        call.last_served_model = message.model
         if message.stop_reason == "refusal":
+            details = getattr(message, "stop_details", None)
+            category = getattr(details, "category", None) if details else None
+            explanation = getattr(details, "explanation", None) if details else None
             raise GenerationFailed(
-                "model_refused", "the model declined to answer this prompt"
+                "model_refused",
+                "the model (and its fallback chain) declined this prompt"
+                + (f" — category {category}" if category else "")
+                + (f": {explanation}" if explanation else ""),
             )
         return "".join(
             block.text for block in message.content if block.type == "text"
@@ -106,9 +126,17 @@ def generate_rule(
         },
     )
 
+    served_models = {}
+
+    def note_served(stage):
+        actual = getattr(model_call, "last_served_model", None)
+        if actual:
+            served_models[stage] = actual
+
     emit("stage_a_started", {"modifiers_in_scope": modifiers_in_scope})
     try:
         stage_a_raw = model_call(stage_a_prompt)
+        note_served("stage_a")
         proposal = _parse_stage_a(stage_a_raw, modifiers_in_scope, shown_ids)
     except GenerationFailed as failed:
         _record_generation_failure(conn, failed, locals().get("stage_a_raw"))
@@ -133,6 +161,7 @@ def generate_rule(
 
     emit("stage_b_started", {})
     stage_b_raw = model_call(stage_b_prompt)
+    note_served("stage_b")
     source = _extract_source(stage_b_raw)
     emit("stage_b_complete", {"source_lines": source.count("\n") + 1})
 
@@ -155,6 +184,7 @@ def generate_rule(
             },
         )
         repair_raw = model_call(repair_rendered)
+        note_served("repair")
         source = _extract_source(repair_raw)
         emit("validating", {})
         failure = _validate(source, proposal, declaration, width, height)
@@ -165,7 +195,12 @@ def generate_rule(
         "modifier_catalog_hash": catalog.catalog_hash(),
         "helper_version": HELPER_VERSION,
         "model_id": settings.anthropic_model,
-        "model_params_json": json.dumps({"max_tokens": GENERATION_MAX_TOKENS}),
+        # served_models records what actually answered each stage — it
+        # differs from model_id only when a refusal fallback stepped in.
+        "model_params_json": json.dumps({
+            "max_tokens": GENERATION_MAX_TOKENS,
+            "served_models": served_models,
+        }),
         "stage_a_rendered": stage_a_prompt,
         "stage_a_raw": stage_a_raw,
         "stage_b_rendered": stage_b_prompt,

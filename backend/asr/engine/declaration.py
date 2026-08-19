@@ -41,12 +41,52 @@ class Declaration:
         for name in self.modifiers:
             if name not in MODIFIER_CATALOG:
                 raise ValueError(f"MODIFIERS names an unknown modifier {name!r}")
+        for name, wanted in self.assign.items():
+            # A modifier draw is {"value": v, "chance": p} and nothing
+            # else — the shape the tick engine consumes (REQ-5.6).
+            if name not in self.modifiers:
+                raise ValueError(
+                    f"ASSIGN names {name!r}, which is not in MODIFIERS"
+                )
+            spec = MODIFIER_CATALOG[name]
+            if not isinstance(wanted, dict) or set(wanted) != {"value", "chance"}:
+                raise ValueError(
+                    f"the ASSIGN entry for {name!r} must be exactly "
+                    '{"value": <number>, "chance": <0..1>}'
+                )
+            value, chance = wanted["value"], wanted["chance"]
+            if not isinstance(value, int) or not spec.lowest <= value <= spec.highest:
+                raise ValueError(
+                    f"ASSIGN value for {name!r} must be a whole number from "
+                    f"{spec.lowest} to {spec.highest}, got {value!r}"
+                )
+            if not isinstance(chance, (int, float)) or not 0 <= chance <= 1:
+                raise ValueError(
+                    f"ASSIGN chance for {name!r} must be between 0 and 1, got {chance!r}"
+                )
         for name, slot in self.semantic_slots.items():
             values = slot.get("values", [])
             if len(values) < 2:
                 raise ValueError(f"semantic slot {name!r} needs at least an identity and one value")
             if slot.get("assign_when") not in ("start", "birth"):
                 raise ValueError(f"semantic slot {name!r} needs assign_when of start or birth")
+            wanted = slot.get("assign")
+            if wanted is not None:
+                if not isinstance(wanted, dict) or set(wanted) != {"value", "chance"}:
+                    raise ValueError(
+                        f"the assign for slot {name!r} must be exactly "
+                        '{"value": <one of its values>, "chance": <0..1>}'
+                    )
+                if wanted["value"] not in values:
+                    raise ValueError(
+                        f"slot {name!r} assign value {wanted['value']!r} is not "
+                        f"among its values {values}"
+                    )
+                chance = wanted["chance"]
+                if not isinstance(chance, (int, float)) or not 0 <= chance <= 1:
+                    raise ValueError(
+                        f"slot {name!r} assign chance must be between 0 and 1"
+                    )
         if len(self.semantic_slots) > 2:
             raise ValueError("at most two semantic slots per rule (REQ-5.5)")
 

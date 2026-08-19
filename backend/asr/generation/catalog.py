@@ -51,6 +51,14 @@ def modifier_blurbs(in_scope: list) -> str:
             f"- {name} (whole numbers {spec.lowest} to {spec.highest}, "
             f"default {spec.identity}, assigned at {spec.assign_when}): {spec.blurb}"
         )
+    lines.append(
+        'To use one, list it in "modifiers" AND declare its draw in "assign",\n'
+        'exactly this shape:\n'
+        '  "assign": {"<modifier name>": {"value": <number in its range>, "chance": <0..1>}}\n'
+        "Each affected cell gets the value with that probability, its default\n"
+        "otherwise. The harness performs the draw. Without an assign entry the\n"
+        "modifier stays at its default everywhere and has no effect at all."
+    )
     return "\n".join(lines)
 
 
