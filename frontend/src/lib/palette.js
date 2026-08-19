@@ -41,13 +41,18 @@ export function textOn(hex) {
 
 // Default display mapping (REQ-13.2): kind drives color, age drives
 // brightness — young cells glow, settled cells cool toward the ground.
+// The floor was 0.38 (settled cells at 38% brightness), which with the
+// brightened palette read as dull once most of a run had aged past a
+// few dozen ticks — the common case for anything that settles or
+// loops. Raised 2026-08-19 so the floor is still visibly dimmer than
+// a fresh cell but doesn't wash the picture out by default.
 export function ageBrightness(age) {
-  return 0.38 + 0.62 * Math.exp(-age / 30)
+  return 0.6 + 0.4 * Math.exp(-age / 30)
 }
 
 // Brightness when a 0..255 property (energy, memory) drives it instead.
 export function levelBrightness(value) {
-  return 0.3 + 0.7 * (value / 255)
+  return 0.5 + 0.5 * (value / 255)
 }
 
 export const SERIES = {
