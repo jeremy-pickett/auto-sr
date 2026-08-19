@@ -6,13 +6,15 @@ import RuleView from './views/RuleView.jsx'
 import Catalog from './views/Catalog.jsx'
 import Invent from './views/Invent.jsx'
 import { AuthControl } from './lib/AuthControl.jsx'
+import { useAuth } from './lib/firebase'
 
-// Tiny hash router: #/ (landing), #/library, #/runs/3, #/rules/3,
-// #/invent, #/catalog
+// Tiny hash router: #/ (landing), #/library, #/mine, #/runs/3,
+// #/rules/3, #/invent, #/catalog
 function parseRoute() {
   const hash = window.location.hash.replace(/^#\/?/, '')
   const [head, id] = hash.split('/')
   if (head === 'library') return { view: 'library' }
+  if (head === 'mine') return { view: 'mine' }
   if (head === 'runs' && id) return { view: 'run', id: Number(id) }
   if (head === 'rules' && id) return { view: 'rule', id: Number(id) }
   if (head === 'invent') return { view: 'invent' }
@@ -22,6 +24,7 @@ function parseRoute() {
 
 export default function App() {
   const [route, setRoute] = useState(parseRoute)
+  const { user } = useAuth()
 
   useEffect(() => {
     const onChange = () => setRoute(parseRoute())
@@ -38,6 +41,7 @@ export default function App() {
         </a>
         <nav>
           <a href="#/library" className={['library', 'run', 'rule'].includes(route.view) ? 'active' : ''}>Library</a>
+          {user && <a href="#/mine" className={route.view === 'mine' ? 'active' : ''}>Mine</a>}
           <a href="#/invent" className={route.view === 'invent' ? 'active' : ''}>Invent</a>
           <a href="#/catalog" className={route.view === 'catalog' ? 'active' : ''}>Modifiers</a>
         </nav>
@@ -48,6 +52,7 @@ export default function App() {
       <main className="page">
         {route.view === 'landing' && <Landing />}
         {route.view === 'library' && <Library />}
+        {route.view === 'mine' && <Library mine />}
         {route.view === 'run' && <RunView runId={route.id} />}
         {route.view === 'rule' && <RuleView ruleId={route.id} />}
         {route.view === 'invent' && <Invent />}

@@ -198,6 +198,7 @@ code, .mono { font-family: var(--font-mono); }
 .chip.status-ok { color: #8ee6b8; border-color: #1f5e41; }
 .chip.status-broken { color: var(--broken); border-color: #6e3232; }
 .chip.flag { color: var(--amber); border-color: #6e5429; }
+.chip.private { color: var(--ink-2); border-color: var(--line-2); }
 .chip .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
 .confidence-low { opacity: 0.75; font-style: italic; }

@@ -1,4 +1,5 @@
 import { decodeGrids } from './lib/decode'
+import { getIdToken } from './lib/firebase'
 
 async function asJson(response) {
   if (!response.ok) {
@@ -8,35 +9,45 @@ async function asJson(response) {
   return response.json()
 }
 
+// Every request goes through this — attaches Authorization when
+// signed in, adds nothing when not. Anonymous requests stay byte-
+// identical to what they were before auth existed: no header at all.
+async function authorizedFetch(path, options = {}) {
+  const token = await getIdToken()
+  const headers = new Headers(options.headers || {})
+  if (token) headers.set('Authorization', `Bearer ${token}`)
+  return fetch(path, { ...options, headers })
+}
+
 export const listRules = (params = {}) => {
   const query = new URLSearchParams(
     Object.entries(params).filter(([, value]) => value !== undefined && value !== '')
   )
-  return fetch(`/rules?${query}`).then(asJson)
+  return authorizedFetch(`/rules?${query}`).then(asJson)
 }
 
-export const getRule = (id) => fetch(`/rules/${id}`).then(asJson)
+export const getRule = (id) => authorizedFetch(`/rules/${id}`).then(asJson)
 
 export const rerunRule = (id, seed) =>
-  fetch(`/rules/${id}/runs`, {
+  authorizedFetch(`/rules/${id}/runs`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(seed == null ? {} : { seed }),
   }).then(asJson)
 
-export const getRun = (id) => fetch(`/runs/${id}`).then(asJson)
+export const getRun = (id) => authorizedFetch(`/runs/${id}`).then(asJson)
 
 export async function getGrids(runId, from, to, props) {
-  const response = await fetch(`/runs/${runId}/grids?from=${from}&to=${to}&props=${props.join(',')}`)
+  const response = await authorizedFetch(`/runs/${runId}/grids?from=${from}&to=${to}&props=${props.join(',')}`)
   if (!response.ok) throw new Error(`${response.status}: ${await response.text()}`)
   return decodeGrids(await response.arrayBuffer())
 }
 
 export const getCellHistory = (runId, y, x, props) =>
-  fetch(`/runs/${runId}/cell/${y}/${x}?props=${props.join(',')}`).then(asJson)
+  authorizedFetch(`/runs/${runId}/cell/${y}/${x}?props=${props.join(',')}`).then(asJson)
 
 export const patchRun = (id, corrections) =>
-  fetch(`/runs/${id}`, {
+  authorizedFetch(`/runs/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(corrections),
@@ -45,8 +56,16 @@ export const patchRun = (id, corrections) =>
 // The generation stream (REQ-11.4). The endpoint is a POST that
 // responds text/event-stream, so this must be a streaming fetch() with
 // a ReadableStream reader — EventSource cannot POST (REQ-11.4.1).
-export async function generateRule(onEvent) {
-  const response = await fetch('/rules/generate', { method: 'POST' })
+// A body is sent only to request private (visibility defaults to
+// public either way) — keeps the ordinary request exactly the bare,
+// bodyless POST it's always been.
+export async function generateRule(onEvent, { visibility } = {}) {
+  const response = await authorizedFetch('/rules/generate', {
+    method: 'POST',
+    ...(visibility === 'private'
+      ? { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ visibility }) }
+      : {}),
+  })
   if (!response.ok) throw new Error(`${response.status}: ${await response.text()}`)
   const reader = response.body.getReader()
   const decoder = new TextDecoder()
@@ -66,6 +85,6 @@ export async function generateRule(onEvent) {
   }
 }
 
-export const getCatalog = () => fetch('/catalog/modifiers').then(asJson)
+export const getCatalog = () => authorizedFetch('/catalog/modifiers').then(asJson)
 
-export const getSummary = () => fetch('/library/summary').then(asJson)
+export const getSummary = () => authorizedFetch('/library/summary').then(asJson)

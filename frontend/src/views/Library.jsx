@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { listRules, getSummary } from '../api'
 import { RunThumbnail } from '../lib/RunThumbnail.jsx'
 import { getHiddenIds, hideRule, unhideRule } from '../lib/hidden'
+import { useAuth } from '../lib/firebase'
 
 const BEHAVIORS = ['settles', 'repeats', 'noisy', 'structured', 'unclassified']
 
@@ -47,10 +48,13 @@ function RuleCard({ rule, hidden, onToggleHidden }) {
             {hidden ? 'unhide' : 'hide'}
           </button>
         </span>
-        <span className={`chip status-${rule.status}`}>
-          <span className="dot" />
-          {rule.status}
-          {rule.failed_check ? `: ${rule.failed_check}` : ''}
+        <span className="row" style={{ gap: 6 }}>
+          {rule.visibility === 'private' && <span className="chip private">🔒 private</span>}
+          <span className={`chip status-${rule.status}`}>
+            <span className="dot" />
+            {rule.status}
+            {rule.failed_check ? `: ${rule.failed_check}` : ''}
+          </span>
         </span>
       </div>
       <div className="card-body">
@@ -79,7 +83,8 @@ function RuleCard({ rule, hidden, onToggleHidden }) {
   )
 }
 
-export default function Library() {
+export default function Library({ mine = false } = {}) {
+  const { user, loading: authLoading } = useAuth()
   const [data, setData] = useState(null)
   const [summary, setSummary] = useState(null)
   const [error, setError] = useState(null)
@@ -89,19 +94,24 @@ export default function Library() {
   const [showHidden, setShowHidden] = useState(false)
 
   useEffect(() => {
-    getSummary().then(setSummary, () => {})
-  }, [])
+    if (!mine) getSummary().then(setSummary, () => {})
+  }, [mine])
+
+  const signedOut = mine && !authLoading && !user
 
   useEffect(() => {
+    if (signedOut) { setData(null); return }
+    if (mine && authLoading) return // wait for auth state before asking
     setData(null)
     listRules({
       status: filters.status,
       behavior: filters.behavior,
       concept: filters.concept,
       flagged: filters.flagged || undefined,
+      mine: mine || undefined,
       page,
     }).then(setData, setError)
-  }, [filters, page])
+  }, [filters, page, mine, authLoading, signedOut])
 
   const toggleHidden = (id) => {
     setHiddenIds(hiddenIds.has(id) ? unhideRule(id) : hideRule(id))
@@ -132,8 +142,8 @@ export default function Library() {
   return (
     <>
       <div className="library-head">
-        <h1>The library</h1>
-        {summary && (
+        <h1>{mine ? 'Your library' : 'The library'}</h1>
+        {!mine && summary && (
           <span className="totals">
             {summary.totals.rules} rules · {summary.totals.broken} broken ·{' '}
             {Object.entries(summary.totals.behaviors)
@@ -141,81 +151,88 @@ export default function Library() {
               .join(' · ') || 'no classified runs yet'}
           </span>
         )}
+        {mine && data && <span className="totals">{data.total} rules, public and private</span>}
         <span style={{ flex: 1 }} />
         <button className="primary" onClick={() => { window.location.hash = '#/invent' }}>
           ✦ Invent a rule
         </button>
       </div>
 
-      <div className="filters">
-        <label>
-          status
-          <select value={filters.status} onChange={set('status')}>
-            <option value="">any</option>
-            <option value="ok">ok</option>
-            <option value="broken">broken</option>
-          </select>
-        </label>
-        <label>
-          behavior
-          <select value={filters.behavior} onChange={set('behavior')}>
-            <option value="">any</option>
-            {BEHAVIORS.map((b) => (
-              <option key={b} value={b}>{b}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          concept
-          <select value={filters.concept} onChange={set('concept')}>
-            <option value="">any</option>
-            {concepts.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          <input type="checkbox" checked={filters.flagged} onChange={set('flagged')} />
-          flagged only
-        </label>
-        <label>
-          <input
-            type="checkbox"
-            checked={showHidden}
-            onChange={(event) => setShowHidden(event.target.checked)}
-          />
-          show hidden{hiddenIds.size ? ` (${hiddenIds.size})` : ''}
-        </label>
-      </div>
+      {signedOut ? (
+        <div className="loading">sign in to see your personal library</div>
+      ) : (
+        <>
+          <div className="filters">
+            <label>
+              status
+              <select value={filters.status} onChange={set('status')}>
+                <option value="">any</option>
+                <option value="ok">ok</option>
+                <option value="broken">broken</option>
+              </select>
+            </label>
+            <label>
+              behavior
+              <select value={filters.behavior} onChange={set('behavior')}>
+                <option value="">any</option>
+                {BEHAVIORS.map((b) => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              concept
+              <select value={filters.concept} onChange={set('concept')}>
+                <option value="">any</option>
+                {concepts.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <input type="checkbox" checked={filters.flagged} onChange={set('flagged')} />
+              flagged only
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={showHidden}
+                onChange={(event) => setShowHidden(event.target.checked)}
+              />
+              show hidden{hiddenIds.size ? ` (${hiddenIds.size})` : ''}
+            </label>
+          </div>
 
-      {error && <div className="error-note">could not load the library: {String(error)}</div>}
-      {!error && !data && <div className="loading">loading the library…</div>}
-      {data && visibleRules.length === 0 && (
-        <div className="loading">
-          {data.rules.length === 0 ? 'nothing matches these filters' : 'everything on this page is hidden'}
-        </div>
-      )}
-      {data && visibleRules.length > 0 && (
-        <div className="rule-grid">
-          {visibleRules.map((rule) => (
-            <RuleCard
-              key={rule.id}
-              rule={rule}
-              hidden={hiddenIds.has(rule.id)}
-              onToggleHidden={toggleHidden}
-            />
-          ))}
-        </div>
-      )}
+          {error && <div className="error-note">could not load the library: {String(error)}</div>}
+          {!error && !data && <div className="loading">loading the library…</div>}
+          {data && visibleRules.length === 0 && (
+            <div className="loading">
+              {data.rules.length === 0 ? 'nothing matches these filters' : 'everything on this page is hidden'}
+            </div>
+          )}
+          {data && visibleRules.length > 0 && (
+            <div className="rule-grid">
+              {visibleRules.map((rule) => (
+                <RuleCard
+                  key={rule.id}
+                  rule={rule}
+                  hidden={hiddenIds.has(rule.id)}
+                  onToggleHidden={toggleHidden}
+                />
+              ))}
+            </div>
+          )}
 
-      {data && data.total > data.page_size && (
-        <div className="pager">
-          <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>‹ prev</button>
-          <span className="pager-status">
-            page {page} of {lastPage} · {data.total} rules
-          </span>
-          <button disabled={page >= lastPage} onClick={() => setPage((p) => p + 1)}>next ›</button>
-        </div>
+          {data && data.total > data.page_size && (
+            <div className="pager">
+              <button disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>‹ prev</button>
+              <span className="pager-status">
+                page {page} of {lastPage} · {data.total} rules
+              </span>
+              <button disabled={page >= lastPage} onClick={() => setPage((p) => p + 1)}>next ›</button>
+            </div>
+          )}
+        </>
       )}
     </>
   )

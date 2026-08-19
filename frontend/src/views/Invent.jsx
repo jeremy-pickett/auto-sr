@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { generateRule } from '../api'
 import { RunThumbnail } from '../lib/RunThumbnail.jsx'
+import { useAuth } from '../lib/firebase'
 
 // The pipeline stages as the stream reports them (REQ-13.7): the user
 // watches the machine think, including failures and the one repair.
@@ -32,9 +33,11 @@ function stageStates(events) {
 }
 
 export default function Invent() {
+  const { user } = useAuth()
   const [events, setEvents] = useState([])
   const [working, setWorking] = useState(false)
   const [failure, setFailure] = useState(null)
+  const [visibility, setVisibility] = useState('public')
   const startedRef = useRef(false)
 
   const start = async () => {
@@ -44,7 +47,10 @@ export default function Invent() {
     setEvents([])
     setFailure(null)
     try {
-      await generateRule((name, data) => setEvents((log) => [...log, [name, data]]))
+      await generateRule(
+        (name, data) => setEvents((log) => [...log, [name, data]]),
+        { visibility }
+      )
     } catch (error) {
       setFailure(String(error))
     } finally {
@@ -69,6 +75,15 @@ export default function Invent() {
           reruns — proposes one rule, implements it, and every outcome lands
           in the library. Failure is data too.
         </p>
+        {user && (
+          <label className="row" style={{ color: 'var(--muted)', fontSize: 12, gap: 6, marginBottom: 12 }}>
+            visibility
+            <select value={visibility} onChange={(e) => setVisibility(e.target.value)} disabled={working}>
+              <option value="public">public — joins the global library</option>
+              <option value="private">private — only in your library</option>
+            </select>
+          </label>
+        )}
         <button className="primary" onClick={start} disabled={working}>
           {working ? 'thinking…' : events.length ? '✦ Invent another' : '✦ Invent a rule'}
         </button>
