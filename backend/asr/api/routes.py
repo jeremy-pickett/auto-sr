@@ -328,6 +328,57 @@ def get_grids(
     )
 
 
+@router.get("/runs/{run_id}/export")
+def export_run(
+    run_id: int,
+    request: Request,
+    from_tick: int = Query(0, alias="from", ge=0),
+    to_tick: int | None = Query(None, alias="to", ge=0),
+    props: str = "kind",
+    user: dict | None = Depends(get_current_user),
+    conn=Depends(get_db),
+):
+    """The full tick range as plain JSON, uncapped — deliberately not
+    the packed binary framing GET /runs/{id}/grids uses. That format
+    exists for a canvas decoder; this one exists so a script (or
+    another Claude session) can fetch a run's raw history with a
+    single request and json.loads it, no custom binary parser needed.
+    Genuinely large for a full run — that's the tradeoff for "plain
+    and simple to consume," not an oversight.
+    """
+    row = conn.execute(
+        """SELECT runs.ticks_run, runs.width, runs.height,
+                  rules.visibility AS rule_visibility, rules.owner_uid AS rule_owner_uid
+           FROM runs JOIN rules ON rules.id = runs.rule_id WHERE runs.id = ?""",
+        (run_id,),
+    ).fetchone()
+    if row is None or _rule_hidden_from(row["rule_visibility"], row["rule_owner_uid"], user):
+        raise HTTPException(404, "no such run")
+    last = row["ticks_run"] if to_tick is None else min(to_tick, row["ticks_run"])
+    if from_tick > last:
+        raise HTTPException(400, "empty tick range")
+    names = [p.strip() for p in props.split(",") if p.strip()]
+    try:
+        stacks = reconstruct_range(conn, run_id, names, from_tick, last)
+    except KeyError as missing:
+        raise HTTPException(400, f"this run has no property named {missing}")
+
+    payload = json.dumps({
+        "run_id": run_id,
+        "shape": [row["height"], row["width"]],
+        "ticks": [from_tick, last],
+        "properties": {name: stack.tolist() for name, stack in stacks.items()},
+    }).encode()
+
+    headers = {}
+    if "gzip" in (request.headers.get("accept-encoding") or ""):
+        import gzip
+
+        payload = gzip.compress(payload, compresslevel=1)
+        headers["Content-Encoding"] = "gzip"
+    return Response(content=payload, media_type="application/json", headers=headers)
+
+
 @router.get("/runs/{run_id}/cell/{y}/{x}")
 def get_cell_history(
     run_id: int, y: int, x: int, props: str = "kind", request: Request = None,

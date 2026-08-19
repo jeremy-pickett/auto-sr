@@ -120,6 +120,7 @@ def test_private_rule_404s_for_non_owners(two_rules, as_who):
     assert two_rules.post(f"/rules/{rid}/runs", json={}).status_code == 404
     assert two_rules.get(f"/runs/{run_id}").status_code == 404
     assert two_rules.get(f"/runs/{run_id}/grids").status_code == 404
+    assert two_rules.get(f"/runs/{run_id}/export").status_code == 404
     assert two_rules.get(f"/runs/{run_id}/cell/0/0").status_code == 404
     assert two_rules.patch(f"/runs/{run_id}", json={"user_flagged": True}).status_code == 404
 
@@ -130,6 +131,7 @@ def test_private_rule_visible_to_its_owner(two_rules):
     assert two_rules.get(f"/rules/{rid}").status_code == 200
     assert two_rules.get(f"/runs/{run_id}").status_code == 200
     assert two_rules.get(f"/runs/{run_id}/grids").status_code == 200
+    assert two_rules.get(f"/runs/{run_id}/export").status_code == 200
     assert two_rules.get(f"/runs/{run_id}/cell/0/0").status_code == 200
     assert two_rules.patch(f"/runs/{run_id}", json={"user_flagged": True}).status_code == 200
     assert two_rules.post(f"/rules/{rid}/runs", json={}).status_code == 200

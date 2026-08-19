@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { getCellHistory, getRule, getRun, getGrids, patchRun, rerunRule } from '../api'
+import { getCellHistory, getRule, getRun, getGrids, patchRun, rerunRule, exportRun } from '../api'
 import { plane } from '../lib/decode'
 import { KIND_COLORS, KIND_RGB, ageBrightness, levelBrightness, SERIES, textOn } from '../lib/palette'
 
@@ -145,6 +145,8 @@ export default function RunView({ runId }) {
   const [mapping, setMapping] = useState(null) // {color, brightness}
   const [picked, setPicked] = useState(null)
   const [showSource, setShowSource] = useState(false)
+  const [exporting, setExporting] = useState(false)
+  const [exportError, setExportError] = useState(null)
   const [smooth, setSmooth] = useState(true)
   const [chunks, setChunks] = useState(() => new Map())
   const [isFullscreen, setIsFullscreen] = useState(false)
@@ -348,6 +350,26 @@ export default function RunView({ runId }) {
 
   const rerun = () =>
     rerunRule(rule.id).then((fresh) => { window.location.hash = `#/runs/${fresh.id}` }, setError)
+
+  // The lazy-loaded "enormous thing": every tick, uncapped, as a
+  // downloaded JSON file — not fetched until asked for.
+  const exportFull = async () => {
+    setExporting(true)
+    setExportError(null)
+    try {
+      const blob = await exportRun(runId, ['kind', ...rule.uses])
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `run-${runId}-export.json`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      setExportError(String(err))
+    } finally {
+      setExporting(false)
+    }
+  }
 
   if (error) return <div className="error-note">something went wrong: {String(error)}</div>
   if (!run || !rule) return <div className="loading">loading the run…</div>
@@ -571,6 +593,19 @@ export default function RunView({ runId }) {
             </button>
           </h3>
           {showSource && <pre className="source-view">{rule.source_code}</pre>}
+        </div>
+
+        <div className="panel">
+          <h3>raw data</h3>
+          <p className="description">
+            Every tick of this run, uncapped, as plain JSON — for a script, or
+            another Claude session, to fetch and read directly. Large: this
+            isn't loaded until you ask for it.
+          </p>
+          <button onClick={exportFull} disabled={exporting}>
+            {exporting ? 'fetching…' : '⬇ download full export'}
+          </button>
+          {exportError && <div className="error-note" style={{ marginTop: 8 }}>{exportError}</div>}
         </div>
       </aside>
     </div>

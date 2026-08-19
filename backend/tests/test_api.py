@@ -104,6 +104,27 @@ def test_grids_reject_oversized_and_unknown_requests(client):
     assert client.get("/runs/999/grids").status_code == 404
 
 
+def test_export_returns_the_whole_run_as_plain_json(client):
+    body = client.get("/runs/1/export?props=kind,age").json()
+    assert body["run_id"] == 1
+    assert body["shape"] == [6, 10]
+    assert body["ticks"][0] == 0
+    live = client.walker_result.ticks
+    assert body["ticks"][1] == len(live) - 1  # no 250-tick cap here
+    kind_stack = body["properties"]["kind"]
+    assert len(kind_stack) == len(live)  # every tick, not just a chunk
+    for tick in range(len(live)):
+        assert kind_stack[tick] == live[tick].arrays["kind"].tolist()
+
+
+def test_export_respects_visibility_and_range(client):
+    assert client.get("/runs/999/export").status_code == 404
+    assert client.get("/runs/1/export?from=9&to=3").status_code == 400
+    partial = client.get("/runs/1/export?from=0&to=2").json()
+    assert partial["ticks"] == [0, 2]
+    assert len(partial["properties"]["kind"]) == 3
+
+
 def test_cell_history_reads_one_position_across_the_run(client):
     body = client.get("/runs/1/cell/3/0?props=kind").json()
     kinds = body["history"]["kind"]

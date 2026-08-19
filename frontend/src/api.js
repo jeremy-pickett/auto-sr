@@ -85,6 +85,17 @@ export async function generateRule(onEvent, { visibility } = {}) {
   }
 }
 
+// The lazy-loaded "enormous thing": every tick of a run, uncapped,
+// as plain JSON — not the packed binary framing used for playback.
+// Returns a Blob rather than parsing it, since a full run can be tens
+// of MB and the browser has no reason to hold it as a JS object; the
+// caller just hands it off as a download.
+export async function exportRun(runId, props) {
+  const response = await authorizedFetch(`/runs/${runId}/export?props=${props.join(',')}`)
+  if (!response.ok) throw new Error(`${response.status}: ${await response.text()}`)
+  return response.blob()
+}
+
 export const getCatalog = () => authorizedFetch('/catalog/modifiers').then(asJson)
 
 export const getSummary = () => authorizedFetch('/library/summary').then(asJson)
