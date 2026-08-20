@@ -550,8 +550,18 @@ def get_grids(
             400, f"ask for at most {MOST_TICKS_PER_GRID_REQUEST} ticks per request"
         )
     names = [p.strip() for p in props.split(",") if p.strip()]
+    # A run's property history never changes once recorded, so it's
+    # cached whole (REQ-11.2) rather than re-decoded from the nearest
+    # snapshot on every request -- the first grids request for a run
+    # pays to decode the full run per property; every later chunk,
+    # including scrubs, loops, and reruns of the same range, is a
+    # cheap in-memory slice instead.
+    cache = request.app.state.cache
     try:
-        stacks = reconstruct_range(conn, run_id, names, from_tick, last)
+        stacks = {
+            name: cache.property_history(conn, run_id, name)[from_tick : last + 1]
+            for name in names
+        }
     except KeyError as missing:
         raise HTTPException(400, f"this run has no property named {missing}")
     from asr.api.framing import frame_grids
