@@ -129,6 +129,12 @@ def test_a_good_generation_lands_ok_with_a_canonical_run(conn):
     ticks = conn.execute("SELECT COUNT(*) AS n FROM ticks").fetchone()["n"]
     assert ticks == run["ticks_run"] + 1
 
+    session = conn.execute("SELECT * FROM generation_sessions").fetchone()
+    assert session["outcome"] == "ok"
+    assert session["stage"] == "complete"
+    assert session["rule_id"] == rule["id"]
+    assert session["finished_at"] is not None
+
 
 def test_a_failed_repair_lands_broken_and_in_rejections(conn):
     events, emit = collect_events()
@@ -149,6 +155,10 @@ def test_a_failed_repair_lands_broken_and_in_rejections(conn):
     assert rejection["rule_id"] == rule["id"]
     assert rejection["failed_check"] == "static"
     assert rejection["stage_a_description"]  # the description survives (REQ-7.11)
+
+    session = conn.execute("SELECT * FROM generation_sessions").fetchone()
+    assert session["outcome"] == "broken"
+    assert session["rule_id"] == rule["id"]
 
 
 def test_a_successful_repair_recovers_the_rule(conn):
@@ -178,6 +188,10 @@ def test_unparseable_stage_a_is_a_generation_failure_not_a_rule(conn):
     rejection = conn.execute("SELECT * FROM rejections").fetchone()
     assert rejection["failed_check"] == "stage_a_unparseable"
     assert rejection["rule_id"] is None
+
+    session = conn.execute("SELECT * FROM generation_sessions").fetchone()
+    assert session["outcome"] == "generation_failed"
+    assert session["rule_id"] is None
 
 
 def test_coverage_counts_the_canonical_run_only(conn):

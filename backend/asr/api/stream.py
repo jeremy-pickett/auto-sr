@@ -13,6 +13,7 @@ import json
 import logging
 import queue
 import threading
+import uuid
 from typing import Literal
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Request
@@ -46,10 +47,17 @@ class GenerateRequest(BaseModel):
 
 def _run_pipeline(database_path: str, events: queue.Queue, owner_uid, visibility, spark, title) -> None:
     conn = db.connect(database_path)
+    # Generated here, not inside generate_rule, so this function can
+    # finalize the generation_sessions row itself if something raises
+    # that generate_rule's own except clauses didn't already turn into
+    # a `complete` event -- otherwise that row would stay "in flight"
+    # on the system page forever. finish_generation_session is a no-op
+    # if generate_rule already finished it normally.
+    gen_id = uuid.uuid4().hex[:8]
     try:
         payload = generate_rule(
             conn, lambda name, data: events.put((name, data)),
-            owner_uid=owner_uid, visibility=visibility, spark=spark,
+            owner_uid=owner_uid, visibility=visibility, spark=spark, gen_id=gen_id,
         )
         if title and payload.get("rule_id") is not None:
             _apply_title(conn, payload["rule_id"], title)
@@ -57,6 +65,9 @@ def _run_pipeline(database_path: str, events: queue.Queue, owner_uid, visibility
         # The browser only sees the tail; the server log keeps the
         # whole story so a transient API failure is diagnosable later.
         logger.exception("generation pipeline failed")
+        db.finish_generation_session(
+            conn, gen_id, outcome="generation_failed", rule_id=None, error_text=str(failed)[-500:]
+        )
         events.put((FINAL_EVENT, {"status": "error", "error": str(failed)[-500:]}))
     finally:
         conn.close()

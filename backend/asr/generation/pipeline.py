@@ -126,6 +126,7 @@ def generate_rule(
     owner_uid: str | None = None,
     visibility: str = "public",
     spark: str | None = None,
+    gen_id: str | None = None,
 ) -> dict:
     """Run the whole pipeline once. Returns the `complete` payload."""
     # Basic timing, not a profiler: one short id so concurrent
@@ -133,8 +134,32 @@ def generate_rule(
     # duration logged after each expensive step. Point of this is
     # visibility if several people generate at once, not measurement
     # precision -- see it before optimizing anything (or not).
-    gen_id = uuid.uuid4().hex[:8]
+    # The caller may supply gen_id (stream.py does, so it can finalize
+    # the generation_sessions row itself if this function raises
+    # something no internal except clause here already turns into a
+    # `complete` event -- otherwise the row would stay "in flight"
+    # forever on the system page).
+    gen_id = gen_id or uuid.uuid4().hex[:8]
     pipeline_started = time.perf_counter()
+
+    # Every lifecycle event already flows through emit() below -- wrapping
+    # it once here persists a generation_sessions row (the system page's
+    # data source) without touching any of the individual emit() call
+    # sites. tick_progress is skipped: it fires every few ticks during the
+    # canonical run and never changes the pipeline stage, so writing it
+    # would just be write amplification for no observable benefit.
+    db.insert_generation_session(conn, gen_id, owner_uid, settings.anthropic_model)
+    raw_emit = emit
+
+    def emit(name, payload):
+        if name == "complete":
+            db.finish_generation_session(
+                conn, gen_id, outcome=payload["status"],
+                rule_id=payload.get("rule_id"), error_text=payload.get("error"),
+            )
+        elif name != "tick_progress":
+            db.update_generation_session_stage(conn, gen_id, name)
+        raw_emit(name, payload)
 
     def log_step(label, started):
         logger.info("gen %s: %s took %.1fms", gen_id, label, (time.perf_counter() - started) * 1000)

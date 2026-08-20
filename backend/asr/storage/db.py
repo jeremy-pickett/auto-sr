@@ -139,6 +139,51 @@ CREATE TABLE IF NOT EXISTS user_profiles(
     uid TEXT PRIMARY KEY,
     display_name TEXT
 );
+
+-- The system page's two kinds of session. generation_sessions turns the
+-- gen_id that already existed purely for log correlation (pipeline.py)
+-- into a persisted, queryable record of one POST /rules/generate call.
+CREATE TABLE IF NOT EXISTS generation_sessions(
+    id TEXT PRIMARY KEY,
+    owner_uid TEXT,
+    started_at TEXT NOT NULL,
+    finished_at TEXT,
+    stage TEXT NOT NULL,
+    outcome TEXT,                       -- ok | broken | generation_failed
+    rule_id INTEGER REFERENCES rules(id),
+    error_text TEXT,
+    model_id TEXT
+);
+CREATE INDEX IF NOT EXISTS gen_sessions_by_started ON generation_sessions(started_at);
+
+-- Presence, first attempt: one row per browser tab, updated by a client
+-- heartbeat. Retired in favor of http_sessions below (a real HTTP session
+-- needs no client cooperation at all -- the request traffic that already
+-- happens is enough). Left in the schema, unused, rather than dropped.
+CREATE TABLE IF NOT EXISTS app_sessions(
+    id TEXT PRIMARY KEY,
+    owner_uid TEXT,
+    started_at TEXT NOT NULL,
+    last_seen_at TEXT NOT NULL,
+    current_view TEXT,
+    status TEXT NOT NULL DEFAULT 'active'
+);
+CREATE INDEX IF NOT EXISTS app_sessions_by_last_seen ON app_sessions(last_seen_at);
+
+-- The colloquial HTTP session: one row per session cookie, updated by the
+-- session middleware (api/app.py) on every request -- no client
+-- cooperation required, so no client bug can leave it stale or wrong.
+CREATE TABLE IF NOT EXISTS http_sessions(
+    id TEXT PRIMARY KEY,
+    owner_uid TEXT,
+    ip_address TEXT,
+    user_agent TEXT,
+    started_at TEXT NOT NULL,
+    last_seen_at TEXT NOT NULL,
+    last_path TEXT,
+    request_count INTEGER NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS http_sessions_by_last_seen ON http_sessions(last_seen_at);
 """
 
 
@@ -167,6 +212,11 @@ def _ensure_columns(conn) -> None:
     conn.execute("CREATE INDEX IF NOT EXISTS rules_by_owner ON rules(owner_uid)")
     conn.execute("CREATE INDEX IF NOT EXISTS rules_by_visibility ON rules(visibility)")
     conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS rules_by_slug ON rules(slug)")
+
+    app_session_columns = {row["name"] for row in conn.execute("PRAGMA table_info(app_sessions)")}
+    if "status" not in app_session_columns:
+        conn.execute("ALTER TABLE app_sessions ADD COLUMN status TEXT NOT NULL DEFAULT 'active'")
+
     conn.commit()
 
 
@@ -265,3 +315,66 @@ def save_run(
     )
     conn.commit()
     return run_id
+
+
+def insert_generation_session(conn, gen_id: str, owner_uid: str | None, model_id: str | None) -> None:
+    conn.execute(
+        """INSERT INTO generation_sessions(id, owner_uid, started_at, stage, model_id)
+           VALUES(?,?,?,?,?)""",
+        (gen_id, owner_uid, now(), "stage_a_started", model_id),
+    )
+    conn.commit()
+
+
+def update_generation_session_stage(conn, gen_id: str, stage: str) -> None:
+    conn.execute("UPDATE generation_sessions SET stage=? WHERE id=?", (stage, gen_id))
+    conn.commit()
+
+
+def finish_generation_session(
+    conn, gen_id: str, *, outcome: str, rule_id: int | None, error_text: str | None
+) -> None:
+    # finished_at IS NULL guards against a second finalize on the same
+    # session -- stream.py's catch-all exception handler calls this as a
+    # safety net for failures generate_rule() didn't already turn into a
+    # `complete` event, and must never clobber a row that already has a
+    # real outcome (e.g. a failure while applying the title, after a
+    # perfectly good generation already finished).
+    conn.execute(
+        """UPDATE generation_sessions
+           SET finished_at=?, stage='complete', outcome=?, rule_id=?, error_text=?
+           WHERE id=? AND finished_at IS NULL""",
+        (now(), outcome, rule_id, error_text, gen_id),
+    )
+    conn.commit()
+
+
+def touch_http_session(
+    conn,
+    session_id: str,
+    owner_uid: str | None,
+    ip_address: str | None,
+    user_agent: str | None,
+    path: str,
+) -> None:
+    """Called once per request by the session middleware (api/app.py) --
+    the entire mechanism, no client cooperation involved. A request that
+    happens to carry no/an unresolvable auth token must never downgrade a
+    session that a previous request already identified, hence COALESCE
+    rather than a flat overwrite on owner_uid.
+    """
+    conn.execute(
+        """INSERT INTO http_sessions(
+               id, owner_uid, ip_address, user_agent, started_at, last_seen_at,
+               last_path, request_count
+           ) VALUES(?,?,?,?,?,?,?,1)
+           ON CONFLICT(id) DO UPDATE SET
+               owner_uid=COALESCE(excluded.owner_uid, http_sessions.owner_uid),
+               ip_address=excluded.ip_address,
+               user_agent=excluded.user_agent,
+               last_seen_at=excluded.last_seen_at,
+               last_path=excluded.last_path,
+               request_count=http_sessions.request_count + 1""",
+        (session_id, owner_uid, ip_address, user_agent, now(), now(), path),
+    )
+    conn.commit()
