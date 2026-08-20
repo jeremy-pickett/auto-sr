@@ -64,3 +64,4 @@ The user once lost an entire project to an accidental bulk delete. These rules e
 - Additions to the `Dice` surface or the approved builtins/NumPy lists are spec changes requiring new REQ identifiers, not implementation decisions.
 - Recorded history is immutable; the only mutating endpoint on runs is `PATCH /runs/{id}` for `user_behavior`/`user_flagged`.
 - Every run is stamped with the engine git revision — identical source under different harness revisions is a different experiment (REQ-12.4.2).
+- **Major version numbers denote new products, not this app's evolution.** "3.0" (and any future whole-number bump) means a distinct, ground-up rewrite — never an increment on the current app. This is unrelated to the omnibus requirements spec's own versioning (`asr-requirements-v3.md`, and uplift documents like `frontend-vis-uplift-2.2.1.md` that fold into a future v4) — that numbering tracks the contract, not the product. Don't conflate the two.
