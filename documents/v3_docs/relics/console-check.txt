@@ -1,0 +1,31 @@
+JSON.stringify({
+  tables: document.querySelectorAll('table.catalog-table').length,
+  rows: document.querySelectorAll('table.catalog-table tbody tr').length,
+  firstRowText: document.querySelector('table.catalog-table tbody tr')?.innerText,
+  firstCellColor: document.querySelector('table.catalog-table tbody td')
+    ? getComputedStyle(document.querySelector('table.catalog-table tbody td')).color
+    : null,
+})
+
+
+"""
+JSON.stringify({
+  tables: document.querySelectorAll('table.catalog-table').length,
+  rows: document.querySelectorAll('table.catalog-table tbody tr').length,
+  firstRowText: document.querySelector('table.catalog-table tbody tr')?.innerText,
+  firstCellColor: document.querySelector('table.catalog-table tbody td')
+    ? getComputedStyle(document.querySelector('table.catalog-table tbody td')).color
+    : null,
+})
+
+'{"tables":1,"rows":2,"firstRowText":"app\\tuser\\tmt1l1s2z-4c5x1g4v89f\\t6:55:20 AM\\t49m 54s\\tbrowsing system","firstCellColor":"rgb(76, 201, 240)"}'
+JSON.stringify({
+  tables: document.querySelectorAll('table.catalog-table').length,
+  rows: document.querySelectorAll('table.catalog-table tbody tr').length,
+  firstRowText: document.querySelector('table.catalog-table tbody tr')?.innerText,
+  firstCellColor: document.querySelector('table.catalog-table tbody td')
+    ? getComputedStyle(document.querySelector('table.catalog-table tbody td')).color
+    : null,
+})
+
+'{"tables":1,"rows":2,"firstRowText":"app\\tuser\\tmt1l1s2z-4c5x1g4v89f\\t6:55:20 AM\\t50m 2s\\tbrowsing system","firstCellColor":"rgb(76, 201, 240)"}'
