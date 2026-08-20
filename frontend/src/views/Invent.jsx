@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { generateRule } from '../api'
 import { RunThumbnail } from '../lib/RunThumbnail.jsx'
 import { useAuth } from '../lib/firebase'
+import { Prose } from '../lib/Prose.jsx'
 
 // The pipeline stages as the stream reports them (REQ-13.7): the user
 // watches the machine think, including failures and the one repair.
@@ -143,7 +144,7 @@ export default function Invent() {
       {proposal && (
         <div className="panel proposal">
           <h3>the proposal</h3>
-          <div className="description">{proposal.description}</div>
+          <Prose text={proposal.description} quoted />
           <div className="meta row" style={{ marginTop: 10 }}>
             <span className="chip">{proposal.kinds} kinds</span>
             <span className="chip">{proposal.neighbors}</span>

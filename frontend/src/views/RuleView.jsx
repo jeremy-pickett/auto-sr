@@ -5,6 +5,7 @@ import { useAuth } from '../lib/firebase'
 import { Comments } from '../lib/Comments.jsx'
 import { useModifierBlurbs } from '../lib/modifierCatalog'
 import { BEHAVIOR_BLURBS } from '../lib/behaviorBlurbs'
+import { Prose } from '../lib/Prose.jsx'
 
 function Fold({ title, text }) {
   const [open, setOpen] = useState(false)
@@ -139,7 +140,7 @@ export default function RuleView({ ruleId, slug }) {
         <div>
           <div className="panel">
             <h3>the rule, in its own words</h3>
-            <div className="description">{rule.description}</div>
+            <Prose text={rule.description} quoted />
             {rule.change_note && (
               <p className="sub">the change: {rule.change_note}</p>
             )}
@@ -151,7 +152,7 @@ export default function RuleView({ ruleId, slug }) {
           {rule.reasoning && (
             <div className="panel">
               <h3>why the machine tried it</h3>
-              <div className="description">{rule.reasoning}</div>
+              <Prose text={rule.reasoning} />
             </div>
           )}
 
