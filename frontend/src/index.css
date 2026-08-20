@@ -314,10 +314,31 @@ code, .mono { font-family: var(--font-mono); }
    pick-ring's percentage coordinates track the canvas. A percentage
    width on the canvas inside a shrink-to-fit parent is circular and
    collapses to the 200px intrinsic size — the bug this layout fixes. */
+/* Zoom (documents/new-features-2.md item 12): a CSS scale on the
+   shell, with the viewport around it handling pan via plain browser
+   scrollbars once the scaled content overflows it -- no custom drag
+   code needed. max-height caps how tall the scrollable area gets so
+   zooming in doesn't blow out the rest of the page layout. */
+.grid-zoom-viewport {
+  width: 100%;
+  max-height: calc(100vh - 250px);
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+}
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+.zoom-controls button { padding: 2px 10px; }
+
 .grid-shell {
   position: relative;
   line-height: 0;
   width: min(100%, calc(100vh - 250px));
+  flex: none;
 }
 .grid-canvas {
   image-rendering: pixelated;

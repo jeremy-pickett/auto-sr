@@ -3,9 +3,27 @@ import { getCellHistory, getRule, getRun, getGrids, patchRun, rerunRule, exportR
 import { plane } from '../lib/decode'
 import { KIND_COLORS, KIND_RGB, ageBrightness, levelBrightness, SERIES, textOn } from '../lib/palette'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
+import { Comments } from '../lib/Comments.jsx'
+import { copyText } from '../lib/clipboard'
+import { useModifierBlurbs } from '../lib/modifierCatalog'
+import { BEHAVIOR_BLURBS } from '../lib/behaviorBlurbs'
 
 const CHUNK = 100 // ticks per grid request: small enough to land fast
 const BEHAVIORS = ['settles', 'repeats', 'noisy', 'structured', 'unclassified']
+
+// Some browsers (older Safari in particular) never fire the download
+// if the triggering <a> isn't attached to the document when .click()
+// runs -- it silently no-ops instead of erroring, which reads exactly
+// like "the button doesn't do anything." Attaching then detaching
+// fixes it everywhere without changing behavior where it already worked.
+function downloadBlobUrl(url, filename) {
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+}
 const SPEEDS = [
   { label: 'slow', ticksPerSecond: 4 },
   { label: 'walk', ticksPerSecond: 10 },
@@ -156,6 +174,8 @@ export default function RunView({ runId, initialTick }) {
   const [loopEnd, setLoopEnd] = useState(null) // null until the run loads
   const [chunks, setChunks] = useState(() => new Map())
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [zoom, setZoom] = useState(1) // 1x-8x; a CSS scale on the shell, panned via native scroll
+  const modifierBlurbs = useModifierBlurbs()
 
   const stageRef = useRef(null)
   const canvasRef = useRef(null)
@@ -395,14 +415,29 @@ export default function RunView({ runId, initialTick }) {
   const copyTickLink = async () => {
     const url = `${window.location.origin}${window.location.pathname}#/runs/${runId}?tick=${tick}`
     window.location.hash = `/runs/${runId}?tick=${tick}`
-    try {
-      await navigator.clipboard.writeText(url)
+    if (await copyText(url)) {
       setLinkCopied(true)
       setTimeout(() => setLinkCopied(false), 1500)
-    } catch {
-      // Clipboard access can be denied (permissions, insecure context);
-      // the URL bar itself already reflects the link either way.
     }
+    // If both copy paths fail (clipboard permission denied, no
+    // execCommand support), the URL bar itself still reflects the
+    // link — but the button no longer silently claims success.
+  }
+
+  // Plain web share-intent links (documents/new-features-2.md items
+  // 14/15) -- the same mechanism every "share on X" button on the web
+  // uses, no API key or OAuth app required. Actual automated posting
+  // (with a thumbnail attached server-side) needs a registered app per
+  // platform, which this pass doesn't have -- logged as skipped rather
+  // than guessed at in documents/feature-run-log-2.md. Instagram has no
+  // web share-intent URL at all, so it isn't offered here.
+  const shareIntentUrl = (platform) => {
+    const url = `${window.location.origin}${window.location.pathname}#/runs/${runId}?tick=${tick}`
+    const text = `${rule.title || `rule #${rule.id}`} — an ASR run`
+    if (platform === 'twitter') {
+      return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`
+    }
+    return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`
   }
 
   // A shareable still of the current frame — scaled up from the native
@@ -425,10 +460,7 @@ export default function RunView({ runId, initialTick }) {
     out.toBlob((blob) => {
       if (!blob) return
       const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `run-${runId}-tick-${tick}.png`
-      a.click()
+      downloadBlobUrl(url, `run-${runId}-tick-${tick}.png`)
       URL.revokeObjectURL(url)
     }, 'image/png')
   }
@@ -441,10 +473,7 @@ export default function RunView({ runId, initialTick }) {
     try {
       const blob = await exportRun(runId, ['kind', ...rule.uses])
       const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `run-${runId}-export.json`
-      a.click()
+      downloadBlobUrl(url, `run-${runId}-export.json`)
       URL.revokeObjectURL(url)
     } catch (err) {
       setExportError(String(err))
@@ -453,7 +482,7 @@ export default function RunView({ runId, initialTick }) {
     }
   }
 
-  useDocumentTitle(run && rule ? `run #${run.id} · rule #${rule.id} — ASR` : null)
+  useDocumentTitle(run && rule ? `${rule.title || `rule #${rule.id}`} — run #${run.id} — ASR` : null)
 
   if (error) return <div className="error-note">something went wrong: {String(error)}</div>
   if (!run || !rule) return <div className="loading">loading the run…</div>
@@ -470,7 +499,9 @@ export default function RunView({ runId, initialTick }) {
       <section className="stage" ref={stageRef}>
         <div className="stage-head">
           <div>
-            <div className="title">rule #{rule.id} · run #{run.id} {run.is_canonical ? '· canonical' : ''}</div>
+            <div className="title">
+              {rule.title ? `${rule.title} · ` : ''}rule #{rule.id} · run #{run.id} {run.is_canonical ? '· canonical' : ''}
+            </div>
             <div className="sub">
               seed {run.start_seed} · {run.width}×{run.height} · {run.ticks_run + 1} ticks stored ·
               stopped: {run.stopped_because}
@@ -478,7 +509,10 @@ export default function RunView({ runId, initialTick }) {
             </div>
           </div>
           <div className="row">
-            <span className={`chip behavior-${shownBehavior} ${run.guess_confidence === 'low' && !run.user_behavior ? 'confidence-low' : ''}`}>
+            <span
+              className={`chip behavior-${shownBehavior} ${run.guess_confidence === 'low' && !run.user_behavior ? 'confidence-low' : ''}`}
+              title={BEHAVIOR_BLURBS[shownBehavior]}
+            >
               <span className="dot" />{shownBehavior}
             </span>
             {run.user_flagged && <span className="chip flag">⚑ flagged</span>}
@@ -487,29 +521,37 @@ export default function RunView({ runId, initialTick }) {
 
         {note && <div className="behavior-note">{note}</div>}
 
-        <div className="grid-shell">
-          <canvas
-            ref={canvasRef}
-            className={`grid-canvas ${roundCells ? 'round-cells' : ''}`}
-            width={run.width}
-            height={run.height}
-            onClick={pickCell}
-            style={{ '--cell-cols': run.width, '--cell-rows': run.height }}
-          />
-          {!picked && !playing && (
-            <div className="inspect-hint">click a cell to inspect it</div>
-          )}
-          {picked && !playing && (
-            <div
-              className="pick-ring"
-              style={{
-                left: `${(picked.x / run.width) * 100}%`,
-                top: `${(picked.y / run.height) * 100}%`,
-                width: `${100 / run.width}%`,
-                height: `${100 / run.height}%`,
-              }}
+        <div className="grid-zoom-viewport">
+          <div className="grid-shell" style={{ transform: `scale(${zoom})`, transformOrigin: 'center' }}>
+            <canvas
+              ref={canvasRef}
+              className={`grid-canvas ${roundCells ? 'round-cells' : ''}`}
+              width={run.width}
+              height={run.height}
+              onClick={pickCell}
+              style={{ '--cell-cols': run.width, '--cell-rows': run.height }}
             />
-          )}
+            {!picked && !playing && (
+              <div className="inspect-hint">click a cell to inspect it</div>
+            )}
+            {picked && !playing && (
+              <div
+                className="pick-ring"
+                style={{
+                  left: `${(picked.x / run.width) * 100}%`,
+                  top: `${(picked.y / run.height) * 100}%`,
+                  width: `${100 / run.width}%`,
+                  height: `${100 / run.height}%`,
+                }}
+              />
+            )}
+          </div>
+        </div>
+        <div className="zoom-controls">
+          <button onClick={() => setZoom((z) => Math.max(1, z / 1.5))} disabled={zoom <= 1} title="zoom out">−</button>
+          <span className="mono sub" title="scroll the frame to pan around while zoomed in">{Math.round(zoom * 100)}%</span>
+          <button onClick={() => setZoom((z) => Math.min(8, z * 1.5))} disabled={zoom >= 8} title="zoom in, to inspect individual cells more closely">+</button>
+          {zoom !== 1 && <button onClick={() => setZoom(1)} title="back to fit">reset zoom</button>}
         </div>
 
         <div className="transport">
@@ -667,7 +709,17 @@ export default function RunView({ runId, initialTick }) {
             <dt>neighbors</dt><dd>{rule.neighbors}</dd>
             <dt>reach</dt><dd>{rule.reach}</dd>
             <dt>extra properties</dt><dd>{rule.uses.join(', ') || 'none'}</dd>
-            <dt>modifiers</dt><dd>{rule.modifiers.join(', ') || 'none'}</dd>
+            <dt>modifiers</dt>
+            <dd>
+              {rule.modifiers.length
+                ? rule.modifiers.map((m, i) => (
+                    <span key={m}>
+                      {i > 0 ? ', ' : ''}
+                      <span title={modifierBlurbs?.[m]}>{m}</span>
+                    </span>
+                  ))
+                : 'none'}
+            </dd>
             <dt>picture settled at</dt><dd>{run.pattern_settled_at ?? 'never'}</dd>
             <dt>engine revision</dt><dd>{rule.provenance.engine_version}</dd>
           </dl>
@@ -719,7 +771,12 @@ export default function RunView({ runId, initialTick }) {
             >
               ⚑ {run.user_flagged ? 'flagged' : 'flag as interesting'}
             </button>
-            <button onClick={rerun}>run again, new seed</button>
+            <button
+              onClick={rerun}
+              title="Starts the same rule over from scratch with a new random seed, so the starting cells are different. This never touches the run you're looking at, and it's never counted toward the library's coverage map — only the original canonical run is."
+            >
+              run again, new seed
+            </button>
           </div>
         </div>
 
@@ -734,6 +791,36 @@ export default function RunView({ runId, initialTick }) {
         </div>
 
         <div className="panel">
+          <h3>share</h3>
+          <p className="description">
+            Opens a share window with this run's link already filled in — no
+            account connection needed, same as any "share on…" button. For an
+            image to go with it, "save current frame as a PNG" above gives a
+            crisp, scaled-up still.
+          </p>
+          <div className="row">
+            <a
+              className="chip"
+              href={shareIntentUrl('twitter')}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="share this run on X / Twitter"
+            >
+              share on X
+            </a>
+            <a
+              className="chip"
+              href={shareIntentUrl('facebook')}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="share this run on Facebook"
+            >
+              share on Facebook
+            </a>
+          </div>
+        </div>
+
+        <div className="panel">
           <h3>raw data</h3>
           <p className="description">
             Every tick of this run, uncapped, as plain JSON — for a script, or
@@ -745,6 +832,8 @@ export default function RunView({ runId, initialTick }) {
           </button>
           {exportError && <div className="error-note" style={{ marginTop: 8 }}>{exportError}</div>}
         </div>
+
+        <Comments ruleId={rule.id} />
       </aside>
     </div>
   )

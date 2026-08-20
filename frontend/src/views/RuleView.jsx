@@ -3,6 +3,8 @@ import { getRule, getRuleBySlug, rerunRule, setRuleTitle, addFavorite, removeFav
 import { useDocumentTitle } from '../lib/useDocumentTitle'
 import { useAuth } from '../lib/firebase'
 import { Comments } from '../lib/Comments.jsx'
+import { useModifierBlurbs } from '../lib/modifierCatalog'
+import { BEHAVIOR_BLURBS } from '../lib/behaviorBlurbs'
 
 function Fold({ title, text }) {
   const [open, setOpen] = useState(false)
@@ -26,6 +28,7 @@ export default function RuleView({ ruleId, slug }) {
   const [titleDraft, setTitleDraft] = useState('')
   const [savingTitle, setSavingTitle] = useState(false)
   const [favBusy, setFavBusy] = useState(false)
+  const modifierBlurbs = useModifierBlurbs()
 
   useEffect(() => {
     setRule(null)
@@ -122,7 +125,11 @@ export default function RuleView({ ruleId, slug }) {
           </button>
         )}
         {rule.status === 'ok' && (
-          <button onClick={rerun} disabled={rerunning}>
+          <button
+            onClick={rerun}
+            disabled={rerunning}
+            title="Starts the same rule over from scratch with a new random seed, so the starting cells are different. Never counted toward the library's coverage map — only the original canonical run is."
+          >
             {rerunning ? 'running…' : 'run again, new seed'}
           </button>
         )}
@@ -172,7 +179,17 @@ export default function RuleView({ ruleId, slug }) {
               <dt>reach</dt><dd>{rule.reach}</dd>
               <dt>extra properties</dt><dd>{rule.uses.join(', ') || 'none'}</dd>
               <dt>reads</dt><dd>{rule.reads.join(', ') || 'none'}</dd>
-              <dt>modifiers</dt><dd>{rule.modifiers.join(', ') || 'none'}</dd>
+              <dt>modifiers</dt>
+              <dd>
+                {rule.modifiers.length
+                  ? rule.modifiers.map((m, i) => (
+                      <span key={m}>
+                        {i > 0 ? ', ' : ''}
+                        <span title={modifierBlurbs?.[m]}>{m}</span>
+                      </span>
+                    ))
+                  : 'none'}
+              </dd>
               <dt>shape asked / observed</dt>
               <dd>{rule.requested_shape} / {rule.observed_shape ?? '—'}</dd>
               <dt>concepts</dt><dd>{rule.concepts.join(', ')}</dd>
@@ -185,7 +202,10 @@ export default function RuleView({ ruleId, slug }) {
             {rule.runs.map((run) => (
               <div key={run.id} className="run-row">
                 <a href={`#/runs/${run.id}`}>run #{run.id}</a>
-                <span className={`chip behavior-${run.user_behavior || run.guessed_behavior}`}>
+                <span
+                  className={`chip behavior-${run.user_behavior || run.guessed_behavior}`}
+                  title={BEHAVIOR_BLURBS[run.user_behavior || run.guessed_behavior]}
+                >
                   <span className="dot" />{run.user_behavior || run.guessed_behavior}
                 </span>
                 <span className="mono sub">

@@ -133,3 +133,12 @@ export const deleteComment = (id) => authorizedFetch(`/comments/${id}`, { method
 export const getCatalog = () => authorizedFetch('/catalog/modifiers').then(asJson)
 
 export const getSummary = () => authorizedFetch('/library/summary').then(asJson)
+
+export const getProfile = () => authorizedFetch('/profile').then(asJson)
+
+export const setDisplayName = (displayName) =>
+  authorizedFetch('/profile', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ display_name: displayName }),
+  }).then(asJson)

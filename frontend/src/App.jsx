@@ -5,6 +5,7 @@ import RunView from './views/RunView.jsx'
 import RuleView from './views/RuleView.jsx'
 import Catalog from './views/Catalog.jsx'
 import Invent from './views/Invent.jsx'
+import Profile from './views/Profile.jsx'
 import { AuthControl } from './lib/AuthControl.jsx'
 import { useAuth } from './lib/firebase'
 
@@ -29,6 +30,7 @@ function parseRoute() {
   if (head === 'r' && id) return { view: 'rule', slug: id, from: params.get('from') }
   if (head === 'invent') return { view: 'invent' }
   if (head === 'catalog') return { view: 'catalog' }
+  if (head === 'profile') return { view: 'profile' }
   return { view: 'landing' }
 }
 
@@ -69,6 +71,9 @@ export default function App() {
           )}
           <a href="#/invent" className={route.view === 'invent' ? 'active' : ''}>Invent</a>
           <a href="#/catalog" className={route.view === 'catalog' ? 'active' : ''}>Modifiers</a>
+          {user && (
+            <a href="#/profile" className={route.view === 'profile' ? 'active' : ''}>Profile</a>
+          )}
         </nav>
         <span className="spacer" />
         <AuthControl />
@@ -82,6 +87,7 @@ export default function App() {
         {route.view === 'rule' && <RuleView ruleId={route.id} slug={route.slug} />}
         {route.view === 'invent' && <Invent />}
         {route.view === 'catalog' && <Catalog />}
+        {route.view === 'profile' && <Profile />}
       </main>
 
       <footer className="footer">

@@ -3,6 +3,8 @@ import { listRules, getSummary, addFavorite, removeFavorite } from '../api'
 import { RunThumbnail } from '../lib/RunThumbnail.jsx'
 import { getHiddenIds, hideRule, unhideRule } from '../lib/hidden'
 import { useAuth } from '../lib/firebase'
+import { useModifierBlurbs } from '../lib/modifierCatalog'
+import { BEHAVIOR_BLURBS } from '../lib/behaviorBlurbs'
 
 const BEHAVIORS = ['settles', 'repeats', 'noisy', 'structured', 'unclassified']
 
@@ -11,7 +13,7 @@ function BehaviorChip({ run }) {
   const shown = run.user_behavior || run.guessed_behavior
   const low = run.guess_confidence === 'low' && !run.user_behavior
   return (
-    <span className={`chip behavior-${shown} ${low ? 'confidence-low' : ''}`}>
+    <span className={`chip behavior-${shown} ${low ? 'confidence-low' : ''}`} title={BEHAVIOR_BLURBS[shown]}>
       <span className="dot" />
       {shown}
       {run.user_behavior ? ' (yours)' : low ? ' (low confidence)' : ''}
@@ -19,7 +21,7 @@ function BehaviorChip({ run }) {
   )
 }
 
-function RuleCard({ rule, hidden, onToggleHidden, signedIn, onFavoriteChange, mine }) {
+function RuleCard({ rule, hidden, onToggleHidden, signedIn, onFavoriteChange, mine, modifierBlurbs }) {
   const run = rule.canonical_run
   const [favBusy, setFavBusy] = useState(false)
   // Carries "you got here from Mine" through to the nav bar, so it
@@ -105,7 +107,7 @@ function RuleCard({ rule, hidden, onToggleHidden, signedIn, onFavoriteChange, mi
           {rule.kinds} kinds · {rule.neighbors} neighbors · reach {rule.reach}
         </span>
         {rule.modifiers.map((m) => (
-          <span key={m} className="chip">{m}</span>
+          <span key={m} className="chip" title={modifierBlurbs?.[m]}>{m}</span>
         ))}
         {rule.concepts.map((c) => (
           <span key={c} className="chip">{c}</span>
@@ -117,6 +119,7 @@ function RuleCard({ rule, hidden, onToggleHidden, signedIn, onFavoriteChange, mi
 
 export default function Library({ mine = false } = {}) {
   const { user, loading: authLoading } = useAuth()
+  const modifierBlurbs = useModifierBlurbs()
   const [data, setData] = useState(null)
   const [summary, setSummary] = useState(null)
   const [error, setError] = useState(null)
@@ -278,6 +281,7 @@ export default function Library({ mine = false } = {}) {
                   signedIn={!!user}
                   onFavoriteChange={onFavoriteChange}
                   mine={mine}
+                  modifierBlurbs={modifierBlurbs}
                 />
               ))}
             </div>
