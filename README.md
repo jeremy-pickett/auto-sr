@@ -28,8 +28,17 @@ Frontend (from `frontend/`, Node 24):
 
 ```
 npm install
-npm run dev        # Vite dev server, proxying /rules /runs /catalog /library to :8000
+npm run dev        # Vite dev server on :5173, proxying the backend routes
 ```
+
+The dev server proxies `/rules /runs /catalog /library /system /profile
+/comments` to `:8000` and binds `0.0.0.0` — add a proxy entry whenever a new
+top-level backend route appears, or it will 404 in dev only.
+
+Sign-in is optional and off by default: the app runs anonymously with every
+rule public, exactly as it did before auth existed. To enable it, set
+`FIREBASE_PROJECT_ID` in `backend/.env` and the `VITE_FIREBASE_*` values in
+`frontend/.env` (see `frontend/.env.example`).
 
 Generation needs `ANTHROPIC_API_KEY` in `backend/.env`. The generator model is
 `ANTHROPIC_MODEL` (default `claude-opus-5`); every rule records the model,
@@ -66,4 +75,20 @@ generated rules (REQ-15.1).
   in the library as generator-quality data.
 - **Frontend** (`frontend/`) — the dark observatory: canvas playback of stored
   runs, cell inspection, the numbers panel, and a live view of the generation
-  pipeline streaming over `fetch()`.
+  pipeline streaming over `fetch()`. Six render styles layer over the default
+  view without touching it — including one that lights only the cells computing
+  this tick, and one that glows where a cell's kind held still while its hidden
+  state kept moving.
+- **System page** (`#/system`) — a live pipeline map and a browsable history of
+  generation and HTTP sessions. Unauthenticated and globally visible, like the
+  rest of this single-user app; it needs an access check before this ever goes
+  multi-user.
+
+## Version
+
+**2.2.1** — the product release, the app as deployed. This is a different
+series from the requirements spec's `v3` (which numbers the contract, not the
+product) and from the uplift documents in `documents/requirements/`. A major
+version bump means a new product, not an increment on this one.
+`documents/deep-dive/` documents each subsystem at this release, with a
+per-release change log in its `README.md`.

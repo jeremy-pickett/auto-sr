@@ -233,3 +233,137 @@ Update in place as numbers land.
   rejections table, which has no owner/visibility concept in this
   phase — judged consistent with "content excluded," not a violation
   of it, but a judgment call rather than a settled question.
+
+- **Phase 9, the system page (2026-08-20):** `#/system` and
+  `backend/asr/api/system.py` — a live pipeline/process map plus a
+  browsable history of the two kinds of session this app has. Two new
+  tables: `generation_sessions` (one row per `POST /rules/generate`)
+  and `http_sessions` (one row per session cookie).
+
+  Two design decisions carried the phase. First, **the pipeline is
+  instrumented at one seam, not at each stage.** Every lifecycle event
+  already flows through `generate_rule`'s `emit` callable, so
+  `pipeline.py` shadows that parameter once with a wrapper that
+  persists the stage and forwards to the original; not one existing
+  `emit()` call site was edited, and the system page's stage column is
+  by construction the same event stream the browser sees.
+  `tick_progress` is skipped — it fires every few ticks and never
+  changes the stage, so persisting it would be pure write
+  amplification. `gen_id` was already there for log correlation; this
+  phase promoted it to a persisted primary key and let the caller
+  supply it, so `stream.py` can finalize a row if `generate_rule`
+  raises something its own except clauses didn't turn into a
+  `complete` event (otherwise that row shows as in-flight forever).
+  `finish_generation_session`'s `WHERE ... AND finished_at IS NULL`
+  makes the resulting double-finalize a no-op rather than letting a
+  late failure clobber a real `ok`.
+
+  Second, **presence is server-observed, not client-reported.** The
+  first attempt was an `app_sessions` table fed by a
+  `lib/usePresence.js` heartbeat; it was built, hit a string of
+  client-side bugs, and was replaced wholesale by a session cookie
+  that a middleware in `api/app.py` (`track_request`, extending the
+  existing timing middleware rather than adding a second one) touches
+  on every request. A heartbeat is a promise the client can break in a
+  dozen ways; request traffic is something the server sees directly
+  and cannot be lied to about. The `app_sessions` table is left in the
+  schema, unused, rather than dropped — dropping it would mean either
+  a destructive migration or a `DROP TABLE IF EXISTS` running on every
+  `connect()`, and an unwritten table costs nothing. The trade
+  accepted: ordinary browsing is far sparser than a 20s heartbeat, so
+  the "active" window widened to two minutes.
+
+  Two bugs the phase surfaced, both recorded because they were silent.
+  `request.client.host` was recording `127.0.0.1` for every visitor,
+  because dev traffic arrives through Vite's proxy — fixed with
+  `xfwd: true` on every proxy entry plus an `_client_ip` helper that
+  prefers `X-Forwarded-For` and unwraps IPv4-mapped IPv6
+  (`::ffff:`) addresses. And `/profile` and `/comments` had never been
+  added to the Vite proxy list at all, so profile edits and comment
+  edit/delete were broken in dev only, looking like frontend bugs.
+
+  `try_resolve_uid` in `auth.py` is the one piece here worth ongoing
+  care: it deliberately treats an invalid token as anonymous rather
+  than raising, because the middleware runs on every request and a
+  stale token must not 401 the whole site to update a timestamp. That
+  is precisely the "silently downgraded" behavior `get_current_user`
+  exists to prevent, so it must never gate access to anything. What
+  keeps it safe is convention, not the type system: it returns a bare
+  `str | None` rather than the dict access checks consume, it is never
+  used as a FastAPI dependency, and it has exactly one caller.
+
+  **`/system/*` and `#/system` are intentionally unauthenticated and
+  globally visible**, the same posture as the rest of this single-user
+  app — but they expose more than any other route (IP addresses,
+  User-Agents, visited paths, generation error text). If this ever
+  goes multi-user, `/system/*` needs an access check the way `#/mine`
+  has one today. The route already reduces `owner_uid` to a
+  `signed_in` boolean before responding, so no user identifier leaves
+  the server; that is the right instinct and not a substitute for the
+  check.
+
+- **Phase 10, render styles — uplift 2.2.1 §8 (2026-08-20):** the
+  run player's style picker gained `activity` (REQ-13.17: lights where
+  `kind` changed this tick) and `kind_stable` (REQ-13.18: glows where
+  `kind` held but the mapped brightness property changed underneath
+  it), `trails` rebuilt into a real 40-tick decaying composite with the
+  REQ-13.19.2 "not a tick" badge, and `relief` upgraded from a
+  single-neighbor emboss to a gradient/normal/fixed-light shading
+  pass. `glow` predates the uplift, is covered by no REQ, and was kept
+  as-is.
+
+  All of it is display only (REQ-13.16) and layered *on top of* the
+  existing color/brightness mapping (REQ-13.2) rather than becoming
+  new entries in it — the style is UI state, never persisted to the
+  run (REQ-13.20.2), and the existing player remains the default
+  (REQ-13.20.3). Two implementation notes: `trails` composites with
+  `globalCompositeOperation = 'lighter'` because painted frames are
+  fully opaque and a normal draw would blot out the current tick
+  instead of ghosting behind it; and the frame cache's six-entry cap
+  became conditional, since `trails` needs its whole window resident.
+  `activity`/`kind_stable` reach one tick back into an already-cached
+  chunk and never trigger a fetch, which is what makes REQ-13.17.1's
+  "nearly free" true.
+
+  `kind_stable` is the highest value-to-cost item in that document and
+  the clearest visual expression the app has of REQ-9.7's pattern-vs-
+  computational distinction — a grid that reads as frozen in the
+  default view lights up like a city in this one. The kind palette was
+  replaced in the same pass with a bioluminescent/instrument-glow set
+  (every kind ≥ 7.5:1 on the ground, minimum pairwise separation up
+  from ~36 to 48.1, kind 0 moved to exactly `--ground`).
+
+  `backend/tests/test_run.py`'s `slow_burn` test pins the data
+  contract these two views read (REQ-15.12.1): before the flip, `kind`
+  never changes while `memory` changes every tick. The canvas
+  rendering has no test harness of its own, which is the honest
+  boundary — the test covers the reconstructible data underneath it.
+
+  **Not built: the recurrent-structure detector** (REQ-19.x, §4–7 of
+  the same uplift). It is specified to contract depth and unstarted;
+  none of the render styles above depend on it. Per REQ-19.20 the
+  detector's own priority order starts with background declaration and
+  grouping, and REQ-17.9 deliberately resists wiring structure counts
+  into the classifier, since that would change `guessed_behavior`,
+  which changes Stage A context.
+
+## Release versioning
+
+**2.2.1 is the product release** — the deployed app, set in
+`frontend/package.json` and `backend/pyproject.toml` as of 2026-08-20
+(both had been left at their scaffold defaults, `0.0.0` and `0.1.0`,
+until then).
+
+Three version series run in this repository and they are independent:
+
+| Series | Example | Numbers |
+|---|---|---|
+| Product release | **2.2.1** | The deployed app. |
+| Omnibus requirements | `asr-requirements-v3.md` (v3 → v4) | The contract. `REQ-` ids live here. |
+| Uplift proposals | `frontend-vis-uplift-2.2.1.md` (uplift 2.2) | Proposed spec additions. |
+
+The product release and that uplift share the digits `2.2.1` only
+because this release shipped the uplift's §8; they will diverge. Per
+`CLAUDE.md`, a **major** bump denotes a new product — a ground-up
+rewrite — not an increment on this app. `documents/deep-dive/README.md`
+carries the per-release log of what changed in each subsystem.
