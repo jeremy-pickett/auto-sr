@@ -1,5 +1,12 @@
 # Generation Pipeline
 
+> **Release 2.2.1** · documented 2026-08-20 · **updated for 2.2.1.**
+> The pipeline's stages, prompts, coverage map, gating, and provenance are unchanged from
+> 2.2.0 and were re-verified against the source. What is new is instrumentation: the
+> pipeline now persists a `generation_sessions` row per call, added at a single wrap point
+> around `emit()` rather than at each stage. That is §10, and it is the only new material
+> in this document.
+
 This is document 4 of 6 in the ASR deep-technical-documentation series. It covers `backend/asr/generation/` — the subsystem that turns "invent a cellular-automaton rule" into a stored, provenance-complete row in the library, whether that row ends up `ok`, `broken`, or never becomes a rule at all. Storage internals, the Stage C validator's AST checks, and the restricted execution namespace are separate subsystems covered in their own documents; this one touches them only where the generation pipeline hands off to them.
 
 Every code citation below was read directly from the repository at `/root/projects/auto-sr`. Line numbers refer to the state of the files at the time of writing.
@@ -722,3 +729,66 @@ Downstream, when Stage A does propose a modifier, `_parse_stage_a` (`pipeline.py
 So the gating in §6 isn't just a courtesy shown in the prompt text — it's checked again mechanically against the model's actual JSON output, and a proposal that names a modifier it was never offered is treated the same as any other malformed Stage A response: a generation failure, with nothing entering the `rules` table.
 
 `catalog_hash()` (`catalog.py:65-72`) — a blake2b digest over every catalog entry's name, range, identity, `assign_when`, `effect`, `availability`, and `blurb`, sorted by name — is stored per rule alongside `prompt_set_hash` for the same provenance reason described in §7: it lets a later analysis distinguish "this rule was generated under a different template wording" from "this rule was generated when the modifier catalog itself had different semantics or a different blurb," which a `source_hash` comparison alone could never reveal (REQ-12.4.2's point, applied to the modifier catalog specifically).
+
+---
+
+## 10. Generation sessions: instrumenting the pipeline (new in 2.2.1)
+
+Release 2.2.1 made a running generation observable from outside the request that started it — the data behind the system page's live pipeline map. The interesting part is not the feature; it is how little of the pipeline had to change to get it.
+
+### One wrap point, not thirty call sites
+
+Every lifecycle event in this pipeline already flows through the `emit` callable that `generate_rule` receives as its second argument (§1). That is the seam. Instead of adding a database write next to each `emit(...)` call, 2.2.1 shadows the parameter once, immediately after the pipeline's timing setup (`pipeline.py:145-162`):
+
+```python
+    # Every lifecycle event already flows through emit() below -- wrapping
+    # it once here persists a generation_sessions row (the system page's
+    # data source) without touching any of the individual emit() call
+    # sites. tick_progress is skipped: it fires every few ticks during the
+    # canonical run and never changes the pipeline stage, so writing it
+    # would just be write amplification for no observable benefit.
+    db.insert_generation_session(conn, gen_id, owner_uid, settings.anthropic_model)
+    raw_emit = emit
+
+    def emit(name, payload):
+        if name == "complete":
+            db.finish_generation_session(
+                conn, gen_id, outcome=payload["status"],
+                rule_id=payload.get("rule_id"), error_text=payload.get("error"),
+            )
+        elif name != "tick_progress":
+            db.update_generation_session_stage(conn, gen_id, name)
+        raw_emit(name, payload)
+```
+
+The local `def emit` rebinds the name for the rest of the function body, so every subsequent `emit("stage_a_complete", ...)` in the several hundred lines below now writes a stage transition and then forwards to the original callable, which is preserved as `raw_emit`. Not one existing call site was edited. The stage column on the system page is therefore, by construction, exactly the event stream the browser sees — the two cannot drift apart, because they are the same function call.
+
+**`tick_progress` is deliberately excluded.** It fires every few ticks throughout the canonical run and never represents a stage change, so persisting it would be write amplification: hundreds of `UPDATE`s per generation, every one of them setting `stage` to the value it already held. The rest of the events are a handful per generation.
+
+**The cost of the seam being a callable, not an event bus:** this only works because `emit` is a plain function passed in, and Python lets a nested `def` shadow it. Had the pipeline used a class with an `emit` method, or a module-level function, the same change would have meant either editing every call site or introducing an indirection layer. Worth noting as the reason the design was cheap rather than as a general technique.
+
+### Who finalizes the row, and the failure it was written for
+
+`gen_id` predates this feature. It was introduced purely so concurrent generations' log lines could be told apart, and its comment still says so. What 2.2.1 added is the ability for the *caller* to supply it (`pipeline.py:129`, `gen_id: str | None = None`, defaulted at `pipeline.py:142` with `gen_id = gen_id or uuid.uuid4().hex[:8]`), and `stream.py` does exactly that (`stream.py:56`):
+
+```python
+    # Generated here, not inside generate_rule, so this function can
+    # finalize the generation_sessions row itself if something raises
+    # that generate_rule's own except clauses didn't already turn into
+    # a `complete` event -- otherwise that row would stay "in flight"
+    # on the system page forever. finish_generation_session is a no-op
+    # if generate_rule already finished it normally.
+    gen_id = uuid.uuid4().hex[:8]
+```
+
+The failure being defended against is specific and would be invisible without the defense. `generate_rule` catches its own expected failures and turns them into a `complete` event with a status — that path finalizes the row correctly. But an *unexpected* exception (something no internal `except` anticipated) propagates past all of that, and the row it started would keep `finished_at IS NULL` forever. The system page reads exactly that predicate to decide what is in flight (`system.py:49-51`), so one such crash would leave a phantom generation pulsing on the pipeline map permanently, with no process behind it.
+
+`stream.py`'s catch-all handler closes this (`stream.py:66-71`), calling `db.finish_generation_session(..., outcome="generation_failed", ...)` alongside the error event it already emitted. Since it owns the id, it can finalize a row `generate_rule` never got to. The two finalizers racing is the exact scenario the `WHERE ... AND finished_at IS NULL` guard in `finish_generation_session` exists for (document 2, §1) — whichever arrives first wins, and the safety net can never overwrite a real outcome with a spurious failure.
+
+### What this does *not* do
+
+Two boundaries are worth stating, because a table named "sessions" that tracks in-flight work looks like the first half of a job queue, and it is not one.
+
+**It does not make generation resumable or restartable.** There is no worker, no claim, no retry. A row in `generation_sessions` is a record that a request happened; if the process dies mid-generation, nothing picks the work up, and the row is finalized only in the sense that some later reader may notice it never finished. REQ-3.6's "no job queue, no background workers" is untouched, and document 5's §2 discusses the one claim in the original text this release required qualifying.
+
+**It does not enter generation context.** Nothing in `context.py` reads this table. The coverage map is still built from canonical runs on public rules only (§3), and no part of Stage A's prompt is aware that generations are being counted or timed. This matters more than it might appear: a table recording every attempt, including failures, is precisely the shape of data that would be tempting to feed back into the generator ("you have tried this region eleven times"), and the attempts/rejections accounting that REQ-8.5's firewall permits already exists separately, in `rejections`, built for that purpose. The session table is operational telemetry, and keeping the two apart is what keeps the firewall checkable.
