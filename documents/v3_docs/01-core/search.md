@@ -1,20 +1,85 @@
 # Search
 
-**Document class:** Level 3 — Requirements (provisional: §37 assigns no level; see `../README.md`) · **Status:** draft
+**Document class:** Level 3 — Requirements · **Status:** draft
 **Path:** `01-core/search.md`
-**Cites:** SCR-F v0.2 §23, §42; F-16
+**Identifier namespace:** `SEARCH-` — reserved to this document. Identifiers are permanent and never reused.
+**Cites:** SCR-F v0.2 §23, §25.6, §42; F-16 · DEC-11, DEC-12
+**Depends on:** `corpus.md`, `readers.md`, `runs.md`.
 
-> **Stub — not written, not adopted.** This file exists so downstream documents have a stable citation target (SCR-F v0.2 §36.2) and so the tree's shape is reviewable before two hundred documents land in it. Per §36.3 a draft may not be relied upon by downstream documents. Per §36.6 a model writing here must cite the specific SCR-F sections it depends on, flag ambiguity rather than smooth it over, refuse to answer a DEC-owned question locally, and keep Lab vocabulary out of this document.
+> **Search** turns accumulated evidence back into useful work. It is what a platform does when it cannot derive the answer: you cannot compute the mechanism that produces branching, so you find one that did.
 
 ---
 
-## What this document owes
+## 1. What Search owns
 
-- What Search retrieves and over which Corpus surfaces — semantic similarity, Plugin structure, World properties, Reader measurements, Study results, outcome history, intent/outcome disagreement, known failures, human annotations (§23).
-- The rule that the ordinary user's query language stays semantic even where structured search also exists (§23).
-- How retrieved results carry their provenance, so a mechanism found by Search arrives with the evidence that justifies it rather than as a bare recommendation.
-- The §42 non-claim enforced at the interface: what Search covers is the space SCR has explored, never the space of all possible local mechanisms.
+**SEARCH-1.** Retrieval across the Corpus, over: stated intent; mechanism structure; declarations; World and Layout properties; Reader measurements; Study findings; outcome history; disagreement between intent and outcome; failures; and human annotations.
 
-## Decisions this document must not resolve locally
+**SEARCH-2.** The ordinary query stays in ordinary language, whatever structured querying also exists.
 
-- **DEC-12 — Search similarity separation.** *Open.* How intent similarity, mechanism similarity, and observed-behavior similarity stay distinct rather than collapsing into one score.
+**SEARCH-3.** Every result arrives with its provenance. A retrieved mechanism carries the evidence that justifies it, never a bare recommendation.
+
+---
+
+## 2. What Search refuses
+
+| Refused | Owner |
+|---|---|
+| Generating anything | Generation |
+| Executing anything | Reactor |
+| Measuring anything | Reader |
+| Deciding relevance is correctness | a person |
+| Implying it searched what it did not | nobody — SEARCH-8 |
+
+---
+
+## 3. Three kinds of similarity, kept apart
+
+**SEARCH-4.** Three similarities are computed, stored, and displayed separately, and are never combined into a single score:
+
+> **Intent similarity** — these were meant to do the same thing.
+> **Mechanism similarity** — these are built the same way.
+> **Observed similarity** — these behaved the same way.
+
+**SEARCH-5.** Any result ordered by similarity states which of the three ordered it.
+
+The platform's most valuable queries depend entirely on the three coming apart. *Mechanisms with similar behaviour but very different stated intent* is answerable only if behaviour and intent were never collapsed. So is *mechanisms built almost identically that behave differently*, which is the case a family view is most likely to hide (CORPUS-15).
+
+A single blended relevance score destroys both queries and looks better while doing it. DEC-12 owns this.
+
+---
+
+## 4. Clusters and neighbourhoods
+
+**SEARCH-6.** Any grouping, cluster, distance, neighbourhood, or map presented to a person states the similarity measure that produced it and the data it was computed over.
+
+**SEARCH-7.** Proximity in any such display is never presented as evidence of a relationship. It is evidence of a computation, and the computation is named.
+
+This is the platform's most presentable capability and its easiest to abuse. A scatter of mechanisms arranged by an unnamed similarity looks like a discovered structure and is a rendering choice.
+
+---
+
+## 5. What Search does not cover
+
+**SEARCH-8.** Search covers what the platform has explored. Interfaces state this where a person could reasonably read absence as evidence of absence.
+
+*No mechanism in the Corpus produced this behaviour* means nobody generated one that did. It does not mean none exists, and the difference is the whole of §42's non-claim (GEN-20, GEN-21). An empty result is a fact about the library, not about the world.
+
+---
+
+## 6. What Search requires
+
+- **From the Corpus:** links, versions, and provenance.
+- **From Readers:** versioned measurements, so a search over behaviour can say which version of "travelling" it matched.
+- **From Runs:** bound identity, so a result can be checked for relevance to the asker's actual question.
+
+## 7. What Search produces
+
+Retrieved records with their evidence, an ordering that names its basis, and an honest statement of what was searched.
+
+---
+
+## 8. Open decisions
+
+- **DEC-12 — Similarity separation.** Constrained by SEARCH-4 to SEARCH-7.
+- **DEC-11 — Corpus identity.** Determines what a family result may hide.
+- **Unregistered — exploration strategy.** Search knows what has been tried and is the natural source for what to try next, but owns no such responsibility (`generation.md` §9).

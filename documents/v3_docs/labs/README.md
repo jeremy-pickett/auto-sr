@@ -53,6 +53,45 @@ Per §36.6, a document writing into this tree flags ambiguity rather than smooth
 
 **2. Production reports are not yet family-aligned.** `../SCR_Labs_01-10_Knowledge_Report_v1.md` covers entries 1–10, which spans Family A entirely and Family B partially. Whether production reports are batched by family or by arbitrary tens is an open question, and it determines both where that report lives and how the remaining fifty are written. The family README files link to it as *pending* where it does not yet reach.
 
+## How Lab papers report standing
+
+Conventions for this subtree. The conceptual framework these rest on is `../00-start-here/irreducibility-and-what-cellular-means.md`; the fit review procedure is `../01-core/labs.md`.
+
+### Four axes, not one grade
+
+A single word compresses too much. Every Lab paper reports these separately:
+
+- **Mechanism fit** — does the local-state abstraction make sense for this domain?
+- **Validation class** — *direct experimental* / *direct observational* / *indirect statistical* / *qualitative only*. These must never look equivalent in Search.
+- **Rediscovery risk** — low / medium / high. Is the canonical local-rule model already known?
+- **Practical need** — would anyone use the resulting mechanism catalogue?
+
+None of these is a fit grade. Fit is decided by review (§30), not by a paper about itself.
+
+### Lab roles
+
+Not every Lab justifies itself with new domain science, and pretending otherwise is less credible than declaring the role:
+
+- **Calibration anchor** — good ground truth, used partly to prove SCR's evidence chain works at all.
+- **Rediscovery benchmark** — a canonical local-rule model exists; SCR should be able to recover something like it. This is a legitimate role, not a consolation.
+- **Architecture stress test** — forces the platform to confront a capability it lacks.
+- **Mechanism-supply candidate** — a specific under-explored interaction problem.
+- **Integrity demonstrator** — exercises the platform's honesty machinery.
+
+**A Lab can be commercially weak and architecturally essential.**
+
+### Visualization credibility class
+
+A visual can be accurate as a rendering and misleading as a product claim (§12, §26). Every Lab paper declares one:
+
+- **Class 1 — mistakable for an operational forecast.** Strictest labelling; output must never appear without Study context.
+- **Class 2 — mistakable for scientific significance it does not have.** *Beauty is the failure mode.*
+- **Class 3 — low hazard.**
+
+### Falsifiable question
+
+Every Lab paper states, in one sentence near the top, the strongest question it could ask that could come back negative. "Simulate X" is not one.
+
 ## Decisions this subtree must not resolve locally
 
 - **DEC-1** mechanism composition · **DEC-3** temporal semantics · **DEC-8** World storage · **DEC-15** Lab governance · **DEC-16** security isolation · **DEC-20** external calibration.
