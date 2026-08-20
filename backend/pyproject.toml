@@ -1,6 +1,9 @@
 [project]
 name = "asr"
-version = "0.1.0"
+# The product release (see CLAUDE.md): 2.2.1 is the deployed app. Not the
+# same series as the omnibus requirements spec's v3/v4, which numbers the
+# contract rather than the product.
+version = "2.2.1"
 description = "Autonomous Semantic Ruliology - an LLM invents cellular automaton rules; a harness proves what they do"
 requires-python = ">=3.11"
 
