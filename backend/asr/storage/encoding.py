@@ -23,8 +23,15 @@ import zstandard
 NEVER_IN_DELTAS = ("age", "changed_last_tick")
 SNAPSHOT_ALSO_KEEPS = ("age",)
 
-_compressor = zstandard.ZstdCompressor()
-_decompressor = zstandard.ZstdDecompressor()
+
+def _compressor() -> zstandard.ZstdCompressor:
+    # A fresh context per call: ZstdCompressor/ZstdDecompressor are not
+    # safe for concurrent use, and route handlers run in a threadpool.
+    return zstandard.ZstdCompressor()
+
+
+def _decompressor() -> zstandard.ZstdDecompressor:
+    return zstandard.ZstdDecompressor()
 
 
 def _frame(header: dict, payload: bytes) -> bytes:
@@ -63,7 +70,7 @@ def encode_snapshot(arrays: dict) -> bytes:
         chunks.append(raw)
         offset += len(raw)
     header = {"shape": shape, "arrays": entries}
-    return _compressor.compress(_frame(header, b"".join(chunks)))
+    return _compressor().compress(_frame(header, b"".join(chunks)))
 
 
 def encode_delta(previous: dict, current: dict):
@@ -73,8 +80,8 @@ def encode_delta(previous: dict, current: dict):
     sparse = _encode_sparse(previous, current)
     dense = _encode_dense(previous, current)
     if len(sparse) <= len(dense):
-        return "sparse", _compressor.compress(sparse)
-    return "dense", _compressor.compress(dense)
+        return "sparse", _compressor().compress(sparse)
+    return "dense", _compressor().compress(dense)
 
 
 def _encode_sparse(previous: dict, current: dict) -> bytes:
@@ -140,7 +147,7 @@ def decode(encoding: str, blob: bytes, previous: dict | None) -> dict:
     """Rebuild one tick's stored arrays. `previous` is the already-
     decoded prior tick for sparse/dense; snapshots stand alone.
     """
-    header, payload = _unframe(_decompressor.decompress(blob))
+    header, payload = _unframe(_decompressor().decompress(blob))
     shape = tuple(header["shape"])
     if encoding == "snapshot":
         arrays = {}
