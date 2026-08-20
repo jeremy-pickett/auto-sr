@@ -29,3 +29,18 @@ What minimum evidence is required before a Lab is described as validated rather 
 - the reconsideration trigger — what evidence would reopen this (§36.1, Level 2);
 - the documents that must be revised when it lands;
 - a status change from *open* to *decided*, recorded rather than assumed.
+
+---
+
+## Note on vocabulary
+
+SCR-F §40.2 registered this record as asking when a Lab may be "described as **validated** rather
+than experimental." The core documents no longer use that word: `../01-core/labs.md` LAB-9 names the
+third status **confirmed**, and LAB-10 forbids *verified* and *validated* of any model of a
+real-world system. The reasoning is in `../03-quality/accuracy.md` §1 — verification and validation
+of numerical models of natural systems is not achievable, and confirmation is partial by
+construction.
+
+The question this record asks is unchanged: what minimum evidence is required before a Lab is
+described as more than experimental. Only the word for the destination has changed. The original
+wording is preserved above and in SCR-F §40.2, which has not been amended.

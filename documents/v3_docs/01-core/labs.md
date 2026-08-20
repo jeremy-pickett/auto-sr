@@ -66,11 +66,13 @@ This question is not in SCR-F §30. It is added here because two independently w
 
 **LAB-8. Standing is not fit.** A judgement carried by a Lab candidate — inherited from a survey, an assessment, or a prior document — is not a review outcome and never becomes one by repetition. A document that repeats a favourable standing has promoted nothing.
 
-**LAB-9.** A Lab holds exactly one status: **candidate** (named, not reviewed), **experimental** (reviewed, in use, accuracy not established), or **validated** (accuracy established against stated reference cases). Promotion is a human act and is recorded with its evidence.
+**LAB-9.** A Lab holds exactly one status: **candidate** (named, not reviewed), **experimental** (reviewed, in use, accuracy not established), or **confirmed** (accuracy evidence exists against stated reference cases, to a stated extent). Promotion is a human act and is recorded with its evidence.
 
-**LAB-10.** No interface, report, or export describes a Lab as validated on the strength of anything other than a completed review under LAB-5 and evidence under LAB-9.
+**LAB-9.1.** *Confirmed* never means the Lab's abstraction is correct for its subject. Confirmation is partial by nature: agreement between a mechanism and an observation does not establish that the mechanism is the real one, because other mechanisms could produce the same agreement. The reasoning and its source are in `../03-quality/accuracy.md` §1.
 
-DEC-15 owns the evidence threshold between experimental and validated.
+**LAB-10.** No interface, report, or export describes a Lab as confirmed on the strength of anything other than a completed review under LAB-5 and evidence under LAB-9. The words *verified* and *validated* are not used of a Lab or of any model of a real-world system (ACCURACY-1).
+
+DEC-15 owns the evidence threshold between experimental and confirmed.
 
 ---
 
@@ -120,6 +122,36 @@ Labs are where pressure to generalise arrives, and it always arrives well argued
 - **DEC-20 — External calibration.** How candidate mechanisms are packaged for the subject's own tools without implying validity not earned. Constrained by LAB-11 to LAB-13.
 - **DEC-24 — The cellular budget.** LAB-16 makes Labs report into it.
 - **Proposed amendment to SCR-F §30:** add the reducibility audit as a tenth fit question. §3.1.
+
+---
+
+## Amendment record
+
+**2026-08-20 — the third Lab status renamed from *validated* to *confirmed*.**
+
+*Was:* LAB-9's third status was **validated**, defined as "accuracy established against stated
+reference cases." LAB-10 used the same word.
+
+*Now:* **confirmed**, defined as accuracy evidence existing to a stated extent, with LAB-9.1 added to
+bound what it means, and LAB-10 extended to forbid *verified* and *validated* of any model of a
+real-world system.
+
+*Why:* writing `../03-quality/accuracy.md` surfaced a conflict this document had introduced.
+Verification and validation of numerical models of natural systems is not achievable — natural
+systems are never closed and model results are never unique — and the established term for what is
+achievable is *confirmation*, which is partial by construction (Oreskes, Shrader-Frechette, and
+Belitz, 1994; cited in that document). *Validated* is exactly the kind of word
+`../00-start-here/language-rules.md` warns about: accurate-sounding, load-bearing, and claiming more
+than the thing does. LAB-10 exists to stop over-reading, and it was doing so in a word that invites
+it.
+
+*Raised by:* this document set's own quality pass, 2026-08-20.
+
+*What did not change:* the identifiers, the three-status structure, that promotion is a human act, or
+anything in LAB-5's review.
+
+*Still outstanding:* nothing in SCR-F uses these status words, so no amendment to Foundations
+follows from this one.
 
 ---
 

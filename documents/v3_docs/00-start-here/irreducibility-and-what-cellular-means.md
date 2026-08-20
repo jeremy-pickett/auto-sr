@@ -2,9 +2,11 @@
 
 **Document class:** Level 1 — Foundations · **Status:** draft
 **Path:** `00-start-here/irreducibility-and-what-cellular-means.md`
-**Cites:** SCR-F v0.2 §6, §13, §13.1, §15, §18.5, §25.3, §30, §36.4, §36.5, §36.6, §40, §41–43, §45.12; F-7, F-9, F-17
+**Cites:** SCR-F v0.2 §6, §13, §15, §18.5, §25.3, §30, §36.4, §36.5, §36.6, §40, §41–43, §45.12; F-7, F-9, F-17 · `../01-core/labs.md` LAB-3, LAB-5, LAB-6, LAB-7, LAB-16 · DEC-1, DEC-3, DEC-21, DEC-24
 **Derived from:** the reducibility framework in `../SCR_Labs_01-10_Knowledge_Report_v1.md` Part I, extracted here because it is platform-level rather than Lab-level.
 
+> **No subject vocabulary appears here (LAB-3).** This is a Level 1 document, so it names no domain. Where an illustration is unavoidable it is stated abstractly. The concrete cases live in Lab papers at `../labs/`, which is where they belong.
+>
 > **Draft — not adopted.** Per §36.3 a draft may not be relied upon by downstream documents. Per §36.4.1 an *adopted* Level 1 document outranks everything for conceptual meaning; this one is not there yet, and it should be read as a proposal for the tree's missing intellectual spine rather than as settled law.
 
 ---
@@ -53,15 +55,16 @@ Both words will be attacked by external reviewers as too broad. These definition
 
 A cellular automaton has five defining properties. Lined up against the Decision Registry:
 
-| Property | Status in 3.x |
+| Property | Status |
 | :--- | :--- |
-| Discrete cells | Decided — §13 |
-| Bounded local state | Decided — §13.1 |
-| **One uniform rule everywhere** | **In play — DEC-1.** Multiple Plugins is a non-uniform rule. |
-| **Simultaneous update** | **In play — DEC-3.** |
-| **Local interaction** | **In play — registered nowhere.** See §3. |
+| Discrete cells, bounded state | Held — the semantic ceiling is not tunable |
+| **One uniform rule everywhere** | **In play — DEC-1** |
+| **Simultaneous update** | **In play — DEC-3** |
+| **Local interaction** | **In play — DEC-21** |
 
-**Three of five are open, and one is not on the register.**
+**Three of five are open.**
+
+**The ledger is owned by DEC-24 — the cellular budget — and this document does not keep it.** `../01-core/labs.md` LAB-16 makes each Lab report its own spending into that record. What follows is the reasoning for why a ledger is needed, not a substitute for one.
 
 This table is the honest answer to the question SCR-F §45.12 asks reviewers to press:
 
@@ -82,19 +85,19 @@ The same test applies within a bounded Cell: **does this value need to persist t
 
 "Local" is doing too much work. Five distinct things hide under it, and the distinction constrains the Plugin contract, every Layout family, and a large number of candidate Labs.
 
-| Class | Meaning |
+| Pattern | What a mechanism needs |
 | :--- | :--- |
 | **Neighbour-local** | Declared immediate neighbours only |
-| **Bounded transport** | A finite hop to a non-neighbour, governed by a local rule |
-| **Path-local** | Influence follows declared connections over bounded path length |
-| **Connected-region constraint** | Behaviour depends on all members of one connected region |
-| **Global read** | The mechanism inspects arbitrary World state |
+| **Bounded transport** | A finite hop past the neighbours, governed by a local rule |
+| **Path-local** | Influence following declared connections over bounded path length |
+| **Connected-region constraint** | Behaviour depending on every member of one connected region |
+| **Unrestricted addressing** | Reaching any Cell because the mechanism knows it exists |
 
-The first four may fit SCR honestly. **The fifth is where the platform becomes a general simulator.**
+**This is a description of what Labs turn out to need, not a boundary.** The boundary is owned by **DEC-21**, which is open, and this document does not resolve it (F-22, §36.6).
 
-Two points that are easy to miss. **Bounded transport is not a compromise** — in wind-blown sand it is what the physics does, and a model without it is wrong. And **a connected-region constraint is not a local rule**, however natural it looks: water sharing one level across a connected pond cannot be computed by any cell from its neighbours.
+Two observations worth carrying into that decision. **Bounded transport is not a compromise** — in at least one subject it is what the physics does, and a model without it is wrong rather than simplified. And **a connected-region constraint is not a local rule**, however natural it looks: a quantity shared across a whole connected region cannot be computed by any Cell from its neighbours.
 
-> The boundary between these classes is undrawn, consequential, and belongs in a decision record rather than in whichever Lab document reaches it first.
+DEC-21 records a leading formulation, not adopted, which is sharper than the ladder above: reach is a question of **authority rather than distance** — a mechanism may observe or affect a Cell only by traversing connections the World declared and the Run admitted. On that reading the dangerous endpoint is not a long jump but the last row of the table, and it breaks locality at any distance. Where the two framings disagree, DEC-21's is the one to cite.
 
 ---
 
@@ -102,11 +105,11 @@ Two points that are easy to miss. **Bounded transport is not a compromise** — 
 
 A recurring error is to call every time-varying influence a second mechanism, which manufactures composition problems that do not exist and blocks Labs on DEC-1 unnecessarily. Three categories:
 
-**Static World condition** — does not evolve during a Run. *Bedrock type, fixed slope, an initial fracture network.*
+**Static World condition** — a property that does not evolve during a Run. Terrain and inherited structure are of this kind.
 
-**External input** — changes during a Run, supplied from outside the simulated state, does not react to it. *A recorded wind series, a rainfall sequence, a prescribed warming trajectory.*
+**External input** — a field or schedule that changes during a Run, is supplied from outside the simulated state, and does not react to it. A recorded forcing series is of this kind.
 
-**Interactive mechanism** — future state depends on simulated state. *Fire altering local airflow; drainage altering future thaw; a crystal depleting the vapour it grows from.*
+**Interactive mechanism** — a process whose future state depends on the simulated state. A mechanism that alters the field driving it is of this kind, and only these are genuine composition cases.
 
 This matters to Studies as much as to architecture. A Study that holds a mechanism fixed while varying the forcing should not have to pretend the forcing is part of the mechanism.
 
@@ -130,7 +133,7 @@ These are **not** solved by giving each Plugin its own clock. That hands the clo
 
 ## 6. Grid World must not mean Cartesian grid
 
-Lattice geometry is not always an artifact to be minimized. Sometimes it is the physics: six-fold symmetry in ice is crystallography, and a hexagonal arrangement is therefore *more* faithful than a square one.
+Lattice geometry is not always an artifact to be minimized. In some subjects the arrangement *is* the physics — the symmetry of the real material dictates the neighbour structure — and a non-square lattice is therefore *more* faithful, not a special case.
 
 The requirement follows directly. The platform should support **named lattice geometries** — square, triangular, hexagonal, layered three-dimensional — or general local spatial graphs. Hard-coding square adjacency would make lattice anisotropy indistinguishable from physical anisotropy, which is fatal in any Lab whose measured output is a morphology, and quietly misleading everywhere else.
 
@@ -142,7 +145,7 @@ Some honest mechanisms need a calculation no local rule can perform. The correct
 
 > **A helper may provide a generic execution primitive. It may not provide a domain-specific answer.**
 
-*Connected-component equalization* is plausibly generic. *A hydrology solver* is not. Borderline cases — global geometric visibility, network flow — should be decided deliberately, in the open, rather than by whichever implementation reaches them first.
+Equalizing a quantity across a connected component is plausibly generic. A solver that encodes one subject's physics is not. Borderline cases — global geometric visibility, network flow — should be decided deliberately, in the open, rather than by whichever implementation reaches them first.
 
 A Plugin must never be handed arbitrary global World access. Where a global calculation is genuinely required it belongs to the World or Reactor as a **declared** capability, visible in provenance (F-9).
 
@@ -166,8 +169,8 @@ SCR should continue to credit Wolfram's work as inspiration while making no clai
 
 ## 9. What this document does not do
 
-**It does not amend SCR-F.** §30 currently asks nine fit questions, none of which is *"where does this domain already have a shortcut?"* — §30.8 (comparison to established tools) is adjacent but different, because the established tool may itself be another simulation. Adding a tenth question is an SCR-F amendment under §36.5 and must be filed as a decision record with evidence attached. **This document proposes it; it does not perform it.**
+**It does not own the reducibility audit.** `../01-core/labs.md` does, as the tenth fit question (LAB-5.10, LAB-6, LAB-7), and that document is the citation target for how the audit is run. The corresponding amendment to SCR-F §30 is **proposed there rather than applied** (§36.5). This document supplies the reasoning the audit rests on; it does not restate the requirement, and where the two differ the Requirements document governs (§36.4.3).
 
-**It does not resolve DEC-owned questions.** The reach boundary (§3), composition (§4), and temporal semantics (§5) are named here so that Lab papers can cite a shared framing instead of inventing nine incompatible ones. Naming a fork is not deciding it (§40, F-22).
+**It does not resolve DEC-owned questions.** Reach (§3) is DEC-21's. The cellular ledger (§2) is DEC-24's. Composition (§4) is DEC-1's. Temporal semantics (§5) is DEC-3's. They are named here so Lab papers can cite one shared framing instead of inventing nine incompatible ones. Naming a fork is not deciding it (§40, F-22).
 
 **It does not grade any Lab.** Fit is owned by the review procedure in `../01-core/labs.md`; assessment conventions for Lab papers are in `../labs/README.md`.
