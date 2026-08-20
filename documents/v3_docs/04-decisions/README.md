@@ -36,7 +36,7 @@ amendment that retired it (§36.5).
 | ID | Title | Status |
 |---|---|---|
 | [DEC-1](dec-001-mechanism-composition.md) | Mechanism composition | open — *the largest unnamed decision in v0.1* |
-| [DEC-2](dec-002-replay-equivalence.md) | Replay equivalence | open |
+| [DEC-2](dec-002-replay-equivalence.md) | Replay equivalence | open; framing amended |
 | [DEC-3](dec-003-temporal-semantics.md) | Temporal semantics | open; placement decided |
 | [DEC-4](dec-004-study-inference-discipline.md) | Study inference discipline | open; stance constrained |
 | [DEC-5](dec-005-home-of-semantic-translation.md) | The home of semantic translation | open |
@@ -65,6 +65,23 @@ amendment that retired it (§36.5).
 the section heading — "open questions carried forward from v0.1" — and is recorded here as an
 inference rather than a quotation.
 
+## Raised by the core contract set (2026-08-20)
+
+Registered while writing `../01-core/`, after external critique. These were not in SCR-F §40; adding
+them is a pending amendment to that section (§36.5).
+
+| ID | Title | Status |
+|---|---|---|
+| [DEC-21](dec-021-locality-and-reach.md) | Locality and reach | open; leading formulation recorded |
+| [DEC-22](dec-022-cell-schema-multiplicity.md) | Cell schema multiplicity | open; lean recorded |
+| [DEC-23](dec-023-starting-state-ownership.md) | Starting State ownership | open; leading candidate recorded |
+| [DEC-24](dec-024-the-cellular-budget.md) | The cellular budget | open; no owner assigned |
+
+**DEC-24 is different in kind from every other record here.** The others ask what the platform should
+do. DEC-24 asks who is counting what the others cost in aggregate — four of the five properties that
+make this recognisably a local-mechanism instrument are currently under negotiation, each argued
+soundly on its own, with no one watching the total.
+
 ## Candidates not yet registered
 
 SCR-F §45.16 asks reviewers which consequential choice is still being made by accident. Three
@@ -78,6 +95,13 @@ DEC is an amendment to §40 (§36.5) and not a local edit:
   `../02-platform/jobs-and-workers.md`.
 - **Ownership of evidence** — the Corpus is described as one durable body with no notion of whose
   evidence it is. Flagged in `../02-platform/identity-and-access.md`.
+
+## Closed by the core contract set
+
+The declaration chain — found independently by all five core documents and left unowned by the seams
+pass — is **closed, not registered**. It needed a record rather than a component: the **Run Contract**,
+produced by the Reactor at admission and stored permanently by the Run. Defined in
+`../01-core/runs.md` §2.
 
 ## Adding a record
 
