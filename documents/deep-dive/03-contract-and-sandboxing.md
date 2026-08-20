@@ -1,5 +1,14 @@
 # Contract Enforcement
 
+> **Release 2.2.1** · documented 2026-08-20 · **unchanged in 2.2.1.**
+> `backend/asr/contract/` has no diff against the 2.2.0 text of this document; it was
+> re-verified against the source at this release rather than assumed current. Neither
+> 2.2.1 feature family reaches this subsystem — nothing in the system page or the
+> render styles changes what generated code may execute or how it is checked. The
+> allowlists in §1 are unchanged, which is the point: per `CLAUDE.md`, additions to the
+> approved builtin/NumPy surface are spec changes requiring new `REQ-` identifiers, so a
+> release that quietly widened them would be a defect, not a feature.
+
 *Part 3 of the ASR deep-dive series. Subsystem: `backend/asr/contract/` — the restricted execution namespace, the Stage C validation pipeline, and the child-process runner that together turn a language model's Python output into something the harness can trust enough to run.*
 
 ## A note on terminology, up front

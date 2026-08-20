@@ -1,5 +1,13 @@
 # Engine Internals
 
+> **Release 2.2.1** · documented 2026-08-20 · **unchanged in 2.2.1.**
+> `backend/asr/engine/` has no diff against the 2.2.0 text of this document; it was
+> re-verified against the source at this release rather than assumed current. Neither
+> feature family in 2.2.1 — the system page and the uplift-2.2 §8 render styles —
+> touches the engine. Both are, by design, downstream of it: the render styles are
+> display-only (REQ-13.16, REQ-13.2) and cannot reach a fingerprint, and the system
+> page reads session bookkeeping that no engine code is aware of.
+
 This is part 1 of a six-part deep-dive series on Autonomous Semantic Ruliology (ASR), covering `backend/asr/engine/` — the deterministic core that every rule, generated or hand-written, runs on top of. Everything here is upstream of generation (Stage A/B/C) and storage: the engine defines what a cellular-automaton "rule" is allowed to be, what a "tick" means, and what "the same state twice" means. Every code excerpt below is quoted verbatim from the repository with file and line numbers so it can be checked against the source.
 
 The engine package has ten files:

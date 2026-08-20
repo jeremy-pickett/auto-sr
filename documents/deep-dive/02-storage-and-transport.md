@@ -1,5 +1,13 @@
 # Storage & Transport
 
+> **Release 2.2.1** · documented 2026-08-20 · **updated for 2.2.1.**
+> `db.py` gained three session tables and four functions that write them, all serving the
+> system page. Nothing about tick encoding, reconstruction, the cache, or binary framing
+> changed — §3 through §8 below are unchanged from 2.2.0 and were re-verified against the
+> source. The new material is §1's "The session tables" and a qualification added to §2,
+> because the release introduces the first `UPDATE` statements in this module that fire on
+> ordinary traffic, and the immutability argument has to account for them.
+
 This is part two of a six-part deep-technical series on Autonomous Semantic Ruliology (ASR), a single-user local app where an LLM invents cellular-automaton rules and a harness validates, runs, and permanently archives them. This document covers the subsystem that makes the archive durable and playback fast: the SQLite library (`backend/asr/storage/db.py`), tick payload encoding (`backend/asr/storage/encoding.py`), reconstruction and its cache (`backend/asr/storage/reconstruct.py`), and the binary wire framing that carries grids to the browser (`backend/asr/api/framing.py`).
 
 The governing idea, stated in `backend/asr/storage/db.py:1-6`, is that **recorded history is immutable**:
@@ -184,11 +192,91 @@ def _ensure_columns(conn) -> None:
 
 Each new column is guarded by an explicit `PRAGMA table_info` membership check before the `ALTER TABLE`, so running this against an already-migrated database is a cheap no-op, and running it against a pre-Firebase database (from before `owner_uid`/`visibility`/`spark`/`title`/`slug` existed) migrates it in place. This function — not the `CREATE TABLE` text above it — is the actual source of truth for what happened to a table's shape after its first release. `owner_uid` and `visibility` are the Firebase-auth-phase columns (personal library, public/private choice at creation); `spark`, `title`, and `slug` are later naming/creative-hint features, added the same way.
 
+### The session tables (new in 2.2.1)
+
+Release 2.2.1 added three more tables, all of them feeding the system page (`#/system`, documented in parts 5 and 6). They are a different *kind* of data from everything above, and the distinction is the most important thing in this subsection: **`rules`, `runs`, and `ticks` are recorded history; these are operational telemetry.** History is immutable and permanent (REQ-11.3). Telemetry is mutable by design — every row here is written to be overwritten — and losing all three tables would cost the system page its contents and cost the library nothing. Nothing in the corpus, the coverage map, Stage A context, or any fingerprint reads them.
+
+**`generation_sessions`** (`db.py:146-157`) is one row per `POST /rules/generate`:
+
+```sql
+CREATE TABLE IF NOT EXISTS generation_sessions(
+    id TEXT PRIMARY KEY,
+    owner_uid TEXT,
+    started_at TEXT NOT NULL,
+    finished_at TEXT,
+    stage TEXT NOT NULL,
+    outcome TEXT,                       -- ok | broken | generation_failed
+    rule_id INTEGER REFERENCES rules(id),
+    error_text TEXT,
+    model_id TEXT
+);
+CREATE INDEX IF NOT EXISTS gen_sessions_by_started ON generation_sessions(started_at);
+```
+
+The `id` is not new. It is the eight-hex-character `gen_id` that already existed inside `generation/pipeline.py` purely to correlate log lines from concurrent generations; 2.2.1 promotes it from a logging convenience to a persisted primary key, which is why the table's own comment describes it as turning that id "into a persisted, queryable record of one `POST /rules/generate` call." How the rows get filled — a single wrapper around `emit()` rather than a write at each pipeline stage — is part 4's territory.
+
+Note `outcome`'s three values against `rules.status`'s two. A rule row is `ok` or `broken`; a *generation* can also end as `generation_failed`, which is the case where no rule row was ever created at all (Stage A returned something unparseable, the model refused, the API call itself failed). That third outcome is precisely the case the older `rejections` table exists for, and the two are complementary rather than redundant: `rejections` records *what was rejected and why*, as generator-quality corpus data; `generation_sessions` records *that an attempt happened, when, and how long it took*, as operational data.
+
+**`app_sessions`** (`db.py:163-171`) is in the schema and unused. It was the first presence design — one row per browser tab, updated by a client-side heartbeat — and its comment says what happened to it:
+
+```sql
+-- Presence, first attempt: one row per browser tab, updated by a client
+-- heartbeat. Retired in favor of http_sessions below (a real HTTP session
+-- needs no client cooperation at all -- the request traffic that already
+-- happens is enough). Left in the schema, unused, rather than dropped.
+```
+
+Leaving a dead table in the schema rather than dropping it is a deliberate call worth naming, because the alternative looks tidier and is worse. Dropping it would mean either a destructive migration against a live database that already has rows, or a `DROP TABLE IF EXISTS` that silently discards data on every single `connect()` — and the table costs nothing to keep: no code queries it, no index is maintained on write because nothing writes. The `_ensure_columns` step even carries a migration for it (`db.py:216-218`, adding a `status` column) from the brief window when it was live, which is a small honest artifact of the retirement rather than something to clean up.
+
+**`http_sessions`** (`db.py:176-186`) is what replaced it — the colloquial HTTP session, one row per session cookie:
+
+```sql
+CREATE TABLE IF NOT EXISTS http_sessions(
+    id TEXT PRIMARY KEY,
+    owner_uid TEXT,
+    ip_address TEXT,
+    user_agent TEXT,
+    started_at TEXT NOT NULL,
+    last_seen_at TEXT NOT NULL,
+    last_path TEXT,
+    request_count INTEGER NOT NULL DEFAULT 0
+);
+```
+
+The design argument is in the comment: this one is "updated by the session middleware (api/app.py) on every request — no client cooperation required, so no client bug can leave it stale or wrong." That is the whole lesson of the retirement. A heartbeat is a promise the client makes and can break in a dozen ways (a backgrounded tab throttled by the browser, an unmount that never fires, a network blip, a bug in the hook); request traffic is something the server observes directly and cannot be lied to about. The trade is resolution — ordinary browsing produces requests far sparser than a fixed 20-second heartbeat did, which is why the system page's "active" window is two minutes rather than something tight (part 5, §11).
+
+**The four writer functions** (`db.py:320-380`) are small, and two of them carry defensive SQL worth reading closely.
+
+`finish_generation_session` (`db.py:334-350`) ends its `UPDATE` with `WHERE id=? AND finished_at IS NULL`:
+
+```sql
+UPDATE generation_sessions
+   SET finished_at=?, stage='complete', outcome=?, rule_id=?, error_text=?
+ WHERE id=? AND finished_at IS NULL
+```
+
+That guard exists because this function has two callers racing to be the one that finalizes a row — the pipeline's own `complete` event, and a catch-all exception handler in `stream.py` that acts as a safety net for failures the pipeline didn't already turn into a `complete`. Without the guard, a failure occurring *after* a perfectly successful generation (the code comment's example: applying a title) would overwrite a real `ok` outcome with a failure. The guard makes the second finalize a silent no-op instead, so the first writer wins and the row keeps the truthful outcome.
+
+`touch_http_session` (`db.py:352-380`) uses an upsert whose `owner_uid` handling is the interesting part:
+
+```sql
+ON CONFLICT(id) DO UPDATE SET
+    owner_uid=COALESCE(excluded.owner_uid, http_sessions.owner_uid),
+    ...
+    request_count=http_sessions.request_count + 1
+```
+
+Every other column is a flat overwrite; `owner_uid` is a `COALESCE`. The docstring gives the reason: "A request that happens to carry no/an unresolvable auth token must never downgrade a session that a previous request already identified." A browser session mixes authenticated and unauthenticated requests constantly — a static asset fetch, a poll that raced a token refresh — and a flat overwrite would flip a known user back to `NULL` on the next such request, making the system page's "signed in" column flicker for reasons that have nothing to do with the user's actual state. `COALESCE` makes identification sticky: once a session is known, it stays known.
+
 ---
 
 ## 2. Immutability: how it's enforced, and where it would break
 
 REQ-11.3 states it plainly: "No endpoint may modify a stored run other than `PATCH /runs/{id}` setting `user_behavior` and `user_flagged`. Recorded history is immutable." This isn't enforced by a database trigger or a permissions layer inside SQLite — there's no `REVOKE UPDATE` on the `ticks` table. It's enforced entirely by *discipline in the query surface*: nothing in `backend/asr/storage/db.py` issues an `UPDATE` against `ticks` or against any `rules`/`runs` column other than the two named above, and the one `UPDATE` statement that exists in the API layer is scoped to exactly those two columns.
+
+**A qualification added in 2.2.1.** As of this release `db.py` *does* contain `UPDATE` statements that fire constantly — `update_generation_session_stage` on every pipeline stage transition, and `touch_http_session` on literally every HTTP request. The sentence above survives intact because of what they target: `generation_sessions` and `http_sessions` are telemetry tables (§1), not recorded history. No `UPDATE` in this module touches `ticks`, and none touches a `rules` or `runs` column other than the two REQ-11.3 names.
+
+This is worth stating rather than leaving implicit, because "no `UPDATE`s in the storage layer" was previously a property you could verify with a single grep, and after 2.2.1 it is not. The invariant is now *scoped* — mutation is confined to tables that carry no history — which is a weaker thing to check and an easier thing to erode. The check that replaces the grep: an `UPDATE` in this module is legitimate only if its target table is one whose complete loss would cost the library nothing. `ticks` fails that test absolutely; `generation_sessions` and `http_sessions` pass it trivially.
 
 That single mutating endpoint is `PATCH /runs/{run_id}` in `backend/asr/api/routes.py:670-702`:
 
