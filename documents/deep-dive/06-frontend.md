@@ -1,6 +1,18 @@
 # Frontend
 
-This is part six of a six-part deep-technical-documentation series on Autonomous Semantic Ruliology (ASR). It covers `frontend/` — a Vite + React 19 single-page app that is the only way a human ever looks at the library. It has no server-side rendering, no build-time data, and no state of its own beyond a hash route and a few `useState` hooks per view: everything it shows comes from the backend's `/rules`, `/runs`, `/catalog`, and `/library` routes, fetched live.
+> **Release 2.2.1** · documented 2026-08-20 · **updated for 2.2.1.**
+> Two feature families landed here. The run player gained a render-style picker
+> implementing uplift 2.2's §8 — `activity` (REQ-13.17), `kind-stable` (REQ-13.18), a
+> rebuilt `trails` (REQ-13.19) and a real `relief` (REQ-13.20) — covered in §3's new
+> "Render styles" subsection, alongside a replaced kind palette (§2). And a System view
+> was added (§11), with the dev proxy fixes it forced (§12). The Invent view, library
+> browser, rule detail, catalog, and sign-in are unchanged and re-verified.
+>
+> Not built: the recurrent-structure detector (REQ-19.x) from §4–7 of the same uplift.
+> Nothing in this document describes structure detection as existing, and the render
+> styles here deliberately depend on none of it.
+
+This is part six of a six-part deep-technical-documentation series on Autonomous Semantic Ruliology (ASR). It covers `frontend/` — a Vite + React 19 single-page app that is the only way a human ever looks at the library. It has no server-side rendering, no build-time data, and no state of its own beyond a hash route and a few `useState` hooks per view: everything it shows comes from the backend's `/rules`, `/runs`, `/catalog`, `/library`, `/profile`, `/comments`, and `/system` routes, fetched live.
 
 The frontend has one job the rest of the series doesn't: it has to render **the pattern fingerprint's opposite** — a picture — without ever pretending that picture is the whole truth. REQ-9.8.1 (`documents/asr-requirements-v3.md`) says a run never stops just because the *picture* went quiet; the frontend's job is to make sure the human watching doesn't draw that conclusion either. That tension between what's on screen and what's actually still moving underneath it shows up repeatedly below — in the quiet-note banner, in the "your read on it" panel that treats the classifier's guess as a guess, and in the deliberate refusal to let the canvas play ahead of stored ticks.
 
@@ -64,7 +76,9 @@ and then does a flat conditional render — no route table, no lazy loading, no 
 </main>
 ```
 
-Six URL shapes fall out of `parseRoute`, all documented in the comment directly above it (`App.jsx:12-14`): `#/` (landing), `#/library`, `#/mine`, `#/runs/3` and `#/runs/3?tick=150` (a permalink to one exact tick — see §3), `#/rules/3` and `#/r/:slug` (a rule's numeric ID or its human-readable slug reach the same `RuleView`), `#/invent`, and `#/catalog`. `Mine` and `Profile` are two of the nav links that only render when `useAuth()` reports a signed-in `user` (`App.jsx:64-76`) — the personal library and the display-name page have no meaning for an anonymous visitor.
+The URL shapes that fall out of `parseRoute` are all documented in the comment directly above it (`App.jsx:12-14`): `#/` (landing), `#/library`, `#/mine`, `#/runs/3` and `#/runs/3?tick=150` (a permalink to one exact tick — see §3), `#/rules/3` and `#/r/:slug` (a rule's numeric ID or its human-readable slug reach the same `RuleView`), `#/invent`, `#/catalog`, `#/profile`, and — added in 2.2.1 — `#/system` (§11). `Mine` and `Profile` are two of the nav links that only render when `useAuth()` reports a signed-in `user` (`App.jsx:64-76`) — the personal library and the display-name page have no meaning for an anonymous visitor.
+
+`#/system` is deliberately *not* one of those: it renders in the nav unconditionally (`App.jsx:76`), for signed-in and anonymous visitors alike. That matches the backend, where `/system/*` has no access check at all (document 5, §11), and both halves carry the same caveat — it is the posture of a single-user app, and the first thing to revisit if this one ever has strangers on it.
 
 `Library` itself is one component reused for both the global and personal views — `mine` is a boolean prop, not a separate implementation:
 
@@ -113,9 +127,9 @@ The whole visual system lives in one file, `frontend/src/index.css`, opening wit
   --amber: #ffb86b;
 
   /* series (validated against the ground) */
-  --series-variety: #3987e5;
-  --series-changed: #d95926;
-  --series-quiet: #199e70;
+  --series-variety: #96a0ff;
+  --series-changed: #ff7a59;
+  --series-quiet: #3ff0b0;
 
   /* status */
   --ok: #0ca30c;
@@ -127,6 +141,8 @@ The whole visual system lives in one file, `frontend/src/index.css`, opening wit
   --font-mono: 'JetBrains Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
 }
 ```
+
+(The three `--series-*` values were restated in 2.2.1 to match the new kind palette described in §3; they mirror `SERIES` in `palette.js`. Everything else in this block is unchanged.)
 
 The metaphor is worked through consistently rather than being a color scheme slapped on top of generic components:
 
@@ -334,7 +350,8 @@ Four speeds are offered — `slow`/`walk`/`play`/`sprint` at 4/10/30/60 ticks pe
 Each tick is painted once into a small offscreen canvas and cached; playback composites between the current and next cached frame with `globalAlpha`, rather than repainting `ImageData` pixel-by-pixel every animation frame:
 
 ```jsx
-// frontend/src/views/RunView.jsx:323-361
+// frontend/src/views/RunView.jsx:345-465 (abridged to the default path;
+// the style branches are the subject of the next subsection)
 // One tick rendered to a cached offscreen canvas.
 const paintFrame = useCallback((t) => {
   const frames = framesRef.current
@@ -351,29 +368,41 @@ const paintFrame = useCallback((t) => {
     display.brightness !== 'none' && inChunk.properties[display.brightness]
       ? plane(inChunk.properties[display.brightness], within, width, height)
       : null
+  /* ... activity/kind_stable read the previous tick here ... */
   const off = document.createElement('canvas')
   off.width = width
   off.height = height
   const ctx = off.getContext('2d')
   const image = ctx.createImageData(width, height)
   const data = image.data
+  const relief = renderStyle === 'relief'
+  const factor = display.brightness === 'age' ? ageBrightness : levelBrightness
   for (let i = 0; i < colors.length; i++) {
-    const value = colors[i]
-    let [r, g, b] = KIND_RGB[value % KIND_RGB.length]
-    // Kind 0 is the empty ground; it never glows or dims.
-    const isGround = display.color === 'kind' && value === 0
-    if (bright && !isGround) {
-      const level =
-        display.brightness === 'age' ? ageBrightness(bright[i]) : levelBrightness(bright[i])
-      r *= level; g *= level; b *= level
+    let r, g, b
+    if (renderStyle === 'activity') {
+      /* ... */
+    } else if (renderStyle === 'kind_stable') {
+      /* ... */
+    } else {
+      const value = colors[i]
+      const c = KIND_RGB[value % KIND_RGB.length]
+      r = c[0]; g = c[1]; b = c[2]
+      // Kind 0 is the empty ground; it never glows or dims.
+      const isGround = display.color === 'kind' && value === 0
+      if (bright && !isGround) {
+        const level = factor(bright[i])
+        r *= level; g *= level; b *= level
+        if (relief) { /* ... gradient shading ... */ }
+      }
     }
     data[i * 4] = r; data[i * 4 + 1] = g; data[i * 4 + 2] = b; data[i * 4 + 3] = 255
   }
   ctx.putImageData(image, 0, 0)
   frames.set(t, off)
-  while (frames.size > 6) frames.delete(frames.keys().next().value)
+  const keep = renderStyle === 'trails' ? TRAIL_WINDOW_TICKS + 4 : 6
+  while (frames.size > keep) frames.delete(frames.keys().next().value)
   return off
-}, [propsKey, display])
+}, [propsKey, display, renderStyle])
 
 // Draw tick t, optionally crossfaded `frac` of the way to t+1.
 const drawBlend = useCallback((t, frac) => {
@@ -394,12 +423,53 @@ const drawBlend = useCallback((t, frac) => {
       ctx.globalAlpha = 1
     }
   }
-}, [paintFrame])
+  /* ... trails compositing and the glow canvas follow ... */
+}, [paintFrame, renderStyle])
 ```
 
-The frame cache is capped at six entries (`while (frames.size > 6) frames.delete(...)`) — enough to smooth a crossfade window without holding an unbounded number of decoded canvases. Color comes from `KIND_COLORS`/`KIND_RGB` in `frontend/src/lib/palette.js` — eight validated colors (kind 0 is `#182130`, the "empty ground," which per the comment above "never glows or dims" regardless of brightness mapping) — and brightness comes from one of two curves, `ageBrightness` (a narrow 88–100% glow that decays with age, retuned twice per the file's comments to avoid reading as "dull") or `levelBrightness` (a linear 72–100% ramp for an arbitrary 0–255 property).
+The frame cache is normally capped at six entries — enough to smooth a crossfade window without holding an unbounded number of decoded canvases. In 2.2.1 that cap became conditional, because `trails` composites a long window of past frames and would otherwise evict them faster than it could use them (`const keep = renderStyle === 'trails' ? TRAIL_WINDOW_TICKS + 4 : 6`, `RunView.jsx:457`).
+
+Color comes from `KIND_COLORS`/`KIND_RGB` in `frontend/src/lib/palette.js`, and brightness from one of two curves: `ageBrightness` (a narrow 88–100% glow that decays with age, retuned twice per the file's comments to avoid reading as "dull") or `levelBrightness` (a linear 72–100% ramp for an arbitrary 0–255 property).
+
+**The palette was replaced in 2.2.1.** The eight kind colors are now a bioluminescent/instrument-glow set rather than the generic vivid categorical set that preceded them, and the file's header comment records both the reason and the measurements:
+
+```js
+// frontend/src/lib/palette.js:1-6
+// The observatory palette. Kind 0 reads as empty ground; kinds 1..7 are a
+// bioluminescent/instrument-glow set — replaced 2026-08-20 (was a generic
+// vivid categorical set with one jarring pure-saturation green) to match the
+// "automaton is the light source" identity index.css already declares. Every
+// kind clears >= 7.5:1 contrast on #0a0e14 (range 7.5-13.2:1), minimum
+// pairwise YCbCr separation is 48.1 (up from the prior palette's ~36 floor).
+```
+
+Two changes matter beyond aesthetics. Kind 0 moved from `#182130` to `#0a0e14` — exactly `--ground`, the page background — so empty ground is now genuinely absent rather than a slightly-lighter tile; it still "never glows or dims." And minimum pairwise separation went *up* to 48.1 from roughly 36, meaning the new palette is measurably easier to tell apart kind-by-kind, not merely better looking. The `SERIES` colors for the sparkline charts were restated in the same vocabulary (`palette.js:62-66`).
 
 The "smooth" checkbox toggles whether the crossfade fraction is computed at all — when off, `drawBlend` is always called with `frac = 0` and playback steps discretely tick to tick instead of tweening (`smoothRef.current ? Math.min(carried, 1) : 0`, `RunView.jsx:314`).
+
+### Render styles (new in 2.2.1)
+
+The run player has a second selector next to the speed picker (`RunView.jsx:739-751`) offering six styles: `flat`, `glow`, `activity`, `kind-stable`, `trails`, `relief`. This implements §8 of the visualization uplift (`documents/requirements/frontend-vis-uplift-2.2.1.md`), and the governing requirement is REQ-13.16: **every one of these is display only.** None affects any fingerprint, the classifier, stopping, storage, or the coverage map. REQ-13.20.2 adds that the choice is never persisted to the run — it is UI state, and a run does not have a render style the way it has a width.
+
+They are also strictly *layered on top of* the existing color/brightness mapping (REQ-13.2), not new entries in it. The comment on the state hook says so explicitly (`RunView.jsx:194-200`), and the distinction is what keeps the picker from becoming a third axis of display precedence.
+
+`glow` predates this uplift and is not covered by any REQ; it was kept as-is.
+
+**`activity` (REQ-13.17)** lights a cell where `kind` changed on this exact tick and leaves everything else at ground. It answers "where is computation happening," which the default view answers only by implication. Its cost is the reason the uplift called it nearly free: the comparison needs the previous tick's `kind` plane, which is almost always sitting in an already-fetched chunk. The lookup reaches across a chunk boundary at worst and **never triggers a fetch** (`RunView.jsx:371-390`) — if the previous chunk is not cached, the comparison is simply skipped for that frame.
+
+**`kind-stable` (REQ-13.18)** is the inverse and the most interesting of the six. A cell glows where `kind` held constant *but the mapped brightness property changed underneath it*, and everything else is dimmed to 10%. A grid that reads as completely frozen in the default view lights up like a city in this one.
+
+This is the clearest visual expression the app has of REQ-9.7's central distinction — pattern state versus computational state — and it is the continuous, per-cell form of the "picture went quiet" banner described later in this section. The uplift rates it the highest value-to-cost item in the document precisely because it needs no detector and no new storage: everything it shows is already in reconstructed history.
+
+The backend test that pins the data contract these two views read is `test_slow_burn_kind_is_stable_while_memory_stays_active_before_the_flip` (`backend/tests/test_run.py:89-104`, citing REQ-15.12.1). Before `slow_burn`'s flip, every cell's `kind` is identical tick to tick while `memory` changes on *every* tick — so the same fixture reads as entirely dark under `activity` and entirely lit under `kind-stable`, then swaps. The canvas rendering itself has no test harness; that test covers the reconstructible data underneath it, which is the honest boundary.
+
+**`trails` (REQ-13.19)** composites the last 40 ticks into one frame with geometrically decaying alpha (`TRAIL_WINDOW_TICKS = 40`, `TRAIL_BASE_ALPHA = 0.5`, `TRAIL_DECAY = 0.9`, `RunView.jsx:19-21`). The compositing detail worth reading is the blend mode (`RunView.jsx:489-503`): every pixel in a painted frame is fully opaque, kind 0 included, so drawing older frames normally would *blot out* the current one rather than ghosting behind it. The loop sets `globalCompositeOperation = 'lighter'` — additive — so an older frame can only brighten a past-active cell into a fading ghost, never erase what the current tick drew. It stops early when a contribution drops below 0.005 alpha or when a frame isn't cached (a scrub jump landing past what has been painted).
+
+REQ-13.19.2 requires that trails never be the default and always be labeled, because a trails frame is not a tick and a viewer who doesn't know that is reading a smear as a state. The implementation satisfies this with an on-canvas badge (`RunView.jsx:678-682`) reading `trails — last 40 ticks blended, not tick N alone`.
+
+**`relief` (REQ-13.20)** treats the mapped brightness property as a height field, derives a surface normal from the local gradient, and shades it with a fixed light direction (`RunView.jsx:429-449`) — replacing a cruder single-neighbor emboss. The uplift marks it optional and lowest-value, and it carries a caveat the UI must respect: only the legibility trick is borrowed from surface rendering, **nothing here is three-dimensional**, and the interface must not imply otherwise.
+
+Two implementation notes cut across the set. Relief bakes its shading into cached pixels, so the frame cache is invalidated when the style changes, not only when the display mapping or run does (`RunView.jsx:519-521`). And `activity`/`kind-stable` automatically get the glow canvas that `glow` uses (`RunView.jsx:511`) — since their flagged cells are boosted near-white against a near-black field, blurring the whole frame blooms only the cells that were flagged, which is the "bigger and more obvious" half that dimmed cells don't receive.
 
 ### Canvas zoom
 
@@ -981,30 +1051,82 @@ So a `run`/`rule` view lights up `Library` unless its route carries `from === 'm
 
 Two smaller items from the same commit round out the picture of the frontend/backend seam. The footer links to a plain RSS 2.0 feed of newly invented public rules — `<a href="/library/feed.rss" target="_blank" rel="noopener noreferrer">RSS — watch the library grow</a>` (`App.jsx:99`) — served by the backend at `GET /library/feed.rss` (`backend/asr/api/routes.py:726-749`, capped at the 30 most recent public rules, `MOST_RSS_ITEMS = 30`); the frontend does nothing more than link to it, since RSS is consumed by an external reader, not rendered in-app. And the `page_size: int = Query(24, ge=1, le=200)` default discussed in §5 (`backend/asr/api/routes.py:189`) is what the frontend's pager silently inherits — there is no frontend-side page-size control or override.
 
-## 10. Build and dev tooling
+## 10. The System view (new in 2.2.1)
 
-`npm run dev` (`package.json:7`) starts the Vite dev server. Vite's proxy config forwards exactly the four path prefixes the frontend talks to on the FastAPI backend, so `fetch('/rules?...')` et al. resolve against `localhost:8000` in dev without any CORS configuration or absolute URLs baked into `api.js`:
+`frontend/src/views/SystemView.jsx` (167 lines) renders `#/system` from the two routes in document 5, §11. It is the app's only polling view: a single `useEffect` fetches both endpoints every two seconds (`POLL_MS = 2000`, `SystemView.jsx:4`), with a `cancelled` flag guarding against a late response landing after unmount and the interval cleared on teardown (`SystemView.jsx:63-72`).
+
+### The pipeline map
+
+The page's centerpiece is a four-node process map — Stage A (describe) → Stage B (implement) → Stage C (validate) → Library (stored) — with any in-flight generation shown pulsing on the node it currently occupies. The mapping from event name to node is a plain lookup table (`SystemView.jsx:9-19`):
+
+```jsx
+// Which pipeline node a generation session's last-seen stage belongs to.
+// validation_failed/repairing fold into Stage C -- a repair is still the
+// harness working on the same implementation, not a new stage.
+const STAGE_NODE = {
+  stage_a_started: 0, stage_a_complete: 0,
+  stage_b_started: 1, stage_b_complete: 1,
+  validating: 2, validation_failed: 2, repairing: 2, running: 2,
+}
+```
+
+Two modelling decisions are embedded there. `validation_failed` and `repairing` fold into Stage C rather than getting nodes of their own, on the grounds that a repair attempt is still the harness working on the same implementation — which matches how the pipeline itself treats the one permitted repair (document 4). And `running` — the canonical run — also folds into Stage C, since from the pipeline's perspective the trial execution is part of validating that the rule works. An unrecognized stage falls back to node 2 (`STAGE_NODE[session.stage] ?? 2`, `SystemView.jsx:79`) rather than disappearing from the map.
+
+The pulse itself is CSS, not JavaScript: `.pipeline-node.active` runs a `pipeline-pulse` keyframe animation (`index.css`), so an in-flight generation animates without the two-second poll driving any per-frame work.
+
+### The session table
+
+Below the map, the merged session list renders with columns for kind, who, IP, User-Agent, started, last active, request count, and last path. Three small presentation decisions are worth noting because each avoids a worse alternative:
+
+- **`who` is `user` or `guest`,** never an identifier — the frontend never receives `owner_uid` at all, because the backend already reduced it to a boolean (document 5, §11).
+- **User-Agent strings are truncated to 28 characters with the full value on hover** (`shortUserAgent`, `SystemView.jsx:52-55`). The comment gives the reasoning: a short identifiable prefix with the whole string in a `title` beats either truncating badly or "writing a whole UA parser for a debug table."
+- **`outcomeLabel` (`SystemView.jsx:41-47`) resolves the two session kinds to one column.** An HTTP session shows its last path; a generation shows `running`, `stored as rule #N`, `rejected — <error>`, or `generation failed` — which is `generation_sessions.outcome`'s three values plus the in-flight case, rendered in plain language per REQ-0.1.
+
+An `in_flight` count also drives the header line, which reads either `N generations in flight` (correctly singular at one) or `idle`, followed by process uptime.
+
+---
+
+## 11. Build and dev tooling
+
+`npm run dev` (`package.json:7`) starts the Vite dev server. Vite's proxy config forwards the path prefixes the frontend talks to on the FastAPI backend, so `fetch('/rules?...')` et al. resolve against `localhost:8000` in dev without any CORS configuration or absolute URLs baked into `api.js`. **All three of the settings below were changed in 2.2.1, each fixing a real failure:**
 
 ```js
-// frontend/vite.config.js:1-17
+// frontend/vite.config.js:1-28
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 const backend = 'http://localhost:8000'
 
+// xfwd: true makes the proxy add X-Forwarded-For (and X-Forwarded-Port)
+// with the real browser's address -- without it, every request the
+// backend sees comes from this proxy's own outbound connection, i.e.
+// 127.0.0.1 for everyone, which is what api/app.py's session tracking
+// was silently recording until this was added.
+const proxied = { target: backend, xfwd: true }
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
+    host: true,
     proxy: {
-      '/rules': backend,
-      '/runs': backend,
-      '/catalog': backend,
-      '/library': backend,
+      '/rules': proxied,
+      '/runs': proxied,
+      '/catalog': proxied,
+      '/library': proxied,
+      '/system': proxied,
+      '/profile': proxied,
+      '/comments': proxied,
     },
   },
 })
 ```
+
+**The missing prefixes were a silent bug, and the shape of it is worth remembering.** `/profile` and `/comments` had backend routes and frontend code calling them, but no proxy entry — so in dev those requests fell through to the Vite dev server itself, which knows nothing about them. Sign-in profile edits and comment edit/delete were broken in development only, in a way that looked like frontend bugs. `CLAUDE.md` now carries the standing warning this produced: watch for the gap again whenever a new top-level route is added to the backend. `/system` was added to the same list when the system page landed.
+
+**`host: true`** binds the dev server to `0.0.0.0` instead of Vite's loopback-only default. This droplet is reached by external IP, and a loopback bind is simply unreachable from outside — a dev server that is "running fine" and completely inaccessible. The diagnostic recorded in `CLAUDE.md` is to check `ss -tlnp | grep 5173` for a loopback-only bind before suspecting anything else.
+
+**`xfwd: true`** is the frontend half of the client-IP fix documented in document 5, §10. Without it the backend's session tracking recorded `127.0.0.1` for every visitor, since the proxy makes its own outbound connection; with it, `X-Forwarded-For` carries the real address for `_client_ip` to prefer.
 
 Note that `/rules/generate`'s streaming response and `/runs/{id}/grids`'s binary payload both pass through this same proxy unmodified — Vite's proxy is a raw pass-through, so neither the SSE framing nor the binary grid framing needs special-casing in dev versus a production deployment where the frontend build is served separately from the API.
 
