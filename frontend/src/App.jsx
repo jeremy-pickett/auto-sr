@@ -22,10 +22,11 @@ function parseRoute() {
     return {
       view: 'run', id: Number(id),
       tick: params.has('tick') ? Number(params.get('tick')) : undefined,
+      from: params.get('from'),
     }
   }
-  if (head === 'rules' && id) return { view: 'rule', id: Number(id) }
-  if (head === 'r' && id) return { view: 'rule', slug: id }
+  if (head === 'rules' && id) return { view: 'rule', id: Number(id), from: params.get('from') }
+  if (head === 'r' && id) return { view: 'rule', slug: id, from: params.get('from') }
   if (head === 'invent') return { view: 'invent' }
   if (head === 'catalog') return { view: 'catalog' }
   return { view: 'landing' }
@@ -49,8 +50,23 @@ export default function App() {
           Autonomous Semantic Ruliology
         </a>
         <nav>
-          <a href="#/library" className={['library', 'run', 'rule'].includes(route.view) ? 'active' : ''}>Library</a>
-          {user && <a href="#/mine" className={route.view === 'mine' ? 'active' : ''}>Mine</a>}
+          {/* A rule/run reached from Mine carries ?from=mine (see
+              RuleCard in Library.jsx) so it doesn't wrongly light up
+              Library instead of the section you actually came from. */}
+          <a
+            href="#/library"
+            className={route.view === 'library' || (['run', 'rule'].includes(route.view) && route.from !== 'mine') ? 'active' : ''}
+          >
+            Library
+          </a>
+          {user && (
+            <a
+              href="#/mine"
+              className={route.view === 'mine' || (['run', 'rule'].includes(route.view) && route.from === 'mine') ? 'active' : ''}
+            >
+              Mine
+            </a>
+          )}
           <a href="#/invent" className={route.view === 'invent' ? 'active' : ''}>Invent</a>
           <a href="#/catalog" className={route.view === 'catalog' ? 'active' : ''}>Modifiers</a>
         </nav>

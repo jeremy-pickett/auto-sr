@@ -19,14 +19,18 @@ function BehaviorChip({ run }) {
   )
 }
 
-function RuleCard({ rule, hidden, onToggleHidden, signedIn, onFavoriteChange }) {
+function RuleCard({ rule, hidden, onToggleHidden, signedIn, onFavoriteChange, mine }) {
   const run = rule.canonical_run
   const [favBusy, setFavBusy] = useState(false)
-  const detailHref = rule.slug ? `#/r/${rule.slug}` : `#/rules/${rule.id}`
+  // Carries "you got here from Mine" through to the nav bar, so it
+  // doesn't wrongly light up "Library" for a rule/run you reached from
+  // your personal library — see App.jsx's active-tab logic.
+  const fromMine = mine ? '?from=mine' : ''
+  const detailHref = (rule.slug ? `#/r/${rule.slug}` : `#/rules/${rule.id}`) + fromMine
   const open = () => {
     // A playable rule opens its canonical run; a broken one opens its
     // details — the failure is part of the library too.
-    window.location.hash = run ? `#/runs/${run.id}` : detailHref
+    window.location.hash = run ? `#/runs/${run.id}${fromMine}` : detailHref
   }
   const details = (event) => {
     event.stopPropagation()
@@ -273,6 +277,7 @@ export default function Library({ mine = false } = {}) {
                   onToggleHidden={toggleHidden}
                   signedIn={!!user}
                   onFavoriteChange={onFavoriteChange}
+                  mine={mine}
                 />
               ))}
             </div>
