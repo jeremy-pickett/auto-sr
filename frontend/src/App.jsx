@@ -6,12 +6,13 @@ import RuleView from './views/RuleView.jsx'
 import Catalog from './views/Catalog.jsx'
 import Invent from './views/Invent.jsx'
 import Profile from './views/Profile.jsx'
+import SystemView from './views/SystemView.jsx'
 import { AuthControl } from './lib/AuthControl.jsx'
 import { useAuth } from './lib/firebase'
 
 // Tiny hash router: #/ (landing), #/library, #/mine, #/runs/3,
 // #/runs/3?tick=150 (a permalink to a specific tick), #/rules/3,
-// #/r/:slug (a titled rule's clean URL), #/invent, #/catalog
+// #/r/:slug (a titled rule's clean URL), #/invent, #/catalog, #/system
 function parseRoute() {
   const raw = window.location.hash.replace(/^#\/?/, '')
   const [path, query] = raw.split('?')
@@ -31,6 +32,7 @@ function parseRoute() {
   if (head === 'invent') return { view: 'invent' }
   if (head === 'catalog') return { view: 'catalog' }
   if (head === 'profile') return { view: 'profile' }
+  if (head === 'system') return { view: 'system' }
   return { view: 'landing' }
 }
 
@@ -71,6 +73,7 @@ export default function App() {
           )}
           <a href="#/invent" className={route.view === 'invent' ? 'active' : ''}>Invent</a>
           <a href="#/catalog" className={route.view === 'catalog' ? 'active' : ''}>Modifiers</a>
+          <a href="#/system" className={route.view === 'system' ? 'active' : ''}>System</a>
           {user && (
             <a href="#/profile" className={route.view === 'profile' ? 'active' : ''}>Profile</a>
           )}
@@ -88,6 +91,7 @@ export default function App() {
         {route.view === 'invent' && <Invent />}
         {route.view === 'catalog' && <Catalog />}
         {route.view === 'profile' && <Profile />}
+        {route.view === 'system' && <SystemView />}
       </main>
 
       <footer className="footer">

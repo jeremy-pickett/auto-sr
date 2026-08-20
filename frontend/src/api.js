@@ -142,3 +142,12 @@ export const setDisplayName = (displayName) =>
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ display_name: displayName }),
   }).then(asJson)
+
+export const getSystemStatus = () => authorizedFetch('/system/status').then(asJson)
+
+export const getSystemSessions = (params = {}) => {
+  const query = new URLSearchParams(
+    Object.entries(params).filter(([, value]) => value !== undefined && value !== '')
+  )
+  return authorizedFetch(`/system/sessions?${query}`).then(asJson)
+}
