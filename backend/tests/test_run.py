@@ -86,6 +86,22 @@ def test_slow_burn_outlives_its_quiet_start():
     assert result.stopped_because == "frozen"  # memory saturates later
 
 
+def test_slow_burn_kind_is_stable_while_memory_stays_active_before_the_flip():
+    # REQ-15.12.1 (uplift 2.2.1 draft, frontend render modes §8): the data
+    # contract behind the activity field (REQ-13.17) and kind-stable/
+    # state-active view (REQ-13.18) -- before the flip, every cell's kind
+    # never changes tick to tick (the activity field would read entirely
+    # dark) while memory changes on every single tick (the kind-stable/
+    # state-active view would read entirely lit). The actual canvas
+    # rendering is frontend code with no test harness of its own; this is
+    # the reconstructible data those two views are computed from.
+    result = run_fixture(slow_burn_fixture.Rule, seed=2, width=10, height=10)
+    for t in range(1, slow_burn_fixture.FLIP_AT):
+        prev, cur = result.ticks[t - 1].arrays, result.ticks[t].arrays
+        assert np.array_equal(prev["kind"], cur["kind"]), f"kind changed at tick {t}"
+        assert not np.array_equal(prev["memory"], cur["memory"]), f"memory held at tick {t}"
+
+
 def test_pattern_settled_at_zero_for_a_run_that_never_moved():
     declaration = Declaration(kinds=2, neighbors="all_8", reach=1)
     result = run_rule(

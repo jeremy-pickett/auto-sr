@@ -1,18 +1,19 @@
-// The observatory palette. Kind 0 reads as empty ground; kinds 1..7
-// take the validated categorical slots — brightened again 2026-08-19
-// (each now >= 7.5:1 contrast on #0a0e14; pairwise separation is
-// down from the first brightening pass but still comfortably clear,
-// min ~36 in a YCbCr distance check).
+// The observatory palette. Kind 0 reads as empty ground; kinds 1..7 are a
+// bioluminescent/instrument-glow set — replaced 2026-08-20 (was a generic
+// vivid categorical set with one jarring pure-saturation green) to match the
+// "automaton is the light source" identity index.css already declares. Every
+// kind clears >= 7.5:1 contrast on #0a0e14 (range 7.5-13.2:1), minimum
+// pairwise YCbCr separation is 48.1 (up from the prior palette's ~36 floor).
 
 export const KIND_COLORS = [
-  '#182130', // kind 0: empty ground
-  '#95c2fa', // blue
-  '#f49e7b', // orange
-  '#38f0b0', // aqua
-  '#ffbc3a', // yellow
-  '#f2a4c0', // magenta
-  '#00f300', // green
-  '#e5e2fd', // violet
+  '#0a0e14', // kind 0: empty ground (matches --ground exactly)
+  '#38c8f0', // cyan glow (near the chrome accent, --cyan: #4cc9f0)
+  '#ff7a59', // coral ember
+  '#3ff0b0', // teal-aqua
+  '#ffc247', // amber gold
+  '#d97bff', // magenta-violet
+  '#96a0ff', // periwinkle
+  '#ff8fc4', // rose-pink
 ]
 
 const rgb = (hex) => [
@@ -59,7 +60,7 @@ export function levelBrightness(value) {
 }
 
 export const SERIES = {
-  variety: '#3987e5',
-  cells_changed: '#d95926',
-  kind_quiet_for: '#199e70',
+  variety: '#96a0ff',
+  cells_changed: '#ff7a59',
+  kind_quiet_for: '#3ff0b0',
 }

@@ -7,9 +7,32 @@ import { Comments } from '../lib/Comments.jsx'
 import { copyText } from '../lib/clipboard'
 import { useModifierBlurbs } from '../lib/modifierCatalog'
 import { BEHAVIOR_BLURBS } from '../lib/behaviorBlurbs'
+import { Prose } from '../lib/Prose.jsx'
 
 const CHUNK = 100 // ticks per grid request: small enough to land fast
 const BEHAVIORS = ['settles', 'repeats', 'noisy', 'structured', 'unclassified']
+
+// Trails (REQ-13.19): ticks composited into one frame, and how fast each
+// one's contribution decays. TRAIL_WINDOW_TICKS matches the uplift's
+// documented default; kept as a frontend constant rather than wired to a
+// backend setting, since trail compositing is pure client-side canvas
+// work with nothing for the backend to configure.
+const TRAIL_WINDOW_TICKS = 40
+const TRAIL_BASE_ALPHA = 0.5
+const TRAIL_DECAY = 0.9 // 0.9^40 ~= 0.015 of base -- a full window fades to negligible
+
+// Relief (REQ-13.20): a real height-field-from-gradient + surface-normal
+// + fixed-light-direction shade, not just an average against one neighbor.
+const RELIEF_HEIGHT_SCALE = 3
+const RELIEF_LIGHT = [0.35, 0.35, 0.868] // upper-left, mostly overhead; already ~unit length
+
+// activity/kind_stable are "does this cell matter right now" highlights --
+// worth pushing past merely "full brightness" so the flagged cells read as
+// obviously distinct rather than just the brightest thing already on
+// screen (they also get the glow-canvas bloom below, so this is the
+// per-pixel half of "bigger, brighter, more obvious").
+const IMPORTANT_BOOST = 1.4
+const UNIMPORTANT_DIM = 0.1
 
 // Some browsers (older Safari in particular) never fire the download
 // if the triggering <a> isn't attached to the document when .click()
@@ -169,6 +192,13 @@ export default function RunView({ runId, initialTick }) {
   const [exportError, setExportError] = useState(null)
   const [smooth, setSmooth] = useState(true)
   const [roundCells, setRoundCells] = useState(false)
+  // flat | glow | trails | relief | activity | kind_stable. activity
+  // (REQ-13.17) and kind_stable (REQ-13.18) are styles, not new
+  // color/brightness mapping choices (REQ-13.2) -- both compose over the
+  // existing per-tick canvas per REQ-13.16, the same way relief already
+  // does, rather than adding new entries to the color-by/brightness-by
+  // selectors.
+  const [renderStyle, setRenderStyle] = useState('flat')
   const [loopEnabled, setLoopEnabled] = useState(false)
   const [loopStart, setLoopStart] = useState(0)
   const [loopEnd, setLoopEnd] = useState(null) // null until the run loads
@@ -179,6 +209,7 @@ export default function RunView({ runId, initialTick }) {
 
   const stageRef = useRef(null)
   const canvasRef = useRef(null)
+  const glowCanvasRef = useRef(null)
   const pendingRef = useRef(new Set())
   const chunksRef = useRef(chunks)
   chunksRef.current = chunks
@@ -336,29 +367,98 @@ export default function RunView({ runId, initialTick }) {
       display.brightness !== 'none' && inChunk.properties[display.brightness]
         ? plane(inChunk.properties[display.brightness], within, width, height)
         : null
+
+    // activity (REQ-13.17) and kind_stable (REQ-13.18) both compare this
+    // tick against the previous one. `kind` and whatever's mapped to
+    // brightness are already part of gridProps, so the previous tick's
+    // values are usually already sitting in an already-cached chunk --
+    // this only reaches across a chunk boundary, it never triggers a new
+    // fetch (REQ-13.17.1's "nearly free").
+    const needsPrevTick = renderStyle === 'activity' || renderStyle === 'kind_stable'
+    let prevKind = null
+    let prevBright = null
+    if (needsPrevTick && t > 0) {
+      const prevChunk = chunksRef.current.get(`${propsKey}|${Math.floor((t - 1) / CHUNK)}`)
+      if (prevChunk) {
+        const prevWithin = t - 1 - prevChunk.firstTick
+        prevKind = plane(prevChunk.properties.kind, prevWithin, width, height)
+        if (renderStyle === 'kind_stable' && bright && prevChunk.properties[display.brightness]) {
+          prevBright = plane(prevChunk.properties[display.brightness], prevWithin, width, height)
+        }
+      }
+    }
+    const kindNow = display.color === 'kind' ? colors : plane(inChunk.properties.kind, within, width, height)
+
     const off = document.createElement('canvas')
     off.width = width
     off.height = height
     const ctx = off.getContext('2d')
     const image = ctx.createImageData(width, height)
     const data = image.data
+    const relief = renderStyle === 'relief'
+    const factor = display.brightness === 'age' ? ageBrightness : levelBrightness
     for (let i = 0; i < colors.length; i++) {
-      const value = colors[i]
-      let [r, g, b] = KIND_RGB[value % KIND_RGB.length]
-      // Kind 0 is the empty ground; it never glows or dims.
-      const isGround = display.color === 'kind' && value === 0
-      if (bright && !isGround) {
-        const level =
-          display.brightness === 'age' ? ageBrightness(bright[i]) : levelBrightness(bright[i])
-        r *= level; g *= level; b *= level
+      let r, g, b
+
+      if (renderStyle === 'activity') {
+        // Lit where kind changed on this exact tick, dark otherwise --
+        // "where is computation happening," independent of what the
+        // color/brightness mapping above is set to.
+        const changed = prevKind != null && kindNow[i] !== prevKind[i]
+        const c = changed ? KIND_RGB[1 % KIND_RGB.length] : KIND_RGB[0]
+        r = c[0]; g = c[1]; b = c[2]
+        if (changed) { r *= IMPORTANT_BOOST; g *= IMPORTANT_BOOST; b *= IMPORTANT_BOOST }
+      } else if (renderStyle === 'kind_stable') {
+        // Glows where kind held constant but the mapped brightness
+        // property changed underneath it -- the cell-level form of the
+        // `drifting` idea and the continuous form of the ran_out banner.
+        const stable = prevKind != null && kindNow[i] === prevKind[i]
+        const active = stable && bright != null && prevBright != null && bright[i] !== prevBright[i]
+        const value = colors[i]
+        const c = KIND_RGB[value % KIND_RGB.length]
+        r = c[0]; g = c[1]; b = c[2]
+        if (active) { r *= IMPORTANT_BOOST; g *= IMPORTANT_BOOST; b *= IMPORTANT_BOOST }
+        else { r *= UNIMPORTANT_DIM; g *= UNIMPORTANT_DIM; b *= UNIMPORTANT_DIM }
+      } else {
+        const value = colors[i]
+        const c = KIND_RGB[value % KIND_RGB.length]
+        r = c[0]; g = c[1]; b = c[2]
+        // Kind 0 is the empty ground; it never glows or dims.
+        const isGround = display.color === 'kind' && value === 0
+        if (bright && !isGround) {
+          const level = factor(bright[i])
+          r *= level; g *= level; b *= level
+          // Relief: a real height-field-from-gradient shading pass -- the
+          // brightness values around this cell approximate a surface, its
+          // gradient gives a normal, and a fixed light direction shades
+          // it, instead of the old single-neighbor-average emboss.
+          if (relief) {
+            const x = i % width
+            const y = (i / width) | 0
+            const leftB = x > 0 ? factor(bright[i - 1]) : level
+            const rightB = x < width - 1 ? factor(bright[i + 1]) : level
+            const upB = y > 0 ? factor(bright[i - width]) : level
+            const downB = y < height - 1 ? factor(bright[i + width]) : level
+            const dx = (rightB - leftB) * RELIEF_HEIGHT_SCALE
+            const dy = (downB - upB) * RELIEF_HEIGHT_SCALE
+            const invLen = 1 / Math.sqrt(dx * dx + dy * dy + 1)
+            const diffuse = (-dx * RELIEF_LIGHT[0] - dy * RELIEF_LIGHT[1] + RELIEF_LIGHT[2]) * invLen
+            const shade = Math.max(0.5, Math.min(1.6, diffuse / RELIEF_LIGHT[2]))
+            r *= shade; g *= shade; b *= shade
+          }
+        }
       }
+
       data[i * 4] = r; data[i * 4 + 1] = g; data[i * 4 + 2] = b; data[i * 4 + 3] = 255
     }
     ctx.putImageData(image, 0, 0)
     frames.set(t, off)
-    while (frames.size > 6) frames.delete(frames.keys().next().value)
+    // Trails needs the last TRAIL_WINDOW_TICKS frames available to
+    // composite; every other style only ever looks one or two ticks back.
+    const keep = renderStyle === 'trails' ? TRAIL_WINDOW_TICKS + 4 : 6
+    while (frames.size > keep) frames.delete(frames.keys().next().value)
     return off
-  }, [propsKey, display])
+  }, [propsKey, display, renderStyle])
 
   // Draw tick t, optionally crossfaded `frac` of the way to t+1.
   const drawBlend = useCallback((t, frac) => {
@@ -379,13 +479,51 @@ export default function RunView({ runId, initialTick }) {
         ctx.globalAlpha = 1
       }
     }
-  }, [paintFrame])
+    // Trails (REQ-13.19): every pixel in `current` is fully opaque (kind 0
+    // included), so a plain draw would blot out any afterimage completely.
+    // Composite dimmed older frames on top with additive blending instead
+    // -- it brightens a past-active cell into a fading ghost without
+    // erasing whatever the current frame drew there. TRAIL_WINDOW_TICKS
+    // ticks back, alpha decaying geometrically; the loop stops early once
+    // a contribution is too small to matter or a frame isn't cached yet
+    // (a scrub jump lands past what's been painted).
+    if (renderStyle === 'trails') {
+      ctx.globalCompositeOperation = 'lighter'
+      for (let k = 1; k <= TRAIL_WINDOW_TICKS && t - k >= 0; k++) {
+        const alpha = TRAIL_BASE_ALPHA * TRAIL_DECAY ** k
+        if (alpha < 0.005) break
+        const older = paintFrame(t - k)
+        if (!older) break
+        ctx.globalAlpha = alpha
+        ctx.drawImage(older, 0, 0)
+      }
+      ctx.globalAlpha = 1
+      ctx.globalCompositeOperation = 'source-over'
+    }
+    // Glow: the same frame painted onto a second canvas behind the crisp
+    // one, blurred and boosted via CSS filter (grid-canvas-glow in
+    // index.css). Pure compositing -- paintFrame's pixel math never
+    // changes for this style. activity/kind_stable get it automatically,
+    // not just glow itself: their "important" cells are already boosted
+    // near-white while everything else sits near-black, so blurring the
+    // whole frame only blooms the cells that were flagged -- exactly the
+    // "bigger, more obvious" half the dimmed cells don't get.
+    const glowCanvas = glowCanvasRef.current
+    const autoGlow = renderStyle === 'glow' || renderStyle === 'activity' || renderStyle === 'kind_stable'
+    if (glowCanvas && autoGlow) {
+      const gctx = glowCanvas.getContext('2d')
+      gctx.imageSmoothingEnabled = false
+      gctx.globalAlpha = 1
+      gctx.drawImage(current, 0, 0)
+    }
+  }, [paintFrame, renderStyle])
 
-  // Rendered frames depend on the display mapping; start fresh when it
-  // changes (or on a new run).
+  // Rendered frames depend on the display mapping and the render style
+  // (relief bakes shading into the cached pixels); start fresh when either
+  // changes, or on a new run.
   useEffect(() => {
     framesRef.current = new Map()
-  }, [display, propsKey, runId])
+  }, [display, propsKey, runId, renderStyle])
 
   drawBlendRef.current = drawBlend
 
@@ -524,6 +662,13 @@ export default function RunView({ runId, initialTick }) {
         <div className="grid-zoom-viewport">
           <div className="grid-shell" style={{ transform: `scale(${zoom})`, transformOrigin: 'center' }}>
             <canvas
+              ref={glowCanvasRef}
+              className={`grid-canvas-glow ${['glow', 'activity', 'kind_stable'].includes(renderStyle) ? 'active' : ''}`}
+              width={run.width}
+              height={run.height}
+              aria-hidden="true"
+            />
+            <canvas
               ref={canvasRef}
               className={`grid-canvas ${roundCells ? 'round-cells' : ''}`}
               width={run.width}
@@ -531,6 +676,11 @@ export default function RunView({ runId, initialTick }) {
               onClick={pickCell}
               style={{ '--cell-cols': run.width, '--cell-rows': run.height }}
             />
+            {renderStyle === 'trails' && (
+              <div className="mode-badge" title="a trails frame blends recent history, it is not a snapshot of the current tick">
+                trails — last {TRAIL_WINDOW_TICKS} ticks blended, not tick {tick} alone
+              </div>
+            )}
             {!picked && !playing && (
               <div className="inspect-hint">click a cell to inspect it</div>
             )}
@@ -586,6 +736,18 @@ export default function RunView({ runId, initialTick }) {
             {SPEEDS.map((s, i) => (
               <option key={s.label} value={i}>{s.label} · {s.ticksPerSecond}/s</option>
             ))}
+          </select>
+          <select
+            value={renderStyle}
+            onChange={(e) => setRenderStyle(e.target.value)}
+            title="how the grid is painted, on top of the color/brightness mapping above"
+          >
+            <option value="flat">flat</option>
+            <option value="glow">glow</option>
+            <option value="activity">activity</option>
+            <option value="kind_stable">kind-stable</option>
+            <option value="trails">trails</option>
+            <option value="relief">relief</option>
           </select>
           <label
             className="row"
@@ -695,7 +857,7 @@ export default function RunView({ runId, initialTick }) {
       <aside className="side">
         <div className="panel">
           <h3>the rule, in its own words</h3>
-          <div className="description">{rule.description}</div>
+          <Prose text={rule.description} quoted />
           {rule.spark && <p className="sub">✦ spark: "{rule.spark}"</p>}
           <div className="meta row" style={{ marginTop: 10 }}>
             {rule.concepts.map((c) => <span key={c} className="chip">{c}</span>)}
