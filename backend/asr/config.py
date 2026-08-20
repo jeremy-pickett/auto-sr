@@ -41,6 +41,7 @@ class Settings:
     shape_model: str
     database_path: str
     firebase_project_id: str
+    frontend_url: str
 
 
 settings = Settings(
@@ -61,4 +62,11 @@ settings = Settings(
     # public Firebase web config. Used only to check a verified
     # token's audience claim (asr/api/auth.py).
     firebase_project_id=_text("FIREBASE_PROJECT_ID", ""),
+    # Where the SPA itself is served, as opposed to this API. The two
+    # run on different origins in dev (Vite proxies API paths through
+    # to here) -- request.base_url reflects *this* server, so anything
+    # that builds a link a person should click (RSS items, share
+    # links) needs this instead, or it points at a bare API host that
+    # 404s on everything but the JSON routes.
+    frontend_url=_text("FRONTEND_URL", "http://localhost:5173"),
 )

@@ -10,7 +10,9 @@ signed-in user's email -- the same privacy reasoning that ruled out
 next to public commentary is not a call this pass makes unilaterally.
 The pseudonym is a deterministic function of the Firebase uid, so the
 same person's comments consistently show the same name without ever
-exposing what that name is derived from.
+exposing what that name is derived from. A user can override it with
+a self-chosen display name via asr/api/profile.py; that override, not
+the email, is the only other thing ever shown here.
 """
 
 import hashlib
@@ -20,6 +22,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from asr.api.auth import get_current_user
+from asr.api.profile import get_display_name
 from asr.api.routes import _rule_hidden_from, get_db
 from asr.storage import db
 
@@ -84,11 +87,11 @@ class CommentBody(BaseModel):
     body: str = Field(min_length=1, max_length=COMMENT_MAX_LENGTH)
 
 
-def _comment_row(row, user) -> dict:
+def _comment_row(conn, row, user) -> dict:
     return {
         "id": row["id"],
         "rule_id": row["rule_id"],
-        "author": pseudonym(row["user_uid"]),
+        "author": get_display_name(conn, row["user_uid"]) or pseudonym(row["user_uid"]),
         "body": row["body"],
         "created_at": row["created_at"],
         "edited_at": row["edited_at"],
@@ -104,7 +107,7 @@ def list_comments(rule_id: int, user: dict | None = Depends(get_current_user), c
     rows = conn.execute(
         "SELECT * FROM comments WHERE rule_id = ? ORDER BY id", (rule_id,)
     ).fetchall()
-    return {"comments": [_comment_row(r, user) for r in rows]}
+    return {"comments": [_comment_row(conn, r, user) for r in rows]}
 
 
 @router.post("/rules/{rule_id}/comments")
@@ -127,7 +130,7 @@ def create_comment(
     )
     conn.commit()
     fresh = conn.execute("SELECT * FROM comments WHERE id = ?", (cursor.lastrowid,)).fetchone()
-    return _comment_row(fresh, user)
+    return _comment_row(conn, fresh, user)
 
 
 @router.patch("/comments/{comment_id}")
@@ -151,7 +154,7 @@ def edit_comment(
     )
     conn.commit()
     fresh = conn.execute("SELECT * FROM comments WHERE id = ?", (comment_id,)).fetchone()
-    return _comment_row(fresh, user)
+    return _comment_row(conn, fresh, user)
 
 
 @router.delete("/comments/{comment_id}")

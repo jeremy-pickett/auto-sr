@@ -107,6 +107,21 @@ def test_mine_does_not_show_someone_elses_private_rule(two_rules):
     assert body["total"] == 0
 
 
+def test_mine_does_not_show_someone_elses_public_rule(two_rules):
+    # A feature-list complaint said "Mine still shows the full library" --
+    # that turned out to describe a library where nearly every rule
+    # happened to be owned by the one signed-in user, not an actual leak.
+    # This nails down the leak case directly: user-b owns nothing, and
+    # mine=true must stay empty even though a public rule (owned by
+    # nobody) and another public rule exist in the library.
+    conn = db.connect(two_rules.app.state.database_path)
+    _insert_walker_rule(conn, owner_uid="user-c", visibility="public")
+    conn.close()
+    as_user(two_rules, "user-b")
+    body = two_rules.get("/rules?mine=true").json()
+    assert body["total"] == 0
+
+
 @pytest.mark.parametrize("as_who", [None, "user-b"])
 def test_private_rule_404s_for_non_owners(two_rules, as_who):
     if as_who:
@@ -154,3 +169,16 @@ def test_rss_feed_never_lists_a_private_rule(two_rules):
     body = two_rules.get("/library/feed.rss").text
     assert f"/rules/{two_rules.public_id}" in body
     assert f"/rules/{two_rules.private_id}" not in body
+
+
+def test_rss_item_links_point_at_the_frontend_not_this_api(two_rules):
+    # Regression: item links used to be built from request.base_url,
+    # which is this API's own origin -- a bare JSON server with no
+    # route at "/", so clicking through 404'd instead of opening the
+    # app. They must use settings.frontend_url instead.
+    from asr.config import settings
+
+    anonymous(two_rules)
+    body = two_rules.get("/library/feed.rss").text
+    assert f"{settings.frontend_url}/#/rules/{two_rules.public_id}" in body
+    assert "http://testserver" not in body

@@ -130,6 +130,15 @@ CREATE TABLE IF NOT EXISTS comments(
     edited_at TEXT
 );
 CREATE INDEX IF NOT EXISTS comments_by_rule ON comments(rule_id);
+
+-- One optional, self-chosen field per signed-in user: a display name
+-- that overrides their comment pseudonym everywhere it's shown. Never
+-- holds an email or anything else Firebase knows about the person --
+-- see asr/api/profile.py for why.
+CREATE TABLE IF NOT EXISTS user_profiles(
+    uid TEXT PRIMARY KEY,
+    display_name TEXT
+);
 """
 
 

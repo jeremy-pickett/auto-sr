@@ -148,3 +148,14 @@ def test_empty_and_oversized_comments_rejected(client):
     as_user(client, "user-a")
     assert client.post(f"/rules/{client.public_id}/comments", json={"body": "   "}).status_code == 400
     assert client.post(f"/rules/{client.public_id}/comments", json={"body": "x" * 1001}).status_code == 422
+
+
+def test_profile_display_name_overrides_pseudonym(client):
+    as_user(client, "user-a")
+    client.put("/profile", json={"display_name": "Alice"})
+    created = client.post(f"/rules/{client.public_id}/comments", json={"body": "hi"}).json()
+    assert created["author"] == "Alice"
+
+    as_user(client, "user-b")
+    listed = client.get(f"/rules/{client.public_id}/comments").json()["comments"]
+    assert listed[0]["author"] == "Alice"  # a viewer without their own override sees it too

@@ -9,6 +9,7 @@ import time
 from fastapi import FastAPI, Request
 
 from asr.api.comments import router as comments_router
+from asr.api.profile import router as profile_router
 from asr.api.routes import router
 from asr.api.stream import router as generation_router
 from asr.config import settings
@@ -31,6 +32,7 @@ def create_app(database_path: str | None = None) -> FastAPI:
     app.include_router(router)
     app.include_router(generation_router)
     app.include_router(comments_router)
+    app.include_router(profile_router)
 
     @app.middleware("http")
     async def log_request_timing(request: Request, call_next):

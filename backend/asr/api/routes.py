@@ -186,7 +186,7 @@ def _run_summary(row) -> dict:
 @router.get("/rules")
 def list_rules(
     page: int = Query(1, ge=1),
-    page_size: int = Query(50, ge=1, le=200),
+    page_size: int = Query(24, ge=1, le=200),
     status: str | None = None,
     behavior: str | None = None,
     concept: str | None = None,
@@ -727,7 +727,7 @@ MOST_RSS_ITEMS = 30
 
 
 @router.get("/library/feed.rss")
-def library_feed(request: Request, conn=Depends(get_db)):
+def library_feed(conn=Depends(get_db)):
     """A plain RSS 2.0 feed of the most recently invented public
     rules -- 'for people who want to watch the library grow passively'
     per the feature request. Public rules only: an RSS reader carries
@@ -748,7 +748,11 @@ def library_feed(request: Request, conn=Depends(get_db)):
            WHERE visibility = 'public' ORDER BY id DESC LIMIT ?""",
         (MOST_RSS_ITEMS,),
     ).fetchall()
-    base = str(request.base_url).rstrip("/")
+    # Links point at the frontend (where #/rules/:id actually renders),
+    # never at this API's own base_url -- the two are different
+    # origins, and an item link built from request.base_url used to
+    # land readers on a bare JSON 404 instead of the app.
+    base = settings.frontend_url.rstrip("/")
     items = []
     for row in rows:
         link = f"{base}/#/rules/{row['id']}"
