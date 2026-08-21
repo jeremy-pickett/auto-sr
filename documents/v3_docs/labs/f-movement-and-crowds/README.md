@@ -14,13 +14,19 @@
 
 | # | Lab | Standing | Production report |
 | :-- | :--- | :--- | :--- |
-| 36 | Crowd Egress | **[strong]** | *pending* |
-| 37 | Highway Traffic | ungraded | *pending* |
-| 38 | Pedestrian Flow | ungraded | *pending* |
-| 39 | Warehouse Robot | **[plausible]** | *pending* |
-| 40 | Degraded-Information Evacuation | ungraded | *pending* |
+| 36 | Crowd Egress | **[strong]** | `family-f-report-v1.md` |
+| 37 | Highway Traffic | ungraded | `family-f-report-v1.md` |
+| 38 | Pedestrian Flow | ungraded | `family-f-report-v1.md` |
+| 39 | Warehouse Robot | **[plausible]** | `family-f-report-v1.md` |
+| 40 | Degraded-Information Evacuation | ungraded | `family-f-report-v1.md` |
 
-**SCR-F §37 correspondence:** falls under §37's trailing `...`. **Life-safety hazard:** entry 36 is operationally used in egress design, which makes SCR look adjacent to legitimate practice in a way it is not.
+**SCR-F §37 correspondence:** falls under §37's trailing `...`. All five entries are covered by `family-f-report-v1.md`.
+
+**Life-safety hazard:** entry 36 is operationally used in egress design, which makes SCR look adjacent to legitimate practice in a way it is not. Each entry declares a **supported regime** and a **boundary regime** rather than one scope — for entry 36 the dangerous high-density regime, where body-force chains dominate, is explicitly outside the abstraction. Entry 38 is the safer early public Lab, and the two are kept separate for epistemic reasons rather than merged.
+
+**Two platform findings originate here.** Entry 39 proves **World fit and mechanism fit are independent** — a warehouse floor is a perfect discrete grid governed by a global central planner. And entry 40 makes **belief versus world** the phenomenon rather than an edge case, generalizing directly to attacker knowledge, defender visibility, stale identity state, and agent memory; it is the strongest reason to build that capability **before** Family H rather than after.
+
+The family also proposes the **Mover** — a bounded state-bearing participant occupying a location and changing location under Reactor control — as a narrower construct than a full Agent ontology.
 
 ## What this folder holds
 

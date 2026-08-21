@@ -2,9 +2,38 @@
 
 *Formal name: replay equivalence. Cite this record as **DEC-2**.*
 
-**Status:** open; framing amended · **Who decides:** the project owner · **Kind:** boundary — both answers coexist; the question is where the line falls
+**Status:** decided (2026-08-21) · **Decided by:** the project owner · **Kind:** boundary — both answers coexist; the decision is where the line falls
 
 > **In one sentence:** when someone re-runs one of our experiments to check it, there are two different promises they could be relying on — and they are not the same promise, they do not cost the same, and one must never quietly stand in for the other.
+
+---
+
+## The decision
+
+**Reproduction under contract is the default promise for every Run. Exact replay is reserved for Runs designated evidence-grade, and designation happens at run time — never retroactively.**
+
+**The designation rule (initial):** a Run is designated evidence-grade at creation when any of these holds —
+
+- it belongs to a Study intended for export or publication;
+- its Lab marks it evidence-grade;
+- the owner flags it.
+
+Default: not designated. A designated Run gets its full environment archived at run time; an undesignated Run records what the equivalence standard requires and nothing more. The two promises are never silently exchanged, and a downgrade (an environment no longer archived) is recorded, dated, and attributed — those rails predate this decision and stand.
+
+**Alternatives considered and rejected:**
+
+- *Exact replay for everything* — rejected on cost: archiving a full software environment per Run, forever, across a planned scale-up of orders of magnitude, paid mostly for Runs nobody will ever audit.
+- *Contract for everything* — rejected on irreversibility: the Runs that end up mattering would carry only the weaker claim, and an environment never archived can never be archived later.
+
+**Reasoning:** the cost of the strong promise lands only where the strong claim is needed, and the one-way door (no retroactive strengthening) is handled by making designation cheap and available at run time rather than by paying for everything.
+
+**What would reopen this:**
+
+1. An audit need arrives for a Run that could not have been designated in advance — evidence the designation rule or the default is wrong.
+2. Designation ends up applied to nearly every Run — the split has failed in practice; reconsider archiving everything.
+3. Environment archival proves far cheaper at scale than assumed — the cost argument against exact-for-everything weakens.
+
+**Documents to revise now that this is decided:** `../02-platform/storage.md` (unblocked — owes the archival machinery for designated Runs and the equivalence-standard record-keeping); `../03-quality/repeatability.md` (REPEAT-7's equivalence standard now has a home: it is requirements work owed by storage and repeatability, no longer waiting on a decision); `../01-core/reactor.md` and `../01-core/runs.md` (REACTOR-21/22, RUN-15/16 already state both promises; their "DEC-2 owns which applies where" lines now point at a decided record).
 
 ---
 
@@ -94,6 +123,8 @@ What is open is which promise applies to which evidence, what the equivalence st
 ---
 
 ## Record history
+
+**2026-08-21 — decided.** Option C adopted by the project owner in session: reproduction under contract as default, exact replay for Runs designated evidence-grade at run time, with the initial designation rule, rejected alternatives, and reopening triggers recorded above. First record in the registry to reach *decided*.
 
 **2026-08-21 — rewritten for readability.** Restructured into the plain-question format (stakes first, precise wording preserved above). Nothing about the question, the identifier, the status, or the constraints changed. Prior text is in version history.
 

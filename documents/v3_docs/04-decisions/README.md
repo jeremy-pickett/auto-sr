@@ -35,7 +35,7 @@ Identifiers are permanent and never reused. A retired decision is marked retired
 | ID | The plain question | Formal name | Status |
 |---|---|---|---|
 | [DEC-1](dec-001-mechanism-composition.md) | Can more than one thing happen at once? | Mechanism composition | open — *the largest unnamed decision in v0.1* |
-| [DEC-2](dec-002-replay-equivalence.md) | What does "run it again and check" promise? | Replay equivalence | open; framing amended |
+| [DEC-2](dec-002-replay-equivalence.md) | What does "run it again and check" promise? | Replay equivalence | **decided (2026-08-21)** |
 | [DEC-3](dec-003-temporal-semantics.md) | Whose clock is it, and must everything tick together? | Temporal semantics | open; placement decided |
 | [DEC-4](dec-004-study-inference-discipline.md) | What does "confident" mean here? | Study inference discipline | open; stance constrained |
 | [DEC-5](dec-005-home-of-semantic-translation.md) | Who owns the translating? | The home of semantic translation | open |
@@ -54,7 +54,7 @@ Identifiers are permanent and never reused. A retired decision is marked retired
 | [DEC-13](dec-013-visualization-scale.md) | What must we keep so the pictures never need a re-run? | Visualization scale | open |
 | [DEC-14](dec-014-video-provenance.md) | What travels with a forty-second clip? | Video provenance | open |
 | [DEC-15](dec-015-lab-governance.md) | When is a Lab more than an experiment? | Lab governance | open |
-| [DEC-16](dec-016-security-isolation.md) | How do we contain code we didn't write? | Security isolation | open |
+| [DEC-16](dec-016-security-isolation.md) | How do we contain code we didn't write? | Security isolation | open; narrowed to the mechanism |
 | [DEC-17](dec-017-model-independence.md) | What changes when we change the AI? | Model independence | open |
 | [DEC-18](dec-018-human-plugin-edits.md) | When a person edits a rule by hand, what happens to its story? | Human Plugin edits | open; substantially narrowed |
 | [DEC-19](dec-019-live-work.md) | Watching live versus the permanent record | Live work | open |
@@ -78,8 +78,8 @@ Registered while writing `../01-core/`, after external critique. These were not 
 Not all 24 block anything today. The ones that do:
 
 - **DEC-1, DEC-21, DEC-22** gate honest design of most non-grid Labs, and DEC-1 gates the final Plugin/Reactor contracts.
-- **DEC-2 (with DEC-8, DEC-13)** gates `../02-platform/storage.md`.
-- **DEC-16** gates `../02-platform/execution-safety.md` and any multi-user deployment.
+- **DEC-2** — *decided 2026-08-21*: contract reproduction by default, exact replay for Runs designated evidence-grade at run time. `../02-platform/storage.md` is unblocked (DEC-8 and DEC-13 remain as registered constraints and a companion question, not blockers).
+- **DEC-16** — *narrowed 2026-08-21*: the boundary's obligations are requirements owned by `../02-platform/execution-safety.md`, writable now; only the containment mechanism waits for a real deployment. The platform lane is unblocked.
 - **DEC-7** closes after DEC-1 and DEC-3, by design.
 - Everything else is either constrained-and-waiting (safe rails already in the requirements) or explicitly best decided against real use.
 

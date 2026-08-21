@@ -2,7 +2,7 @@
 
 *Formal name: security isolation. Cite this record as **DEC-16**.*
 
-**Status:** open · **Who decides:** the project owner · **Kind:** boundary — deferred deliberately until the deployment it protects is real
+**Status:** open; narrowed to the mechanism (2026-08-21) · **Who decides:** the project owner · **Kind:** boundary — the obligations are now requirements; the mechanism waits for a real deployment
 
 > **In one sentence:** every experiment runs code that was written on demand, by a machine, minutes ago — the earlier system contained it with measures sized for one trusted user on one machine, and production needs a boundary sized for strangers.
 
@@ -18,9 +18,13 @@ The earlier system could get away with a modest wall because of what it was: one
 
 One principle is already fixed and worth repeating, because the pressure against it will come dressed as a reasonable request: **studying attackers never justifies loosening the contract.** A rule that models an intruder gets its hostile conditions — stale views, timing gaps, partial knowledge — as declared features of the experimental setting. It never gets extra freedom on the actual machine.
 
-## What's open
+## What's open — narrowed by the split of 2026-08-21
 
-The production wall itself: what isolation technology, what blast radius per experiment, what the boundary assumes about the code it contains (assume: hostile), and what a containment failure costs. This is a deployment-architecture decision, and deciding it before the deployment exists would mean deciding it against guesses.
+This record was split the same way DEC-7 was, by the owner's decision: **the obligations are separated from the mechanism.**
+
+**Obligations — no longer open.** What the boundary must guarantee is requirements work, owned by `../02-platform/execution-safety.md`: the boundary assumes the code it contains is hostile; blast radius is bounded per experiment; the boundary fails closed; limits are recorded in each Run's contract. Writing those does not guess at deployment architecture — it states what any architecture must satisfy.
+
+**Mechanism — still open, and deliberately so.** Which containment technology, on what infrastructure, at what cost per experiment: a deployment-architecture decision, made when the production deployment is real, against facts instead of guesses.
 
 ## What this is blocking right now
 
@@ -40,5 +44,7 @@ What production execution boundary replaces the hardened single-user 2.x host as
 ---
 
 ## Record history
+
+**2026-08-21 — narrowed by decision of the project owner.** Split into obligations (requirements, owned by `../02-platform/execution-safety.md`, writable now) and mechanism (open until a production deployment exists). Same move as DEC-7's contract/notation split. The question, identifier, and constraints are otherwise unchanged.
 
 **2026-08-21 — rewritten for readability.** Plain-question format; question, identifier, status, and constraints unchanged. Prior text is in version history.

@@ -14,16 +14,22 @@
 
 | # | Lab | Standing | Production report |
 | :-- | :--- | :--- | :--- |
-| 28 | Corrosion Pitting | **[plausible]** | *pending* |
-| 29 | Dendritic Solidification | ungraded | *pending* |
-| 30 | Grain Growth | ungraded | *pending* |
-| 31 | Fracture Propagation | ungraded | *pending* |
-| 32 | Sintering | ungraded | *pending* |
-| 33 | Thin-Film Growth | ungraded | *pending* |
-| 34 | Battery Dendrite | ungraded | *pending* |
-| 35 | Catalytic Surface Reaction | ungraded | *pending* |
+| 28 | Corrosion Pitting | **[plausible]** | `family-e-report-v1.md` |
+| 29 | Dendritic Solidification | ungraded | `family-e-report-v1.md` |
+| 30 | Grain Growth | ungraded | `family-e-report-v1.md` |
+| 31 | Fracture Propagation | ungraded | `family-e-report-v1.md` |
+| 32 | Sintering | ungraded | `family-e-report-v1.md` |
+| 33 | Thin-Film Growth | ungraded | `family-e-report-v1.md` |
+| 34 | Battery Dendrite | ungraded | `family-e-report-v1.md` |
+| 35 | Catalytic Surface Reaction | ungraded | `family-e-report-v1.md` |
 
-**SCR-F §37 correspondence:** completes the illustrative `materials/` entry. Two entries here bear on the platform rather than the domain: entry 30 has an **exact** per-step law and is the tree's candidate correctness anchor; entry 33 is where universality most directly challenges the corpus premise.
+**SCR-F §37 correspondence:** completes the illustrative `materials/` entry. All eight entries are covered by `family-e-report-v1.md`.
+
+**This family contains both the catalog's best calibration Lab and its clearest rejection**, and both are valuable for the same reason. Entry 30 has an **exact** relation — von Neumann–Mullins, generalized to three dimensions by MacPherson and Srolovitz — giving SCR a hard answer it is not allowed to negotiate with; it is the only source of **law-level correctness** in the catalog and its research weakness is irrelevant to that role. Entry 31 should probably **fail mechanism fit**: the domain-defining driver is a whole-body elasticity solve, and a neighbour-transfer surrogate produces plausible avalanche exponents alongside physically wrong crack paths. Rejected does not mean deleted — it means the Lab established a boundary.
+
+Entry 33 is where **observable-equivalence identity** should be formalized: universality means many mechanisms collapse to the same measured exponents, which directly challenges the premise that different mechanisms are worth cataloguing separately.
+
+**Benchmark leakage is acute here.** Potts grain growth, DLA/Eden, classical dendrites, and the ZGB model are almost certainly in foundation-model training data. Calibration Studies in this family require **blinded benchmark modes** recording what Generation was allowed to know.
 
 ## What this folder holds
 
