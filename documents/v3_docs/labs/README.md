@@ -33,6 +33,7 @@ Letter prefixes are for stable ordering and traceability to the catalog. They ca
 | Path | Holds | Status |
 | :--- | :--- | :--- |
 | `scr-lab-catalog-v0.1.md` | The sixty candidates, named and briefly described | Draft, cited by every family |
+| `ingestion-inventory.md` | Every dataset the sixty Labs name, sorted into the four ingestion pipelines | Draft — the finding is that **~two-thirds are comparison targets that never enter a Run** |
 | `<family>/` | Production Lab papers and family reports | Being written |
 | `short-lab-definitions/` | **Historical reference.** The sixty first-pass Lab Knowledge Briefs | Frozen — see below |
 
