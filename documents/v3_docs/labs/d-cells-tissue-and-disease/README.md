@@ -14,16 +14,20 @@
 
 | # | Lab | Standing | Production report |
 | :-- | :--- | :--- | :--- |
-| 20 | Biological Pattern Formation | **[strong]** | *pending* |
-| 21 | Excitable Media | **[strong]** | *pending* |
-| 22 | Cortical Spreading Depression | ungraded | *pending* |
-| 23 | Avascular Tumor Growth | **[plausible]** | *pending* |
-| 24 | Wound Healing | ungraded | *pending* |
-| 25 | Biofilm Morphology | **[plausible]** | *pending* |
-| 26 | Immune Response | ungraded | *pending* |
-| 27 | Cell Sorting and Tissue Boundary | ungraded | *pending* |
+| 20 | Biological Pattern Formation | **[strong]** | `family-d-report-v1.md` |
+| 21 | Excitable Media | **[strong]** | `family-d-report-v1.md` |
+| 22 | Cortical Spreading Depression | ungraded | `family-d-report-v1.md` |
+| 23 | Avascular Tumor Growth | **[plausible]** | `family-d-report-v1.md` |
+| 24 | Wound Healing | ungraded | `family-d-report-v1.md` |
+| 25 | Biofilm Morphology | **[plausible]** | `family-d-report-v1.md` |
+| 26 | Immune Response | ungraded | `family-d-report-v1.md` |
+| 27 | Cell Sorting and Tissue Boundary | ungraded | `family-d-report-v1.md` |
 
-**SCR-F §37 correspondence:** falls under §37's trailing `...`; not named in the illustrative list. **Highest visualization credibility hazard outside Family H** — medical framing invites clinical over-reading, and entries 21 and 23 need the strongest non-claims language in the tree.
+**SCR-F §37 correspondence:** falls under §37's trailing `...`; not named in the illustrative list. All eight entries are covered by `family-d-report-v1.md`.
+
+**Highest visualization credibility hazard outside Family H.** A rendered arrhythmia, tumour, migraine wave, immune lesion, or wound is not neutral — readers infer clinical significance from the subject itself, regardless of caption. The family report opens with a **medical scope statement** rather than closing with a non-claims paragraph, and records a **Lab credibility class** as an unregistered platform requirement: a policy surface governing labelling, export language, and whether output may appear without Study context. The risk being guarded against is the View layer silently upgrading a mechanism experiment into a medical claim (§12, §26).
+
+**Two entries are proposed for renaming** on scope grounds: entry 26 to *Granuloma Formation*, and entry 25 to plate colony morphology. Entry 21 is proposed as the catalog's **reference mechanism family** for cross-Lab retrieval, and entry 27 as a recorded **architecture boundary** (many-sites-per-entity) that must not be spent to rescue one weak Lab.
 
 ## What this folder holds
 

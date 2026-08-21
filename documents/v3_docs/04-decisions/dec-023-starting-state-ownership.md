@@ -1,46 +1,56 @@
-# DEC-23 — Starting State ownership
+# DEC-23 — Who sets up the board?
 
-**Document class:** Level 2 — Architecture Decision · **Status:** open; leading candidate recorded
-**Registered by:** the core contract set, 2026-08-20 (`../01-core/`), following external critique
-**Decision:** not made
+*Formal name: Starting State ownership. Cite this record as **DEC-23**.*
 
-> **No document may resolve this locally (SCR-F v0.2 F-22, §36.6).** A downstream writer who needs an answer here cites the fork; it does not pick a side. Naming a fork is not deciding it (§40). Resolution requires this record to be decided and adopted, and adoption is a human act (§36.3).
+**Status:** open; leading candidate recorded · **Who decides:** the project owner · **Kind:** boundary — it decides whether our comparisons are fair tests
+
+> **In one sentence:** every experiment starts from some arrangement, and two parts of our own history disagree about who creates it — which matters because a comparison where each contestant set up their own board is not a comparison.
 
 ---
 
-## The question
+## What this is about
 
-Who owns the values an experiment starts from — the World, the mechanism, or neither.
+Put two cooks in the same kitchen to settle whose technique is better. If each brings their own ingredients, you've settled nothing — any difference on the plate might be the groceries. A fair test means same kitchen, same ingredients, technique varies.
 
-## Why it is consequential
+Our founding document says the experimental setting owns the starting arrangement. But the earlier working system did it the other way: the *rule* generated its own starting arrangement (it was the one place a rule could use randomness). Both readings sit in the record, and they can't both stand — because one of our flagship experiment types is exactly the two-cooks test: **hold everything constant, vary only the mechanism.** If each mechanism sets up its own board, that experiment is invalid on its face.
 
-SCR-F §14 places the starting state inside the World. The earlier system had the mechanism generate it, in the one place a mechanism was permitted to use randomness. Both readings are present in the material and they contradict each other.
+The counter-argument is real: the rule often *knows* what a sensible setup looks like — what density of starting material makes anything happen at all. A generic setting description doesn't know that.
 
-This is not cosmetic. One of the platform's own Study patterns holds the World constant and compares mechanisms. If each mechanism generates its own start, that comparison is invalid on its face: every mechanism received a different opening arrangement, and any difference in outcome could be the start rather than the mechanism.
+## The leading candidate — recorded, not adopted
 
-The counter-argument is real. A mechanism often does know what a sensible opening arrangement looks like — which Cells should be alive, where a seed belongs, what density makes anything happen at all — and a generic description of a setting does not.
+Separate three things that were being conflated:
 
-## What is already constrained
+> **The setting** (the kitchen): durable — what exists, how it's arranged, what's possible.
+> **The starting arrangement** (the ingredients on the counter): the actual opening values for one experiment, recorded exactly, owned by the experiment record.
+> **The recipe**: a *described procedure* for producing a valid starting arrangement. A rule or Lab may supply one — that's where the knowledge lives — but the recipe is not the arrangement. The platform executes the recipe under its own controlled randomness, records the exact result, and binds *both* to the experiment.
 
-**A leading candidate is recorded in `../01-core/worlds.md` §4 (WORLD-4 to WORLD-6)** and is written into `../01-core/runs.md` §2. It is not adopted.
+This keeps the fair test fair (same kitchen, same ingredients, technique varies — checkable, because the arrangement is recorded separately), keeps the knowledge where it lives (rules may still say how to set up), and improves the record (not just "random seed 1234" but the exact arrangement *and* the recipe that produced it).
 
-Its move is to separate rather than choose: the **World** is the durable setting, the **Starting State** is the realized opening values for one Run or family of Runs, and they are separate inputs recorded separately. A mechanism or Lab may supply a *start recipe*; the realized values are produced under the Reactor's controlled randomness and bound to the Run alongside the recipe that produced them.
+## What's genuinely open
 
-This makes "hold the World constant and vary the Starting State" mean exactly what it says, and makes a Plugin Comparison checkable.
+1. Is a starting arrangement a first-class stored object (reusable across experiments by name) or a per-experiment attribute?
+2. When a family of experiments shares one, who owns the family?
+3. How is a recipe expressed so it stays a setup instruction and doesn't become a second mechanism in disguise?
 
-What remains open: whether a Starting State is a first-class stored object in its own right or an attribute of a Run; whether a family of Runs shares one; and how a recipe is expressed without becoming a mechanism in disguise.
+Question 3 is the sharp one — a recipe with enough expressive power *is* a rule, and then it needs the whole rule contract.
 
-## What this record constrains
+## What this is blocking right now
 
-- `../01-core/worlds.md`
-- `../01-core/runs.md`
-- `../01-core/plugins.md`
-- `../01-core/studies.md`
+- Formal validity of the mechanism-comparison Study pattern (`../01-core/studies.md` STUDY-6 refuses the pattern where the split doesn't hold).
+- `../01-core/worlds.md` §4 and `../01-core/runs.md` RUN-6 are written to the candidate and labelled as such — if this decision goes another way, those sections change shape, not just wording.
 
-## What a decision here owes
+---
 
-- the alternatives actually considered, not only the one chosen;
-- the reasoning, in plain language (F-5);
-- the reconsideration trigger — what evidence would reopen this (§36.1, Level 2);
-- the documents that must be revised when it lands;
-- a status change from *open* to *decided*, recorded rather than assumed.
+## The precise version
+
+*This is the wording other documents cite.*
+
+Who owns the values an experiment starts from — the World, the mechanism, or neither. Leading candidate recorded in `../01-core/worlds.md` §4 (WORLD-4 to WORLD-6) and written into `../01-core/runs.md` §2: World and Starting State as separate inputs; a mechanism or Lab may supply a start recipe; realized values are produced under the Reactor's controlled randomness and bound to the Run alongside the recipe. Open: whether a Starting State is a first-class stored object or a Run attribute; family sharing; and how a recipe is expressed without becoming a mechanism in disguise.
+
+**A decision here owes:** the alternatives considered; the reasoning in plain language; what evidence would reopen it; the documents to be revised; and a status change recorded rather than assumed.
+
+---
+
+## Record history
+
+**2026-08-21 — rewritten for readability.** Plain-question format; question, identifier, status, and the recorded candidate unchanged. Prior text is in version history.

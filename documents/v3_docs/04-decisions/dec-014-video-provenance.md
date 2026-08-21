@@ -1,30 +1,43 @@
-# DEC-14 — Video provenance
+# DEC-14 — What travels with a forty-second clip?
 
-**Document class:** Level 2 — Architecture Decision · **Status:** open
-**Registered by:** SCR-F v0.2 §40.2
-**Decision:** not made
+*Formal name: video provenance. Cite this record as **DEC-14**.*
 
-> **No document may resolve this locally (SCR-F v0.2 F-22, §36.6).** A downstream writer who needs an answer here cites the fork; it does not pick a side. Naming a fork is not deciding it (§40). Resolution requires this record to be decided and adopted, and adoption is a human act (§36.3).
+**Status:** open · **Who decides:** the project owner, on a proposal · **Kind:** deferred detail — the truth rules are law; the paperwork format is not
+
+> **In one sentence:** the platform will someday generate short video summaries of experiments, and a short clip is the artifact most likely to travel without its case file — so we must decide what evidence-paperwork is welded to it before the first one ships.
 
 ---
 
-## The question
+## What this is about
 
-What provenance attaches to generated narration and edits so a short video can never outrun the evidence.
+Everyone now understands the problem of the clip without its context. A short excerpt, honestly cut from a longer record, shown alone — and the audience concludes something the full record doesn't support. The clip isn't false. The *impression* is.
 
-## Why it is consequential
+The planned capability: automatically generated 30–60 second summaries of an experiment or Study — narrated, paced, camera-directed by machine. The truth rules for them are already law:
 
-§28's contract is that the video *edits* evidence and does not fabricate a story: narration, captions, camera selection, pacing, and emphasis may be generated, while claims and depicted behavior must trace to real data. A forty-second clip is also the artifact most likely to travel without its Study attached, which is what makes this more than a formality.
+- narration, captions, pacing, and emphasis may be generated;
+- **every claim and every depicted behaviour must trace to real recorded data**;
+- the video *edits* evidence — it never composes a story;
+- and where a video shows one change's ripple effects, it must also show how the system responds to comparable changes generally, exactly as the interactive views must — so one dramatic divergence can't be passed off as special when everything diverges.
 
-## What this record constrains
+What's open is the attachment: what provenance is bound to the clip itself — which experiments, which measurements, which tool versions, what was left out — and in what form, so that a clip forwarded three times still leads back to its evidence.
 
-- `../01-core/visualization.md`
-- `../01-core/corpus.md`
+## What this is blocking right now
 
-## What a decision here owes
+- Nothing — video generation is a stretch goal with no build date.
+- It must be settled before the *first* video ships, because clips escape immediately and retroactive paperwork never catches them.
 
-- the alternatives actually considered, not only the one chosen;
-- the reasoning, in plain language (F-5);
-- the reconsideration trigger — what evidence would reopen this (§36.1, Level 2);
-- the documents that must be revised when it lands;
-- a status change from *open* to *decided*, recorded rather than assumed.
+---
+
+## The precise version
+
+*This is the wording other documents cite.*
+
+What provenance attaches to generated narration and edits so a short video can never outrun the evidence. Constrained by `../01-core/visualization.md` VIS-19 and VIS-20 (claims and depicted behaviour trace to recorded data; provenance sufficient to check every claim; the ambient-sensitivity requirement of §5 applies to video exactly as to interactive views).
+
+**A decision here owes:** the alternatives considered; the reasoning in plain language; what evidence would reopen it; the documents to be revised; and a status change recorded rather than assumed.
+
+---
+
+## Record history
+
+**2026-08-21 — rewritten for readability.** Plain-question format; question, identifier, status, and constraints unchanged. Prior text is in version history.

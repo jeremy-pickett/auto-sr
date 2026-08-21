@@ -1,37 +1,53 @@
-# DEC-6 — 2.x corpus migration
+# DEC-6 — What happens to the old library?
 
-**Document class:** Level 2 — Architecture Decision · **Status:** partially decided
-**Registered by:** SCR-F v0.2 §40.1
-**Decision:** not made
+*Formal name: 2.x corpus migration. Cite this record as **DEC-6**.*
 
-> **No document may resolve this locally (SCR-F v0.2 F-22, §36.6).** A downstream writer who needs an answer here cites the fork; it does not pick a side. Naming a fork is not deciding it (§40). Resolution requires this record to be decided and adopted, and adoption is a human act (§36.3).
+**Status:** partially decided · **Who decides:** the project owner · **Kind:** partially decided — the destination is settled, the moving arrangements are not
+
+> **In one sentence:** everything the earlier system produced comes with us — that's decided; what's open is how the old records get new labels, and what happens to old measurements when our measuring tools improve.
 
 ---
 
-## The question
+## What this is about
 
-How the existing 2.x library enters the 3.x Corpus: identifier mapping into 3.x namespaces, comparability across engine and Reactor versions, and which 2.x derived data is recomputed under 3.x Readers versus preserved as historical readings.
+The earlier version of this platform built a library: mechanisms, experiment histories, failures, the lot. Two things about it are already decided:
 
-## Why it is consequential
+1. **It comes forward as founding evidence.** Not archived, not orphaned, not a separate lineage.
+2. **Nothing in it gets rewritten. Ever.** Old histories are immutable evidence, same as new ones.
 
-For a permanence-obsessed project, v0.1's silence on this was itself a foundational unknown. The library is small today — tens of Runs — but §22.1 records a planned scale-up of several orders of magnitude, so migration will run against a substantially larger body than exists now. Deciding late means deciding against more data.
+The unresolved part is familiar to anyone who has lived through a records-system change. When a hospital moves to a new charting system, the old charts come along — but old lab results were measured under old reference ranges, on old equipment. You don't re-interpret them silently as if they were measured today. You carry them forward *labelled as what they are*, and you decide deliberately which old readings are worth re-running under the new methods.
 
-## What is already constrained
+Same three questions here:
 
-**Decided (§22.1):** the 2.x library is carried forward into the 3.x Corpus as **founding evidence**. It is not archived, not orphaned, and not a separate lineage.
+1. **Naming** — old records had old identifiers; how do they map into the new scheme without breaking anything that referenced them?
+2. **Comparability** — an old experiment ran under old machinery; when may it be compared with a new one, and how is the difference flagged?
+3. **Re-measuring** — our measurement tools (Readers) are versioned and improve; which old measurements get recomputed under new tools, and which are preserved as historical readings? The rule for that already exists: when both exist, keep both, each labelled with the version that produced it.
 
-**Constrained by §7:** the 2.x histories are immutable evidence. Whatever 3.x does around them, it does not rewrite them.
+## What would make this easy to decide
 
-## What this record constrains
+Mostly, this one just needs doing rather than agonizing — it's the most mechanical record in the registry. One genuine judgment call inside it:
 
-- `../01-core/corpus.md`
-- `../02-platform/storage.md`
-- `../01-core/readers.md`
+> **The old library is small now (tens of Runs) and a large scale-up is planned. Migrate before the scale-up, and the job is an afternoon; after, it's a project.**
 
-## What a decision here owes
+The timing is the decision.
 
-- the alternatives actually considered, not only the one chosen;
-- the reasoning, in plain language (F-5);
-- the reconsideration trigger — what evidence would reopen this (§36.1, Level 2);
-- the documents that must be revised when it lands;
-- a status change from *open* to *decided*, recorded rather than assumed.
+## What this is blocking right now
+
+- Nothing today. It becomes urgent the moment the scale-up starts.
+- `../01-core/corpus.md` §6 holds the constraints (CORPUS-12 to CORPUS-14).
+
+---
+
+## The precise version
+
+*This is the wording other documents cite.*
+
+**Decided (SCR-F §22.1):** the 2.x library is carried forward into the 3.x Corpus as founding evidence. **Constrained by §7:** migration never rewrites 2.x histories. **Open:** identifier mapping into 3.x namespaces, cross-version comparability, and which derived data is recomputed under 3.x Readers versus preserved as historical readings (CORPUS-14 governs the keep-both rule where recomputation happens).
+
+**A decision here owes:** the alternatives considered; the reasoning in plain language; what evidence would reopen it; the documents to be revised; and a status change recorded rather than assumed.
+
+---
+
+## Record history
+
+**2026-08-21 — rewritten for readability.** Plain-question format; question, identifier, status, and constraints unchanged. Prior text is in version history.
