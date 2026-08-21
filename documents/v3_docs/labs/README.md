@@ -4,7 +4,7 @@
 **Path:** `labs/`
 **Implements:** SCR-F v0.2 §37 (`labs/` subtree)
 **Cites:** SCR-F v0.2 §11, §29, §30, §36.2, §36.6, §37, §41–43; F-17
-**Fit reviews (§30):** none performed for any of the sixty candidates.
+**Fit reviews (§30):** none performed for any candidate.
 
 > This directory is the `labs/` subtree of SCR-F v0.2 §37. It holds **production Lab papers**, organized by domain family. It does not hold drafting material.
 
@@ -32,8 +32,8 @@ Letter prefixes are for stable ordering and traceability to the catalog. They ca
 
 | Path | Holds | Status |
 | :--- | :--- | :--- |
-| `scr-lab-catalog-v0.1.md` | The sixty candidates, named and briefly described | Draft, cited by every family |
-| `ingestion-inventory.md` | Every dataset the sixty Labs name, sorted into the four ingestion pipelines | Draft — the finding is that **~two-thirds are comparison targets that never enter a Run** |
+| `scr-lab-catalog-v0.1.md` | The candidate Labs, named and briefly described | Draft, cited by every family |
+| `ingestion-inventory.md` | Every dataset the catalog's Labs name, sorted into the four ingestion pipelines | Draft — the finding is that **~two-thirds are comparison targets that never enter a Run** |
 | `<family>/` | Production Lab papers and family reports | Being written |
 | `short-lab-definitions/` | **Historical reference.** The sixty first-pass Lab Knowledge Briefs | Frozen — see below |
 

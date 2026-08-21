@@ -9,7 +9,7 @@
 **Cited as:** `SCR-F v3.x §n`; condensed rules as `F-1` … `F-23`.
 **Purpose:** define what the platform is, what its major components own, how people interact with it, which principles later documents must preserve, and how the large document tree that follows stays honest.
 
-> **This is not the implementation requirements document.** It sits above requirements. Since v0.2, the first ring of that tree has actually been written — the twelve component contracts, eight platform documents, six quality documents, the orientation set, and the Decision Registry, together holding (at this writing) 369 numbered requirements across `documents/v3_docs/` — and this revision exists to bring Foundations back into agreement with what building that ring taught. Where a testable detail lives in the tree, this document points at it rather than repeating it; for testable contract details, the owning requirements document outranks this one (§36.4).
+> **This is not the implementation requirements document.** It sits above requirements. Since v0.2, the first ring of that tree has actually been written — the twelve component contracts, the platform and quality documents, the orientation set, and the Decision Registry, holding hundreds of numbered requirements across `documents/v3_docs/` and growing — and this revision exists to bring Foundations back into agreement with what building that ring taught. Where a testable detail lives in the tree, this document points at it rather than repeating it; for testable contract details, the owning requirements document outranks this one (§36.4).
 
 ---
 
@@ -35,7 +35,7 @@ Recorded rather than silently applied, following the project's standing practice
 | **The expert-reader standard absorbed** (§5) | Strengthening, set by the owner. Plain language is not simplified language: never require the reader to learn this platform's vocabulary to understand the stakes; always assume fluency in their own field. Examples are load-bearing and follow the citation rule — verified or general, never invented specifics. Standard: `v3_docs/00-start-here/language-rules.md`. |
 | **Registry statuses updated; three candidates reserved** (§40) | Bookkeeping with one addition: DEC-16 and DEC-18 are narrowed; identifiers DEC-25 through DEC-27 are **reserved** for the three named unregistered candidates (exploration strategy; cost and budget; ownership of evidence), registration landing with adoption of this revision. |
 | **Rendering repaired** (§35, §37, headings throughout) | Mechanical. v0.2 contained no code fences, so its two diagrams rendered as scattered paragraphs, and carried 45 headings with export artifacts. The root document of a two-hundred-document tree has to render. |
-| **The documentation tree recorded as built** (§36, §37) | Status. The initial ring exists: Level 1, the twelve core documents, eight platform documents, six quality documents (the synthetic-data suite joined after this revision was first drafted), and the Decision Registry in plain-question format. All draft; adoption pending. |
+| **The documentation tree recorded as built** (§36, §37) | Status. The initial ring exists: Level 1, the twelve core documents, the platform and quality sets, and the Decision Registry in plain-question format. The tree grows continuously; this record deliberately states its shape, not its size. All draft; adoption pending. |
 | **Version numbering corrected: this revision is v3.x, not v0.3** | Labeling fix, by the owner, not an amendment. The 0.x scheme was an early mistake; the Foundations of SCR 3.x carries the product line's numbering. Prior versions keep their historical labels (v0.1, v0.2) and are not retroactively relabeled. Where any document says "v0.3," it is corrected on sight — no supersede ceremony (see CLAUDE.md). |
 
 ---
@@ -759,8 +759,8 @@ documents/v3_docs/
 │                           reference cases, human review, synthetic data
 ├── 04-decisions/           Level 2 — DEC records, plain-question format,
 │                           indexed by §40
-├── labs/                   Level 5 — the candidate catalog, nine family
-│                           folders, Lab papers, the ingestion inventory
+├── labs/                   Level 5 — the candidate catalog, family folders,
+│                           Lab papers, the ingestion inventory
 ├── surveys/                idiom surveys and raw material for requirements
 ├── critiques/              external review, retained as evidence
 ├── outstanding.md          the living list of what remains
@@ -945,7 +945,7 @@ This document is the second revision of the 3.x foundational design. Evidence fo
 
 1. **The 2.x deep-dive set** — engine internals, storage and transport, contract enforcement, generation pipeline, interface and identity, frontend (Release 2.2.1 documents). The demonstrated-behaviour basis.
 2. **ASR Omnibus Requirements v3** — the 2.x contract and its stable-identifier practice, treated as prior-art evidence, not as the 3.x contract.
-3. **The 3.x documentation tree** (`documents/v3_docs/`, 2026-08-20/21) — Level 1 orientation documents; the twelve core requirements documents with the five preserved seam passes; eight platform documents; six quality documents including the synthetic-data suite; the Decision Registry in plain-question format. This revision's largest single source: where v0.2 reasoned forward from principles, v3.x also reasons backward from what writing the contracts revealed.
+3. **The 3.x documentation tree** (`documents/v3_docs/`, 2026-08-20/21) — Level 1 orientation documents; the twelve core requirements documents with their preserved seam passes; the platform and quality sets, including the synthetic-data suite; the Decision Registry in plain-question format. This revision's largest single source: where v0.2 reasoned forward from principles, v3.x also reasons backward from what writing the contracts revealed.
 4. **External critiques** (`v3_docs/critiques/`, third-party models, 2026-08) — the core-contract critique that produced the Run Contract closure, the two-promise replay framing, the Attempt/Run distinction, trust-follows-role, and the input/mechanism test; and the Lab-catalog critiques. Each adopted item is credited at its point of use; each rejected item's rejection is recorded where it was rejected.
 5. **The Lab briefs** (`v3_docs/labs/`) — source of the reducibility audit, which two briefs invented independently before any core document asked for it.
 6. **A Card Catalog for Emergence** (position paper) — the prior mechanism-hypothesis framing and the Corpus/Search argument.

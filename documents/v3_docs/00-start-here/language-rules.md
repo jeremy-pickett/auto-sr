@@ -113,6 +113,14 @@ The rules:
 - Counts, proportions, distributions, and side-by-side comparisons, in ordinary sentences.
 - State what was **not** tested next to what was.
 - Never present a number nobody can trace back to a computation.
+- **Never state the current size of a growing collection.** "Sixty candidates," "369 requirements,"
+  "eight platform documents" — every such count is false within hours of being written, and a tree
+  that grows continuously turns its own indexes into liars. Name the shape, not the size: *the
+  candidate catalog*, *the platform documents*, *a growing roster*. Numbers that stay: identifiers
+  (F-23, DEC-12 — permanent by rule), frozen history (the five preserved seam passes), structural
+  facts that change only by amendment (the twelve components), mathematics (256 elementary rules),
+  and findings of a completed, dated analysis (19 of 20 starts). The test: would this number
+  change without anyone editing this sentence? Then this sentence may not contain it.
 - Never imply precision the method does not have. Three decimal places on a measurement with two conditions is a claim about accuracy.
 
 What "enough confidence" means for a Study is an open question in the Decision Registry (DEC-4). Until it is decided, no document invents a local definition of it.

@@ -71,11 +71,11 @@ Registered while writing `../01-core/`, after external critique. These were not 
 | [DEC-23](dec-023-starting-state-ownership.md) | Who sets up the board? | Starting State ownership | open; leading candidate recorded |
 | [DEC-24](dec-024-the-cellular-budget.md) | How much can we bend before it isn't the same instrument? | The cellular budget | open; no owner assigned |
 
-## Raised by the sixty-Lab catalog (2026-08-21), not yet registered
+## Raised by the Lab catalog (2026-08-21), not yet registered
 
 Writing the nine family reports in `../labs/` surfaced 44 platform questions that no record owns — **19 distinct requirements** once deduplicated, several invented independently under different names in three or four unrelated families.
 
-They are triaged in **[Proposals from the sixty-Lab catalog](proposed-from-the-lab-catalog.md)**: seven candidates for new records, six already within an existing record's scope, and six that are contract requirements belonging to `../01-core/` rather than to this registry.
+They are triaged in **[Proposals from the Lab catalog](proposed-from-the-lab-catalog.md)**: seven candidates for new records, six already within an existing record's scope, and six that are contract requirements belonging to `../01-core/` rather than to this registry.
 
 **That document mints nothing.** Identifiers are permanent and adoption is a human act (§36.3); the triage exists so that assigning them is mechanical rather than a fresh act of judgement. The most recurrent unregistered question is *what may a mechanism depend on that it cannot compute for itself* — raised by eight entries across four families.
 
@@ -85,7 +85,7 @@ They are triaged in **[Proposals from the sixty-Lab catalog](proposed-from-the-l
 
 ## Which records actually gate work
 
-Not all 24 block anything today. The ones that do:
+Most records block nothing today. The ones that do:
 
 - **DEC-1, DEC-21, DEC-22** gate honest design of most non-grid Labs, and DEC-1 gates the final Plugin/Reactor contracts.
 - **DEC-2** — *decided 2026-08-21*: contract reproduction by default, exact replay for Runs designated evidence-grade at run time. `../02-platform/storage.md` is unblocked (DEC-8 and DEC-13 remain as registered constraints and a companion question, not blockers).

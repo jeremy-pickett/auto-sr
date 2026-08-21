@@ -62,6 +62,7 @@ The user once lost an entire project to an accidental bulk delete. These rules e
 
 ## Hard rules that are easy to violate
 
+- **Never state the current size of a growing collection in docs** ("sixty labs", "369 requirements") — it goes stale in hours. Name the shape, not the size. Identifiers, frozen history, structural facts, and dated findings keep their numbers. Full rule: `documents/v3_docs/00-start-here/language-rules.md`, Numbers.
 - **Plain language everywhere** (REQ-0.1): no mathematical jargon in code, property names, UI labels, or docs. Use the plain-English name; mention the standard term once in a comment ("wraps top to bottom" → toroidal).
 - Modifier defaults must be identity values — no effect at all (REQ-5.1); every modifier gets a test that default == absent, bit-identical (REQ-15.2).
 - User signals (behavior overrides, flags, reruns) never enter Stage A generation context (REQ-8.5, REQ-8.6): coverage counts canonical runs only.

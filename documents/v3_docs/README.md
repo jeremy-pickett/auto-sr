@@ -31,7 +31,7 @@ documents/v3_docs/
 ├── 03-quality/        testing, repeatability, accuracy, references, human review,
 │                      synthetic data
 ├── 04-decisions/      DEC-1 … DEC-24 (25–27 reserved), indexed by §40
-├── labs/              Level 5 — the sixty-candidate catalog, nine family folders,
+├── labs/              Level 5 — the candidate catalog, family folders,
 │                      Lab papers, the ingestion inventory (see labs/README.md)
 ├── surveys/           idiom surveys and other raw material for future requirements
 ├── critiques/         external review, retained as evidence
@@ -64,8 +64,8 @@ directory in §37; they are listed above so their absence is visible rather than
 - Foundations: `SCR-F v0.2 §19` — v0.2 remains the governing text until v3.x is adopted, and
   v0.2 citations stay valid permanently as historical pins. Condensed rules `F-1` … `F-22`; the
   v3.x draft adds `F-23`.
-- Decisions: `DEC-1` … `DEC-24`; `DEC-25` … `DEC-27` are reserved (registration lands with
-  adoption of SCR-F v3.x).
+- Decisions: `DEC-n` — the registry index (`04-decisions/README.md`) is the current roster;
+  identifiers are permanent and never reused, and reserved identifiers are noted there.
 - Requirements documents define their own permanent identifier namespaces, following the 2.x
   `REQ-` practice: identifiers are never reused, retirements are recorded rather than silently
   dropped, and rationale travels with the requirement. A document writing into a shared namespace
