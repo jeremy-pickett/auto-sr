@@ -14,14 +14,20 @@
 
 | # | Lab | Standing | Production report |
 | :-- | :--- | :--- | :--- |
-| 41 | Urban Growth | **[strong]** | *pending* |
-| 42 | Power Grid Cascade | ungraded | *pending* |
-| 43 | Water Distribution | ungraded | *pending* |
-| 44 | Freight and Rail Congestion | ungraded | *pending* |
-| 45 | Service Cascade | ungraded | *pending* |
-| 46 | Routing Instability | ungraded | *pending* |
+| 41 | Urban Growth | **[strong]** | `family-g-report-v1.md` |
+| 42 | Power Grid Cascade | ungraded | `family-g-report-v1.md` |
+| 43 | Water Distribution | ungraded | `family-g-report-v1.md` |
+| 44 | Freight and Rail Congestion | ungraded | `family-g-report-v1.md` |
+| 45 | Service Cascade | ungraded | `family-g-report-v1.md` |
+| 46 | Routing Instability | ungraded | `family-g-report-v1.md` |
 
-**SCR-F §37 correspondence:** falls under §37's trailing `...`. Several entries here are driven by a **global solve** (power flow, hydraulics) rather than a local mechanism, and the fit reviews should expect to reject on that ground.
+**SCR-F §37 correspondence:** falls under §37's trailing `...`. All six entries are covered by `family-g-report-v1.md`.
+
+> **Written without critique coverage.** `SCR_Labs_41-50_Critique` does not exist. Entries 41–46 have had no external review pass; their assessments are first opinions and should be revised when it lands.
+
+This family holds the largest concentration of the **globally-computed-driver** boundary (42 power flow, 43 hydraulics — both likely mechanism-fit failures) and, at the opposite extreme, two entries where the local rule is **specified, human-written, and running in production**: 45 retry policies and 46 the BGP decision process. Those sit in the *mechanism-analysis* mode rather than mechanism-discovery — nothing needs inferring, and the many-participant consequences still require simulation.
+
+**Entry 45 (Service Cascade) is, in my assessment, the strongest ungraded entry in the whole catalog**; entry 46 carries its most rigorous irreducibility credential (an NP-completeness result exactly where the interesting question is). Entry 43 is a recommended rejection contributing a category distinct from 42's.
 
 ## What this folder holds
 

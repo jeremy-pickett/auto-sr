@@ -14,12 +14,18 @@
 
 | # | Lab | Standing | Production report |
 | :-- | :--- | :--- | :--- |
-| 57 | Epidemic Spread | **[weak]** | *pending* |
-| 58 | Opinion and Adoption | **[weak]** | *pending* |
-| 59 | Ant Trail | **[weak]** | *pending* |
-| 60 | Parking-Lot | **[insane]** | *pending* |
+| 57 | Epidemic Spread | **[weak]** | `family-i-report-v1.md` |
+| 58 | Opinion and Adoption | **[weak]** | `family-i-report-v1.md` |
+| 59 | Ant Trail | **[weak]** | `family-i-report-v1.md` |
+| 60 | Parking-Lot | **[insane]** | `family-i-report-v1.md` |
 
 **SCR-F §37 correspondence:** falls under §37's trailing `...`.
+
+All four entries are covered by `family-i-report-v1.md`.
+
+**This is a deliberate boundary family and not a weak ending.** Each entry tests a different temptation: *contagion is local, therefore grid* (57 — no); *neighbour influence exists, therefore CA* (58 — no, twice over); *agents plus a field looks like CA* (59 — maybe, if the architecture supports both honestly); *a spatial occupancy pattern exists, therefore a local mechanism* (60 — absolutely not).
+
+The family's largest contribution is that **SCR's boundary is a set of distinct failure modes, not one line** — seven are now named across the catalog, and the fit-review framework should record rejection *reasons* rather than only a grade. Entry 59 is the proposed **acceptance Lab** for moving participants plus persistent fields: tiny, low-stakes, measurable, and analytically characterized. Do not justify that capability with a high-stakes Lab first.
 
 **Retained deliberately.** A catalog with only defensible entries hides where the platform's boundary is, and §30 treats a failed Lab as useful evidence. These are not candidates; they are the calibration that gives the other fifty-six their scale. Entry 57 carries a hazard the others do not: epidemic output escapes its caption, and decontextualized circulation is a more likely route to harm than direct misuse.
 

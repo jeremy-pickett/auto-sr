@@ -14,14 +14,14 @@
 
 | # | Lab | Standing | Production report |
 | :-- | :--- | :--- | :--- |
-| 1 | Wildfire | **[strong]** | `../../SCR_Labs_01-10_Knowledge_Report_v1.md` |
-| 2 | Smouldering and Peat Fire | ungraded | same |
-| 3 | Landslide and Debris Flow | ungraded | same |
-| 4 | Dune and Ripple | **[plausible]** | same |
-| 5 | Coastal Erosion | ungraded | same |
-| 6 | River Braiding | ungraded | same |
-| 7 | Karst Dissolution | ungraded | same |
-| 8 | Permafrost Thaw | ungraded | same |
+| 1 | Wildfire | **[strong]** | `family-a-report-v1.md` |
+| 2 | Smouldering and Peat Fire | ungraded | `family-a-report-v1.md` |
+| 3 | Landslide and Debris Flow | ungraded | `family-a-report-v1.md` |
+| 4 | Dune and Ripple | **[plausible]** | `family-a-report-v1.md` |
+| 5 | Coastal Erosion | ungraded | `family-a-report-v1.md` |
+| 6 | River Braiding | ungraded | `family-a-report-v1.md` |
+| 7 | Karst Dissolution | ungraded | `family-a-report-v1.md` |
+| 8 | Permafrost Thaw | ungraded | `family-a-report-v1.md` |
 
 **SCR-F §37 correspondence:** this family completes the illustrative `wildfire/` entry. Entry 1 is the platform's proposed calibration anchor; entry 4 carries two declared mechanism classes (ripples and dunes are separate instabilities at separate scales) and must not force one Plugin contract to explain both.
 

@@ -14,18 +14,22 @@
 
 | # | Lab | Standing | Production report |
 | :-- | :--- | :--- | :--- |
-| 47 | Lateral Movement | ungraded | *pending* |
-| 48 | Identity and Privilege | ungraded | *pending* |
-| 49 | Prompt Injection | ungraded | *pending* |
-| 50 | Agent Memory | ungraded | *pending* |
-| 51 | Sensitive Data Diffusion | ungraded | *pending* |
-| 52 | Ransomware Spread | ungraded | *pending* |
-| 53 | Patch Propagation | ungraded | *pending* |
-| 54 | Worm and Botnet | ungraded | *pending* |
-| 55 | Segmentation and Containment | ungraded | *pending* |
-| 56 | Software Supply Chain | ungraded | *pending* |
+| 47 | Lateral Movement | ungraded | `family-h-report-v1.md` |
+| 48 | Identity and Privilege | ungraded | `family-h-report-v1.md` |
+| 49 | Prompt Injection | ungraded | `family-h-report-v1.md` |
+| 50 | Agent Memory | ungraded | `family-h-report-v1.md` |
+| 51 | Sensitive Data Diffusion | ungraded | `family-h-report-v1.md` |
+| 52 | Ransomware Spread | ungraded | `family-h-report-v1.md` |
+| 53 | Patch Propagation | ungraded | `family-h-report-v1.md` |
+| 54 | Worm and Botnet | ungraded | `family-h-report-v1.md` |
+| 55 | Segmentation and Containment | ungraded | `family-h-report-v1.md` |
+| 56 | Software Supply Chain | ungraded | `family-h-report-v1.md` |
 
 **SCR-F §37 correspondence:** completes the illustrative `security/` entry.
+
+All ten entries are covered by `family-h-report-v1.md`, with **entries 47–50 written without critique coverage** (`SCR_Labs_41-50_Critique` does not exist).
+
+**Three structural findings shape this family.** It is **one World with several mechanisms**, not ten Labs — 47, 48, 52, 54, and 55 share an enterprise-security World and differ by mechanism package and Study. Three mechanisms must not be blended: *autonomous propagation* (worms), *directed adaptive action* (lateral movement), and *coordinated deployment* (ransomware, patch scheduling) — a large share of bad "cyber contagion" modelling comes from treating all three as epidemics. And the family's **first engineering deliverable is probably not a Lab** but a versioned **synthetic enterprise reference World** with known ground truth and deliberately seeded traps.
 
 **This family is ungraded as a whole**, and the catalog records an explicit expectation that these entries may grade weak if forced onto a lattice (Catalog §0, gap 1). If they do, that is a finding about SCR's boundary and should be published as one — not buried. It is also the family most likely to be over-claimed commercially, and **F-20 applies throughout**: hostile conditions are explicit experimental capabilities, and studying attacker behaviour never justifies a more permissive execution surface for generated code (§18.4, DEC-16).
 
