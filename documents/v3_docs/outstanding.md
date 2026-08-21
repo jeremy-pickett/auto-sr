@@ -17,7 +17,7 @@ Five corrections accumulated against SCR-F v0.2, each recorded where it arose:
 4. Register DEC-21 through DEC-24; record DEC-2 decided and DEC-16/18 narrowed (§40).
 5. Replace "exact or contractually equivalent" with the two named replay promises (§19) — DEC-2, decided 2026-08-21.
 
-**Applied in the SCR-F v0.3 draft** (`../SCR_Foundations_and_Platform_Architecture_v0_3.md`, written 2026-08-21) — all five, plus F-23, the tenth fit question, the expert-reader standard, and a clean render. The amendments **land when v0.3 is adopted**; until then v0.2 remains the governing Foundations text and the differences are recorded in the open. So item 2 now folds into item 1: what remains is adoption.
+**Applied in the SCR-F v3.x draft** (`00-start-here/foundations-and-platform-architecture.md`, written 2026-08-21; version label corrected from v0.3 — an old numbering mistake, fixed on sight per CLAUDE.md) — all five, plus F-23, the tenth fit question, the expert-reader standard, and a clean render. The amendments **land when v3.x is adopted**; until then v0.2 remains the governing Foundations text and the differences are recorded in the open. So item 2 now folds into item 1: what remains is adoption.
 
 ## 3. The decisions that gate Lab design
 
