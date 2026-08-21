@@ -73,6 +73,33 @@ This matters more than usual here, because most of this tree will be machine-wri
 
 ---
 
+## Writing for the expert reader
+
+Plain language is not simplified language. The people most likely to read this platform's documents closely — a fire behaviour officer, a charge nurse, a network administrator, an incident responder, a police investigator — are experts. In their field, not in ours.
+
+So the rule has two halves, and both bind:
+
+> **Never make the reader learn our vocabulary to understand the stakes. Always assume they are fluent in their own.**
+
+A fire officer does not need *spotting* or *fuel break* explained. They need to not be stopped by *mechanism*, *Reactor*, or *fingerprint*. A security analyst knows *lateral movement*; they should not have to decode our word *reach* to recognise it. Writing down to a reader is as much a failure as writing over their head — it costs the same thing, which is the reader's trust that we know what we are talking about.
+
+### Examples are load-bearing
+
+The examples in a document are where an expert reader decides whether to trust it. An illustration that gets their field subtly wrong does not cost us the illustration — it costs us the reader, in the first paragraph, permanently.
+
+So examples follow the same rule as citations:
+
+1. **A domain-specific example is verified or it is not used.** Grounded in something checked, or reviewed by someone who knows the field.
+2. **Where verification is not available, stay general.** An example vague enough that it cannot be wrong beats a vivid one that might be.
+3. **No invented specifics for colour.** A made-up measurement, dosage, protocol, or timeline in an illustration reads exactly like expertise until the one reader who knows arrives.
+4. **Introduce every element before relying on it.** An example that produces a new actor mid-argument reads as sleight of hand, whatever the intent.
+
+### Documents that leave the building
+
+Decision records, Lab papers, reports, and anything surfaced in the interface are written on the assumption that they will be read by outsiders, quoted out of context, and read hostilely — because the ones that matter eventually are. For those documents: the plain statement of the question comes first; the precise internal wording is preserved alongside it, never replaced by it; and nothing in the plain version claims more than the precise version does. Two renderings, one meaning.
+
+---
+
 ## Numbers
 
 Say what was counted.

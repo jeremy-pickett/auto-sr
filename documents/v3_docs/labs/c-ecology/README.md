@@ -14,14 +14,14 @@
 
 | # | Lab | Standing | Production report |
 | :-- | :--- | :--- | :--- |
-| 14 | Invasion Ecology | **[strong]** | *pending* |
-| 15 | Forest Gap Dynamics | ungraded | *pending* |
-| 16 | Pest Outbreak | ungraded | *pending* |
-| 17 | Coral Reef Competition | ungraded | *pending* |
-| 18 | Mycelial Network | ungraded | *pending* |
-| 19 | Seed Dispersal and Recruitment | ungraded | *pending* |
+| 14 | Invasion Ecology | **[strong]** | `family-c-report-v1.md` |
+| 15 | Forest Gap Dynamics | ungraded | `family-c-report-v1.md` |
+| 16 | Pest Outbreak | ungraded | `family-c-report-v1.md` |
+| 17 | Coral Reef Competition | ungraded | `family-c-report-v1.md` |
+| 18 | Mycelial Network | ungraded | `family-c-report-v1.md` |
+| 19 | Seed Dispersal and Recruitment | ungraded | `family-c-report-v1.md` |
 
-**SCR-F §37 correspondence:** completes the illustrative `ecology/` entry.
+**SCR-F §37 correspondence:** completes the illustrative `ecology/` entry. All six entries are covered by `family-c-report-v1.md`. This family holds the catalog's best-posed Lab (14) and two of its most useful architectural failures (18 constructed topology, 19 the reach question in its purest form). It also supplies the strongest **non-security** evidence that limited and delayed observation is a general platform requirement.
 
 ## What this folder holds
 

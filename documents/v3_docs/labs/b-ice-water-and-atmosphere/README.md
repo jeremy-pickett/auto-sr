@@ -14,13 +14,13 @@
 
 | # | Lab | Standing | Production report |
 | :-- | :--- | :--- | :--- |
-| 9 | Sea-Ice Melt Pond | **[plausible]** | `../../SCR_Labs_01-10_Knowledge_Report_v1.md` |
-| 10 | Snow and Crystal Growth | **[plausible]** | same |
-| 11 | Cellular Convection | ungraded | *pending* |
-| 12 | Vegetation Banding | ungraded | *pending* |
-| 13 | Plankton Patchiness | ungraded | *pending* |
+| 9 | Sea-Ice Melt Pond | **[plausible]** | `family-b-report-v1.md` |
+| 10 | Snow and Crystal Growth | **[plausible]** | `family-b-report-v1.md` |
+| 11 | Cellular Convection | ungraded | `family-b-report-v1.md` |
+| 12 | Vegetation Banding | ungraded | `family-b-report-v1.md` |
+| 13 | Plankton Patchiness | ungraded | `family-b-report-v1.md` |
 
-**SCR-F §37 correspondence:** completes the illustrative `weather/` entry. **This family is split across production reports** — entries 9–10 are covered by the 01–10 report, 11–13 are not yet written. See the note on batching below.
+**SCR-F §37 correspondence:** completes the illustrative `weather/` entry. **All five entries are covered by `family-b-report-v1.md`**, which supersedes the earlier treatment of 9–10 in the top-level 01–10 report. This is the family where *abstraction level* became a fit question: entry 11 is defensible at the convective-cell level and dubious at the fluid-element level, and entry 13 fails largely because its medium moves.
 
 ## What this folder holds
 

@@ -12,6 +12,22 @@
 
 ---
 
+> ## ⚠ SUPERSEDED — do not cite
+>
+> This report predates the decision to organize production Lab papers by family (`labs/<family>/`). It straddles two families and is now **fully superseded**:
+>
+> | Content | Superseded by |
+> | :--- | :--- |
+> | Labs 1–8 | `labs/a-fire-land-and-surface/family-a-report-v1.md` |
+> | Labs 9–10 | `labs/b-ice-water-and-atmosphere/family-b-report-v1.md` |
+> | Part I (the shared framework) | `00-start-here/irreducibility-and-what-cellular-means.md` (Level 1) |
+>
+> **Retained, not deleted.** The successors correct it in several places — sensitivity was conflated with computational irreducibility in four entries, and the Nakaya diagram was oversimplified — and what changed between versions is itself informative (§7, §10). Its verified references carried forward intact.
+>
+> Cite the successor, never this file.
+
+---
+
 ## What this document is
 
 Ten Labs, examined through **computational irreducibility and cellular automata**, asking one question of each: *what does this Lab need to know?*
