@@ -123,3 +123,28 @@ Three claims, never sold as one another:
 - **Efficacy** — the output was worth having: a practitioner took a candidate mechanism, validated it with their own tools, and acted differently. Real use, real recipients (DEC-20), and time. A reference-case match is still not efficacy.
 
 Consequence: the synthetic phase can produce a platform that is provably faithful and still worthless — and fidelity testing feels productive (green checks accumulate) while the deciding risk sits untouched at rung three. **The synthetic phase gets an exit criterion written in advance**: it ends when round-trip, recovery-of-planted, and pathology-honesty are demonstrated — not one generator later.
+
+---
+
+# Addendum (2026-08-21): archetypes, and the visualization arsenal
+
+## Cell feature archetypes — the cross-Lab discovery question, and the synthetic kit, are one artifact
+
+Seven archetypes recur across the catalog wearing different names: **the store** (depletable supply: fuel, susceptible pool, sand), **the fuse** (accumulator + threshold: heat-to-ignition, exposure-to-infection, saturation-to-failure), **the one-way door** (irreversible state machine: burnt, infected, compromised), **the cooldown** (recovery timer: immunity, regrowth, patched), **the tilt** (static bias: slope, wind, topology weights), **the moving pile** (conserved transferable quantity: sand, water, load — conservation is a checkable fidelity assertion inside the semantics), **the ember** (hidden live state under a quiet surface: smoldering peat, incubation, dormant persistence — §38.6 as an archetype, the platform's signature).
+
+Payoffs: synthetic generators become archetype compositions (one kit, cross-Lab coverage, parametric drama); the §21 neutral-Reader list maps onto archetypes ~1:1 (front-speed ↔ one-way door, loading-detection ↔ fuse, conservation-check ↔ moving pile) — now we know why that list is what it is; a testable corpus-scale claim — do Labs sharing an archetype signature produce overlapping behavior families? (fronts need the door, waves need the cooldown, cascades need the fuse, long-quiet surprises need the ember); and a candidate DEC-24 floor statement: every Cell is a composition of a small set of bounded feature archetypes.
+
+## The visualization arsenal (all pass VIS-8: rendered later from stored evidence; together they define what DEC-13 makes storage keep)
+
+1. **Time-solid** — a whole Run as one rotatable object, time as an axis; travelers become diagonal crystal threads. A shelf of them is a library of universes.
+2. **Recurrence crystal** — periodicity as geometry: the sculpture goes crystalline exactly where prediction becomes possible. The reducibility audit, visible.
+3. **Butterfly cone with ghosts** — one flip's divergence cone among twenty translucent comparables; §25.3's ambient honesty makes the shot stronger, not weaker.
+4. **Invention feed** — proposal → code → gauntlet → first bloom. The loop is the product; this is the five-second answer (three seconds of feed, then collapse to time-solid, rack onto the shelf).
+5. **Ember x-ray** — split screen: quiet surface, charging fuses beneath. Partly built already (2.x kind_stable is the seed). The security pitch in one frame.
+6. **Library galaxy** — every mechanism as a star by named similarity; failures kept, as dark matter.
+7. **Behavior terrain** — Try Many Settings as landscape; cliffs are phase transitions; every point an actual experiment.
+8. **Sensitivity cable** — a Study's runs as braided threads; the one that leaves the braid is the finding.
+
+## Pitch legitimacy
+
+A Run of a synthetic world is a real Run — the demo shows true executions of invented universes. Label the substrate ("rendered from live executions of synthetic worlds") and the deck is not merely compliant, it is **auditable**: technical DD can scrub the evidence behind every frame. The one uncrossable line: a synthetic shot never implies a domain forecast. Show universes, not fire predictions.
