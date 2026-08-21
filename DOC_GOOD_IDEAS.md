@@ -113,3 +113,13 @@ Order of operations: fixtures (exist) → clean synthetic → degraded synthetic
 
 1. Synthetic is marked synthetic in provenance, permanently. It never drifts into looking like an observed reference case.
 2. **Never confirm a Lab against its own synthetic data.** Generator-is-a-cellular-mechanism → SCR-finds-a-cellular-mechanism is planting the answer; it will look exactly like successful confirmation and it proves nothing about any subject. Recovery tests are evidence about the platform (ACCURACY-10 at maximum strength). Subject claims begin at real data, not before.
+
+## Correction from the owner: synthetic tests fidelity, never efficacy
+
+Three claims, never sold as one another:
+
+- **Fidelity** — components keep their promises to each other: ingestion preserved what it claims, the chain recovers what was planted, pathologies are reported honestly. **The only rung synthetic can reach.** (testing.md's territory.)
+- **Confirmation** — output agrees with a named real reference case, per regime. Real data only. (accuracy.md's territory.)
+- **Efficacy** — the output was worth having: a practitioner took a candidate mechanism, validated it with their own tools, and acted differently. Real use, real recipients (DEC-20), and time. A reference-case match is still not efficacy.
+
+Consequence: the synthetic phase can produce a platform that is provably faithful and still worthless — and fidelity testing feels productive (green checks accumulate) while the deciding risk sits untouched at rung three. **The synthetic phase gets an exit criterion written in advance**: it ends when round-trip, recovery-of-planted, and pathology-honesty are demonstrated — not one generator later.
