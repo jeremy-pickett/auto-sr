@@ -95,7 +95,10 @@ Not all 24 block anything today. The ones that do:
 
 ## Candidates not yet registered
 
-SCR-F §45.16 asks which consequential choice is still being made by accident. Three are flagged in the tree but not registered, because registering a DEC is an amendment to §40 (§36.5):
+SCR-F §45.16 asks which consequential choice is still being made by accident. Three are flagged in
+the tree but not registered, because registering a DEC is an amendment to §40 (§36.5). **The SCR-F
+v3.x draft reserves identifiers DEC-25 through DEC-27 for them, in this order; registration lands
+with its adoption:**
 
 - **Exploration strategy** — nothing among the twelve components owns *deciding what to generate next*. Flagged in `../01-core/generation.md` §9.
 - **Cost and budget** — no principle covers the economics of generation, repair, or Study fan-out, against a planned scale-up of several orders of magnitude (§22.1). Flagged in `../02-platform/jobs-and-workers.md`.

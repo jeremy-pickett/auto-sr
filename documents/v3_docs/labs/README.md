@@ -95,7 +95,7 @@ Every Lab paper states, in one sentence near the top, the strongest question it 
 
 ## Decisions this subtree must not resolve locally
 
-- **DEC-1** mechanism composition · **DEC-3** temporal semantics · **DEC-8** World storage · **DEC-15** Lab governance · **DEC-16** security isolation · **DEC-20** external calibration.
+- **DEC-1** mechanism composition · **DEC-3** temporal semantics · **DEC-8** World storage · **DEC-15** Lab governance · **DEC-16** security isolation · **DEC-20** external calibration · **DEC-21** locality and reach · **DEC-22** Cell schema multiplicity · **DEC-23** Starting State ownership.
 
 The fit review procedure itself is owned by `../01-core/labs.md`, not by any Lab paper.
 

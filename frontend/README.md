@@ -1,16 +1,26 @@
-# React + Vite
+# ASR frontend (2.x)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+The dark-observatory web interface for Autonomous Semantic Ruliology 2.x: library browser, run
+player with six render styles, rule detail with provenance, the Invent view over the generation
+stream, modifier catalog, optional Firebase Email/Password sign-in with a personal library, and
+the System view.
 
-Currently, two official plugins are available:
+Built with Vite and React 19. Started from the Vite React template; the template's own README is
+in version history.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Commands
 
-## React Compiler
+- `npm run dev` — dev server on :5173, proxying `/rules /runs /catalog /library /system /profile
+  /comments` to the backend on :8000. Binds `0.0.0.0` deliberately (`server.host: true`) — this
+  machine is reached by external IP, and a loopback-only bind looks "up but unreachable."
+- `npm run build` — production build
+- `npm run lint` — oxlint (config in `.oxlintrc.json`)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Two recurring gotchas, documented in `CLAUDE.md`: a new top-level backend route must be added to
+the dev proxy list or it fails silently in dev; and if the dev server is unreachable, check
+`ss -tlnp | grep 5173` for a loopback-only bind before debugging anything else.
 
-## Expanding the Oxlint configuration
+Sign-in needs `VITE_FIREBASE_*` values in `frontend/.env` (see `.env.example`); the app runs
+anonymously without them.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+The full subsystem deep-dive is `documents/deep-dive/06-frontend.md`.

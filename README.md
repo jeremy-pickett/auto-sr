@@ -32,6 +32,12 @@ I invite you to join.
 
 ### Where to start
 
+This repository currently hosts two things: the **running 2.x system** (the working
+proof — `backend/`, `frontend/`, documented in [`documents/deep-dive/`](documents/deep-dive/))
+and the **3.x documentation tree** the manifesto above describes. 3.x moves to its own
+repository soon; until then, `CLAUDE.md` is the 2.x operating guide and the links below are the
+3.x entrance.
+
 - **What this is, carefully:** [`documents/v3_docs/00-start-here/what-is-scr.md`](documents/v3_docs/00-start-here/what-is-scr.md)
 - **The foundations (SCR-F v3.x):** [`documents/v3_docs/00-start-here/foundations-and-platform-architecture.md`](documents/v3_docs/00-start-here/foundations-and-platform-architecture.md)
 - **The open decisions, in plain language:** [`documents/v3_docs/04-decisions/`](documents/v3_docs/04-decisions/)

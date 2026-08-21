@@ -1,15 +1,16 @@
 # SCR 3.x documentation tree
 
-**Status:** draft (scaffold) · **Date:** 2026-08-20
+**Status:** draft · **Date:** 2026-08-20, revised 2026-08-21
 **Implements:** SCR-F v0.2 §37 (initial documentation tree), §36 (authority, lifecycle, citation)
 
 This directory is the `docs/` root described in SCR-F v0.2 §37. It began (2026-08-20) as a
 scaffold of stubs — stable citation targets carrying what each document owes and which DEC records
 it must not resolve locally. As of 2026-08-21, **every numbered directory is written**: Level 1
-foundations in `00-start-here/`, production requirements across `01-core/` (twelve documents; the
-five core-contract seam passes preserved as `*.seams.md`), `02-platform/` (eight), and
-`03-quality/` (five), with the Decision Registry in `04-decisions/` holding all records in the
-plain-question format. Everything remains **draft** — adoption is a human act (§36.3) and none has
+foundations in `00-start-here/` — six documents, including SCR-F v3.x itself and the
+irreducibility paper — production requirements across `01-core/` (twelve documents; the five
+core-contract seam passes preserved as `*.seams.md`), `02-platform/` (eight), and `03-quality/`
+(six, the synthetic-data suite having joined the original five), with the Decision Registry in
+`04-decisions/` holding all records in the plain-question format. Everything remains **draft** — adoption is a human act (§36.3) and none has
 happened yet.
 
 The discipline the scaffold established still governs every future edit. Roughly two hundred
@@ -23,16 +24,22 @@ answer.
 
 ```
 documents/v3_docs/
-├── 00-start-here/     Level 1 — Foundations
-├── 01-core/           the twelve components
+├── 00-start-here/     Level 1 — Foundations, including SCR-F v3.x (draft)
+├── 01-core/           the twelve components (+ preserved *.seams.md passes)
 ├── 02-platform/       Platform Services (§33)
-├── 03-quality/        testing, repeatability, accuracy, references, human review
-├── 04-decisions/      DEC-1 … DEC-20, indexed by §40
-├── labs/              Level 5 — Lab papers and the sixty-candidate catalog
+├── 03-quality/        testing, repeatability, accuracy, references, human review,
+│                      synthetic data
+├── 04-decisions/      DEC-1 … DEC-24 (25–27 reserved), indexed by §40
+├── labs/              Level 5 — the sixty-candidate catalog, nine family folders,
+│                      Lab papers, the ingestion inventory (see labs/README.md)
+├── surveys/           idiom surveys and other raw material for future requirements
+├── critiques/         external review, retained as evidence
+├── outstanding.md     the living list of what remains after the documentation phase
 └── relics/            prior drafts and source material; not part of the tree
 ```
 
-`labs/` and `relics/` predate this scaffold and were left untouched.
+`labs/` is an actively written lane with its own conventions — see `labs/README.md`. `relics/`
+holds prior drafts and is not part of the tree.
 
 ## Document classes (§36.1)
 
@@ -45,15 +52,19 @@ documents/v3_docs/
 | 5 | Lab Papers | `labs/` |
 | 6 | Operations and User Documentation | not yet created |
 
-**The Level 3 assignment is provisional.** §37 gives the tree without assigning levels to it.
-Reading `01-core/`, `02-platform/`, and `03-quality/` as Level 3 Requirements is this scaffold's
-proposal, recorded here for review rather than asserted as SCR-F's position. Levels 4 and 6 have no
+**The Level 3 assignment is provisional.** v0.2's §37 gives the tree without assigning levels to
+it; reading `01-core/`, `02-platform/`, and `03-quality/` as Level 3 Requirements began as this
+scaffold's proposal. The SCR-F v3.x draft records the assignment as built (§36.1, §37); it becomes
+SCR-F's position when v3.x is adopted. Levels 4 and 6 have no
 directory in §37; they are listed above so their absence is visible rather than forgotten.
 
 ## Citation (§36.2)
 
-- Foundations: `SCR-F v0.2 §19`; condensed rules as `F-1` … `F-22`.
-- Decisions: `DEC-1` … `DEC-20`.
+- Foundations: `SCR-F v0.2 §19` — v0.2 remains the governing text until v3.x is adopted, and
+  v0.2 citations stay valid permanently as historical pins. Condensed rules `F-1` … `F-22`; the
+  v3.x draft adds `F-23`.
+- Decisions: `DEC-1` … `DEC-24`; `DEC-25` … `DEC-27` are reserved (registration lands with
+  adoption of SCR-F v3.x).
 - Requirements documents define their own permanent identifier namespaces, following the 2.x
   `REQ-` practice: identifiers are never reused, retirements are recorded rather than silently
   dropped, and rationale travels with the requirement. A document writing into a shared namespace
@@ -89,14 +100,17 @@ the tree holding an undecided decision as settled fact.
 
 ## Known state
 
-- **SCR-F itself is not in this tree yet.** Its canonical text remains at
-  `../SCR_Foundations_and_Platform_Architecture_v0_2.md`; `00-start-here/foundations-and-platform-architecture.md`
-  is a pointer explaining what must happen before it moves here.
-- **SCR-F is *in review*, not adopted.** Downstream documents may cite it; they may not yet rely
-  on it (§36.3).
+- **SCR-F v3.x (draft) lives in this tree** at `00-start-here/foundations-and-platform-architecture.md`
+  (moved 2026-08-21, replacing the former pointer; version label corrected from v0.3 per the
+  standing rule in `CLAUDE.md`). **v0.2 remains the governing Foundations text** — still at
+  `../SCR_Foundations_and_Platform_Architecture_v0_2.md`, status *in review* — until v3.x is
+  adopted. The five recorded disagreements between them are indexed in `outstanding.md`.
+- **Nothing is adopted.** Every document here is draft; adoption is a human act (§36.3), per
+  document, by the owner.
 - **Three unregistered candidate decisions** are flagged in the documents and listed in
   `04-decisions/README.md` — exploration strategy, cost and budget, and ownership of evidence.
-- **DEC-2 is decided** (2026-08-21; replay promises) and **DEC-16 is narrowed** (obligations are
-  requirements in `02-platform/execution-safety.md`; the mechanism waits for a real deployment).
+- **DEC-2 is decided** (2026-08-21; replay promises), **DEC-16 is narrowed** (obligations are
+  requirements in `02-platform/execution-safety.md`; the mechanism waits for a real deployment),
+  and **DEC-18 is substantially narrowed** (only the stale-intent catch-up procedure remains).
 - **After documentation: real data, per Lab.** These documents are expected to be stressed by it;
   amendment with the evidence attached is the intended response (§36.5), not a sign of failure.
