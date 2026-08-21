@@ -7,9 +7,9 @@ This directory is the `docs/` root described in SCR-F v0.2 §37. It began (2026-
 scaffold of stubs — stable citation targets carrying what each document owes and which DEC records
 it must not resolve locally. As of 2026-08-21, **every numbered directory is written**: Level 1
 foundations — SCR-F v3.x at this directory's root, with the orientation documents (including
-the irreducibility paper) in `00-start-here/` — production requirements across `01-core/` (twelve documents; the five
-core-contract seam passes preserved as `*.seams.md`), `02-platform/` (eight), and `03-quality/`
-(six, the synthetic-data suite having joined the original five), with the Decision Registry in
+the irreducibility paper) in `00-start-here/` — production requirements across `01-core/` (one document per
+component, with the core-contract seam passes preserved as `*.seams.md`), `02-platform/`, and
+`03-quality/`, with the Decision Registry in
 `04-decisions/` holding all records in the plain-question format. Everything remains **draft** — adoption is a human act (§36.3) and none has
 happened yet.
 
