@@ -28,7 +28,7 @@ The first draft of this report was written before `SCR_Labs_41-50_Critique_v0.1.
 | **DEC-3 given an execution vocabulary** (§findings) | Step / delayed effect / message / scheduled event / phase. **Do not resolve DEC-3 with a boolean such as "supports async."** |
 | **Urban Growth reframed as a benchmark** (41) | Against a mature operational CA tradition, not as a new methodology. Its open questions are now stated as benchmark questions. |
 | **Multiple Connection classes per World** (41, §findings) | Urban Growth needs spatial adjacency *and* road connectivity *and* jurisdiction membership. The answer is not a HybridWorld abstraction but **a World declaring more than one Connection class**, with a Plugin declaring which it reads. |
-| **Connection state as first-class and bounded** (§findings) | Direction, type, latency, capacity, visibility, state — under the same readable, bounded, declared discipline as Cell state. |
+| **Connection model** (§findings) | Direction, type, latency, capacity, visibility, state — under the same readable, bounded, declared discipline as Cell state. |
 
 ---
 
@@ -282,15 +282,15 @@ Blocked hard on **DEC-3**: lockstep would model a protocol that does not exist. 
 
 | Question | Owner | Raised by |
 | :--- | :--- | :--- |
-| **Globally-computed drivers** — the boundary established by entry 31 | *unregistered* | 42 and 43 are its largest concentration; 45 partially, via shared infrastructure |
+| **Globally-computed drivers** — the boundary established by entry 31 | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 42 and 43 are its largest concentration; 45 partially, via shared infrastructure |
 | **Rejection reasons recorded, not just grades** | **DEC-15** | 43 contributes a category distinct from 42's and 60's |
 | **Asynchronous message passing and clock-scheduled events** | **DEC-3** | 46 (the protocol *is* asynchrony), 44 (timetables), 45 (timeouts). **The densest DEC-3 cluster in the catalog.** |
-| **Mechanism analysis as a distinct mode** | *unregistered* | 45 and 46 — the rule is known, the consequences are not |
+| **Mechanism analysis as a mode** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 45 and 46 — the rule is known, the consequences are not |
 | **Coordinator semantics** | **DEC-1** | 44 dispatch |
 | **Bounded state under realistic scale** | **CELL ceiling** | 46 — a real routing table is a million prefixes |
-| **Global-driver dependency declared in fit review** | *unregistered* | 42, 43. A Lab must state whether critical transition values come from bounded local information, a generic global helper, or a **subject-specific global solver** — and if the last, justify what SCR adds beyond orchestrating that solver. |
-| **Multiple Connection classes in one World** | *unregistered* | 41 (spatial + road + jurisdiction). Treat Grid, Network, Identity, and Agent as common *patterns* rather than mutually exclusive boxes. |
-| **Connection state as first-class and bounded** | *unregistered* | 45 (latency, direction, in-flight), 46 (announcement delay). Same readable-bounded-declared discipline as Cell state; a Connection must not become an object with unlimited hidden logic. |
+| **Globally-computed drivers** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 42, 43. A Lab must state whether critical transition values come from bounded local information, a generic global helper, or a **subject-specific global solver** — and if the last, justify what SCR adds beyond orchestrating that solver. |
+| **Connection model** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 41 (spatial + road + jurisdiction). Treat Grid, Network, Identity, and Agent as common *patterns* rather than mutually exclusive boxes. |
+| **Connection model** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 45 (latency, direction, in-flight), 46 (announcement delay). Same readable-bounded-declared discipline as Cell state; a Connection must not become an object with unlimited hidden logic. |
 
 ### DEC-3 needs a vocabulary, not a boolean
 

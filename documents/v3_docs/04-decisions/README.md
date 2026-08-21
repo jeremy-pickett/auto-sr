@@ -71,6 +71,16 @@ Registered while writing `../01-core/`, after external critique. These were not 
 | [DEC-23](dec-023-starting-state-ownership.md) | Who sets up the board? | Starting State ownership | open; leading candidate recorded |
 | [DEC-24](dec-024-the-cellular-budget.md) | How much can we bend before it isn't the same instrument? | The cellular budget | open; no owner assigned |
 
+## Raised by the sixty-Lab catalog (2026-08-21), not yet registered
+
+Writing the nine family reports in `../labs/` surfaced 44 platform questions that no record owns — **19 distinct requirements** once deduplicated, several invented independently under different names in three or four unrelated families.
+
+They are triaged in **[Proposals from the sixty-Lab catalog](proposed-from-the-lab-catalog.md)**: seven candidates for new records, six already within an existing record's scope, and six that are contract requirements belonging to `../01-core/` rather than to this registry.
+
+**That document mints nothing.** Identifiers are permanent and adoption is a human act (§36.3); the triage exists so that assigning them is mechanical rather than a fresh act of judgement. The most recurrent unregistered question is *what may a mechanism depend on that it cannot compute for itself* — raised by eight entries across four families.
+
+---
+
 **DEC-24 is different in kind from every other record here.** The others ask what the platform should do. DEC-24 asks who is counting what the others cost in aggregate — four of the five properties that make this recognisably a local-mechanism instrument are currently under negotiation, each argued soundly on its own, with no one watching the total. Its own record proposes starting with the floor: what stays true regardless of how DEC-1, 3, 21, and 22 land.
 
 ## Which records actually gate work

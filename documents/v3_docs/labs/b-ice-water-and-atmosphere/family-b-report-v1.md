@@ -260,14 +260,14 @@ Three entries across Families B and C revolve around bistability, and the catalo
 
 | Question | Owner | Raised by |
 | :--- | :--- | :--- |
-| **Abstraction-level declaration** — what one Cell represents and why that level | *unregistered* | 11 (cell vs fluid element), 13 (patch vs parcel vs population). **Strongest new candidate from this batch.** |
-| **Generic helpers vs subject solvers** | *unregistered* | 9 — connected-component level equalization |
+| **Abstraction-level declaration** — what one Cell represents and why that level | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 11 (cell vs fluid element), 13 (patch vs parcel vs population). **Strongest new candidate from this batch.** |
+| **Generic helpers vs subject solvers** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 9 — connected-component level equalization |
 | **Moving or advected Cells** | **DEC-24** | 13. A substantial identity expenditure; do not spend it for one weak Lab. |
-| **Geometry families** — hexagonal is physical, not exotic | *unregistered* | 10 |
+| **Named geometry families** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 10 |
 | **Reach** | **DEC-21** | 9 (connected-region constraint) |
-| **Cross-Lab mechanism retrieval** | *unregistered* | 11, and the whole family |
-| **Mechanism discrimination beyond morphology** | *unregistered* | Every entry. Readers must distinguish *same picture, different mechanism*. |
-| **Catalog governance: merge, demote, benchmark-only** | *unregistered* | 13. Sixty Labs should not become sixty product commitments. |
+| **Cross-Lab mechanism retrieval** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 11, and the whole family |
+| **Mechanism discrimination beyond morphology** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | Every entry. Readers must distinguish *same picture, different mechanism*. |
+| **Catalog governance: merge, demote, benchmark-only** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 13. Sixty Labs should not become sixty product commitments. |
 
 ### Build priority within the family
 

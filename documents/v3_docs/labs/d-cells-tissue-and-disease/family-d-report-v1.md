@@ -386,15 +386,15 @@ That is better than treating Steinberg as a universal answer, and it gives the L
 
 | Question | Owner | Raised by |
 | :--- | :--- | :--- |
-| **Lab credibility class** — a policy surface governing labelling, export language, and whether output may appear without Study context | *unregistered* | The whole family. **Non-claims paragraphs are insufficient where the subject itself carries clinical weight.** |
+| **Output risk policy** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | The whole family. **Non-claims paragraphs are insufficient where the subject itself carries clinical weight.** |
 | **Many-sites-per-entity** — one domain object occupying a variable connected region | **DEC-24** | 27. Record as a boundary; do not spend to rescue one weak Lab. |
 | **Growing Worlds** — participant count changing during a Run | **DEC-24** | 20. Prefer activating inactive sites or coordinate remapping over dynamic allocation. |
-| **Surface topology independent of display coordinates** | *unregistered* | 22. More general and cheaper than "3-D World". |
-| **Mechanism-similarity vocabulary** — same mechanism / same family / same behaviour | *unregistered* | The fingering group (23, 24, 25, and 29 in Family E) |
-| **Anisotropy control Study** — separating physical from numerical anisotropy | *unregistered* | 21 (desired), 23 and 25 (numerical). Automatable. |
-| **Correctness levels recorded in standing** | *unregistered* | The whole family; decides how Search ranks mechanisms. |
+| **Named geometry families** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 22. More general and cheaper than "3-D World". |
+| **Mechanism identity layers** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | The fingering group (23, 24, 25, and 29 in Family E) |
+| **Lattice-artifact control Study** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 21 (desired), 23 and 25 (numerical). Automatable. |
+| **Evidence standing metadata** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | The whole family; decides how Search ranks mechanisms. |
 | **"Cell" disambiguation in Lab writing** | **§5, LAB-3** | 24, 26, 27. Semantic clarity is an architectural principle, not a style preference. |
-| **Mechanism discrimination beyond morphology** | *unregistered* | 20. Two mechanisms producing indistinguishable spots are not equivalent. |
+| **Mechanism discrimination beyond morphology** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 20. Two mechanisms producing indistinguishable spots are not equivalent. |
 
 ### Cross-Lab mechanism families in this batch
 

@@ -269,11 +269,11 @@ What people actually do is well documented and is not what models assume. They *
 | Question | Owner | Raised by |
 | :--- | :--- | :--- |
 | **The Mover** — bounded state-bearing participant occupying a location, moving under Reactor control | **DEC-24** | All five. Consider before reaching for a full Agent ontology. |
-| **Belief and seen-state as a core World capability** — world truth / participant belief / observation channel / recorded evidence | *unregistered* — **strongest new candidate from this batch** | 40 primarily; generalizes to all of Family H |
+| **World / Seen / Recorded state** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* — **strongest new candidate from this batch** | 40 primarily; generalizes to all of Family H |
 | **World fit and mechanism fit as independent axes** | **DEC-15** via standing | 39 (perfect World, weak mechanism); 31 (natural-looking lattice, non-local physics) |
-| **Mechanism discovery vs mechanism analysis as two modes** | *unregistered* | 39, and most of Family H |
+| **Mechanism analysis as a mode** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 39, and most of Family H |
 | **Coordinator semantics** — local mechanisms plus a global planner | **DEC-1** | 39, with known ground truth |
-| **Orientation-control Study** | *unregistered* | 38 — lane direction is the phenomenon and the grid has directions |
+| **Lattice-artifact control Study** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 38 — lane direction is the phenomenon and the grid has directions |
 | **Bounded belief under the semantic ceiling** | **CELL ceiling** | 40, shared with 47 |
 
 ### Build priority within the family

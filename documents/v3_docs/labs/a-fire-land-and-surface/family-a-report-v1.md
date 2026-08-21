@@ -358,11 +358,11 @@ Roles and sequencing, **not** scientific worth, and **not** fit grades.
 | :--- | :--- | :--- |
 | **External input vs interactive mechanism vs static condition** | **DEC-1** | Seven of eight. Highest leverage, and separable from the full composition question — resolving the external-input category alone dissolves most of this family's apparent blockage. |
 | **Reach** — bounded transport, path-local, unrestricted addressing | **DEC-21** | Dune (bounded transport, physically correct), Wildfire (embers), Karst (path-local), Coastal (visibility) |
-| **Geometry families** — network, layered 3-D | *unregistered* | Karst, Smouldering. Grid must not mean square grid. |
-| **Dynamic connection strength vs existence** | *unregistered* | River braiding. Weight changes with state; the edge set does not. |
+| **Named geometry families** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | Karst, Smouldering. Grid must not mean square grid. |
+| **Connection model** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | River braiding. Weight changes with state; the edge set does not. |
 | **Multi-rate temporal semantics** | **DEC-3** | Six of eight span three or more orders of magnitude |
-| **Generic helpers vs subject solvers** | *unregistered* | Coastal (visibility geometry) |
-| **Validation standing as a searchable property** | *unregistered* | The family's widest internal spread: two entries checkable against controlled experiment, two uncheckable |
+| **Generic helpers vs subject solvers** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | Coastal (visibility geometry) |
+| **Evidence standing metadata** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | The family's widest internal spread: two entries checkable against controlled experiment, two uncheckable |
 | **The cellular budget** | **DEC-24** | Per LAB-16 each Lab reports its own spending. This family spends mainly against *local interaction*: Dune and Karst both need reach beyond declared neighbours, and neither is asking frivolously. |
 
 **The tenth fit question is no longer a proposal.** `../../01-core/labs.md` LAB-5.10 adopts the reducibility audit as a requirement, with LAB-6 requiring the regimes be named separately and LAB-7 requiring the audit be stated **per regime, never per subject**. Every Lab above is written to satisfy LAB-7: each has a *Reducible* and an *Irreducible* section rather than a verdict on the domain. The matching amendment to SCR-F §30 is proposed in that document, not applied.

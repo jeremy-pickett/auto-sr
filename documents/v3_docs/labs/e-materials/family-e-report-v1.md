@@ -371,15 +371,15 @@ But commercial electrolytes are **concentrated**, not dilute, and the lithium su
 
 | Question | Owner | Raised by |
 | :--- | :--- | :--- |
-| **Globally-computed drivers** — local / generic global property / domain-defining solve | *unregistered* — **strongest new DEC candidate from this batch** | 31 (decisive), 34 (conditional), 28 (open) |
+| **Globally-computed drivers** — local / generic global property / domain-defining solve | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* — **strongest new DEC candidate from this batch** | 31 (decisive), 34 (conditional), 28 (open) |
 | **Standing vocabulary admitting rejection** | **DEC-15** | 31. "Rejected" must not mean "deleted". |
-| **Observable-equivalence identity** — behavioural equivalence under a specified measurement set | *unregistered* | 33 |
-| **Blinded benchmark modes** — what Generation was allowed to know | *unregistered* | 30, 35. Without it, calibration measures literature recall. |
+| **Mechanism identity layers** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 33 |
+| **Blinded benchmark modes** — what Generation was allowed to know | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 30, 35. Without it, calibration measures literature recall. |
 | **Geometry-change taxonomy** — occupancy / topology / population / contraction / deformation | **DEC-24** | 32. Do not spend on deformable Worlds for one Lab. |
 | **Phase schedule** in temporal semantics | **DEC-3** | 34. Declared phases, Reactor-owned, deterministic. |
-| **Anisotropy control Study** | *unregistered* | 29 (mandatory before morphology claims), 30 (documented faceting) |
-| **Reader validation rigour** — finite-size and crossover discipline | *unregistered* | 33. A naive Reader will misclassify confidently. |
-| **Mechanism-family language, not identity** | *unregistered* | 29 as the physics anchor for the fingering family |
+| **Lattice-artifact control Study** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 29 (mandatory before morphology claims), 30 (documented faceting) |
+| **Reader validation rigour** — finite-size and crossover discipline | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 33. A naive Reader will misclassify confidently. |
+| **Mechanism identity layers** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 29 as the physics anchor for the fingering family |
 
 ### Three kinds of platform validation, now complete
 

@@ -214,10 +214,10 @@ Every other weak entry in this catalog has some residue worth stating — 57 has
 | :--- | :--- | :--- |
 | **Moving Participants as a first-class World capability** | **DEC-24** | 59 is the ideal acceptance case. State has now appeared on movers in ecology, immunology, crowds, robots, evacuation, ants, and attacker abstractions. |
 | **Composition roles** — participant / field / external input / coordinator | **DEC-1** | 59. More honest than "multiple Plugins, all peers". |
-| **Dynamic Connections** | *unregistered* | 58 is the cheapest, lowest-stakes test |
+| **Dynamic Connections** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 58 is the cheapest, lowest-stakes test |
 | **Rejection reasons recorded, not just grades** | **DEC-15** | The whole family; 58 fails twice |
-| **Reducibility levels** — analytic / algorithmic / numerical / empirical / operational | *unregistered* | Applies retroactively to all sixty briefs |
-| **Socially portable output** as a distinct hazard class | *unregistered* | 57, and 58 by political readability |
+| **Reducibility levels** — analytic / algorithmic / numerical / empirical / operational | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | Applies retroactively to all sixty briefs |
+| **Output risk policy** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 57, and 58 by political readability |
 
 ### A proposed model, from the catalog as a whole
 

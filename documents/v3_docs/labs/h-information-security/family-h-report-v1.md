@@ -423,16 +423,16 @@ That turns *what depends on package X?* into:
 
 | Question | Owner | Raised by |
 | :--- | :--- | :--- |
-| **Dynamic Connections** — Plugin proposes, Reactor validates and applies under a declared contract | *unregistered* — **now likely foundational rather than speculative** | 48, 56; with 18, 50, 58 elsewhere. Needs allowed source/target types, connection types, creation and removal budgets, duplicate-relation rules, reversibility, complete history, and future-relevant-state inclusion. |
-| **Seen State versus World State** | *unregistered* | 47, 52, 55. Entry 40 in Family F is the cheaper place to build it first. |
+| **Dynamic Connections** — Plugin proposes, Reactor validates and applies under a declared contract | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* — **now likely foundational rather than speculative** | 48, 56; with 18, 50, 58 elsewhere. Needs allowed source/target types, connection types, creation and removal budgets, duplicate-relation rules, reversibility, complete history, and future-relevant-state inclusion. |
+| **World / Seen / Recorded state** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 47, 52, 55. Entry 40 in Family F is the cheaper place to build it first. |
 | **Multi-mechanism composition** | **DEC-1** | 52 and 55 are meaningless without attacker and defender both |
 | **Temporal semantics** | **DEC-3** | 52 (the race), 55 (timed containment) |
-| **Shared Domain World templates distinct from Labs** | *unregistered* | 47, 48, 52, 54, 55 — one World, several mechanisms |
+| **Shared Domain World templates distinct from Labs** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 47, 48, 52, 54, 55 — one World, several mechanisms |
 | **Rejection reasons recorded, not just grades** | **DEC-15** | 51 (observation), 53 (planned process) — two distinct categories |
-| **Provenance inside high-risk Views** | *unregistered* | 52, 55 |
+| **Output risk policy** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 52, 55 |
 | **Execution boundary for adversarial Labs** | **DEC-16** | The whole family (F-20, §18.4, LAB-4) |
-| **Semantic-state sufficiency test** | *unregistered* | 49, 50. **The central fit question for the AI entries.** A malicious instruction survives because of its meaning in context, not because a bit stays high; a summary drifts in a *direction*, not merely by an amount. A fit review must compare scalar-model behaviour against a real text-transform pipeline, test whether different semantic errors with equal scalar "distortion" produce materially different downstream outcomes, and document which questions survive the abstraction. **If the scalar cannot preserve the relevant behaviour, the Lab fails rather than promoting opaque embeddings as fake precision.** |
-| **Evidence external-validity metadata** | *unregistered* | 49. Findings over a versioned model substrate are historical evidence with a short generalization lifetime; Corpus retrieval must respect substrate version. |
+| **Semantic-state sufficiency test** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 49, 50. **The central fit question for the AI entries.** A malicious instruction survives because of its meaning in context, not because a bit stays high; a summary drifts in a *direction*, not merely by an amount. A fit review must compare scalar-model behaviour against a real text-transform pipeline, test whether different semantic errors with equal scalar "distortion" produce materially different downstream outcomes, and document which questions survive the abstraction. **If the scalar cannot preserve the relevant behaviour, the Lab fails rather than promoting opaque embeddings as fake precision.** |
+| **Evidence standing metadata** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 49. Findings over a versioned model substrate are historical evidence with a short generalization lifetime; Corpus retrieval must respect substrate version. |
 
 ### Fit frames for high-overclaim Labs
 

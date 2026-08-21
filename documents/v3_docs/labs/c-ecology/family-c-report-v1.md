@@ -302,12 +302,12 @@ Candidate consolidations from this batch: **Seed Dispersal (19) into a broader d
 | Question | Owner | Raised by |
 | :--- | :--- | :--- |
 | **Reach** — fat-tailed transport where the tail decides the outcome | **DEC-21** | 14, 16, 19. Entry 19 is the purest forcing case. |
-| **Topology classes** — fixed / state-weighted / **constructed** | *unregistered* | 18. Constructed topology is a distinct class needing its own Run Contract terms. |
-| **Observation model** — true / observable / recorded | *unregistered* | 14, 16. General, not adversarial. |
-| **Generic helpers vs subject solvers** | *unregistered* | 18 — network flow |
-| **Abstraction-level declaration** | *unregistered* | 15 (patch vs tree), 16 (stand vs tree), 17 (substrate vs grazer), 18 (patch vs segment) |
+| **Dynamic Connections** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 18. Constructed topology is a distinct class needing its own Run Contract terms. |
+| **World / Seen / Recorded state** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 14, 16. General, not adversarial. |
+| **Generic helpers vs subject solvers** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 18 — network flow |
+| **Abstraction-level declaration** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 15 (patch vs tree), 16 (stand vs tree), 17 (substrate vs grazer), 18 (patch vs segment) |
 | **Agent participants** | **DEC-24** | 17 grazers, 19 dispersers. Both avoidable at first via precomputed external fields. |
-| **Catalog governance: merge, demote, benchmark-only** | *unregistered* | 13, 19 |
+| **Catalog governance: merge, demote, benchmark-only** | *unregistered — [triaged](../../04-decisions/proposed-from-the-lab-catalog.md)* | 13, 19 |
 | **Cell state scale under within-patch coexistence** | **CELL ceiling** | 15 |
 
 ### Build priority within the family
