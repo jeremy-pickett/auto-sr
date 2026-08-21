@@ -148,3 +148,16 @@ Payoffs: synthetic generators become archetype compositions (one kit, cross-Lab 
 ## Pitch legitimacy
 
 A Run of a synthetic world is a real Run — the demo shows true executions of invented universes. Label the substrate ("rendered from live executions of synthetic worlds") and the deck is not merely compliant, it is **auditable**: technical DD can scrub the evidence behind every frame. The one uncrossable line: a synthetic shot never implies a domain forecast. Show universes, not fire predictions.
+
+---
+
+# Addendum (2026-08-21): riff on the visual idioms survey; the 3D selection
+
+**Survey:** `documents/v3_docs/surveys/scr-visual-idioms-survey-v0.1.md`. Its §7 is right; four extensions:
+
+1. **AOV channels answer DEC-13.** Per-step channels (kind, properties, changed-mask, plus derived channels) ARE the evidence format the advanced views need — 2.x already half-does this (stores kind/age, reconstructs changed). Our cryptomatte improves on film's: structure identity is a Reader-written **derived-evidence channel, versioned and recomputable** (the recurrent-structure detector, REQ-19.x, is its writer). Channel storage is the one decision Tier B/C both stand on — write it down first.
+2. **One master object.** Time-solid (world × time) is the master; kymograph = a line-slice of it; Run barcode = total collapse (library page, nearly free); the existing 2D player = a **section plane** through it — scrubbing is sectioning, the slider is the plane. Building the solid generalizes the player rather than adding a feature beside it.
+3. **The survey's missing idiom is drawable, by us alone: the said-vs-did chart.** DEC-12 keeps intent-similarity and observed-similarity separate, so plot each mechanism at (intent-sim, behaviour-sim) vs a reference: the diagonal did-what-it-said, the off-diagonal quadrants are §3's gap as *positions*. Nobody else records intent as an artifact, so nobody else can draw it.
+4. **Select 3D by one rule: the third axis must be data, never decoration.** Three honest uses: time-as-axis (the solid family: cones, ghosts, crystal, section playback); genuinely 3D worlds (peat depth — the ember lives underground; karst; convection); derived landscapes (height = Reader measurement). Refusals, permanent: 3D node-link graphs (security iterated to 2D for a reason), spinning globes, cameras implying depth that isn't data.
+
+**Build ladder:** A (days, 2D): barcode, onion-skin in player (trails half-is this), wedge grid, kymograph slice. B (the one 3D investment): time-solid + section scrubbing + ghost cones + recurrence crystal — one renderer, four shots, includes the five-second pitch. C (data-gated): terrain, said-vs-did, galaxy, ember volume.
