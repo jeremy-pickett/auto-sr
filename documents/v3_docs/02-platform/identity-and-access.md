@@ -1,27 +1,39 @@
 # Identity and access
 
-**Document class:** Level 3 — Requirements (provisional: §37 assigns no level; see `../README.md`) · **Status:** draft
+**Document class:** Level 3 — Requirements · **Status:** draft
 **Path:** `02-platform/identity-and-access.md`
-**Cites:** SCR-F v0.2 §33, §22, §31
+**Identifier namespace:** `IDENT-` — reserved to this document. Identifiers are permanent and never reused.
+**Cites:** SCR-F v0.2 §22, §31, §33 · `../01-core/corpus.md`, `../03-quality/human-review.md`, `../01-core/search.md`
+**Standing constraint (§33):** Platform Services support the conceptual platform and must not define its scientific assumptions accidentally.
 
-> **Stub — not written, not adopted.** This file exists so downstream documents have a stable citation target (SCR-F v0.2 §36.2) and so the tree's shape is reviewable before two hundred documents land in it. Per §36.3 a draft may not be relied upon by downstream documents. Per §36.6 a model writing here must cite the specific SCR-F sections it depends on, flag ambiguity rather than smooth it over, refuse to answer a DEC-owned question locally, and keep Lab vocabulary out of this document.
+> Identity's first job here is not keeping people out. It is **attribution**: a platform whose evidence includes who corrected what, who decided what, and which machine wrote what, needs to know who everyone is before it needs to stop anyone.
 
 ---
 
-## What this document owes
+## 1. Attribution before permission
 
-- Identity and authorization as platform services that never become scientific assumptions (§33).
-- Attribution: who or what supplied a correction, a Study, a Plugin, or a Lab judgment (§31).
-- Whether and how the Corpus partitions evidence by owner, and what that means for Search and for the claim that the Corpus is one durable body of evidence (§22).
+**IDENT-1.** Every act that enters the permanent record carries its actor: who supplied a correction and why (CORPUS-10), who adopted a document, who promoted a Lab, who designated a Run evidence-grade (DEC-2), who decided an open decision (REVIEW-1). "The system" is not an actor; an unattributed act of that kind is a defect.
 
-## Decisions this document must not resolve locally
+**IDENT-2.** Machines are actors too, identified with the same seriousness: which model, which version, which settings wrote or repaired a mechanism (GEN-15). Human and machine attribution use one framework — the provenance model already adopted for the Corpus treats "who is responsible" as a first-class concept for both (CORPUS-6).
 
-None recorded in §40 as blocking this document. If writing it surfaces a consequential choice, the choice is registered as a new DEC record — it is not answered here (F-22, §36.5).
+**IDENT-3.** Attribution is never retroactively editable. A recorded actor on a recorded act is part of the evidence.
 
-## Standing constraint on this directory
+---
 
-§33 is explicit: Platform Services support the conceptual platform and **must not define its scientific assumptions accidentally**. The 2.x choices — SQLite, synchronous generation over a streamed HTTP request, local execution, a React frontend — are evidence about what worked at toy scale, not constraints on 3.x (§33, §39). Every conceptual contract in SCR-F must remain meaningful after this directory's answers change.
+## 2. Access, in the current phase
 
-## An unregistered concern
+**IDENT-4.** The platform's current posture — single user, optional sign-in, everything readable — is documented as **temporary**, adequate for the same reason the earlier system's execution posture was: one trusted person, one host. The moment a second person arrives, every read and write surface needs a deliberate answer, and the gate for that is DEC-16's mechanism plus this document's ownership question below.
 
-SCR-F describes the Corpus as one durable body of evidence without a notion of *whose* evidence it is. That is comfortable for a single-user platform and uncomfortable the moment a Lab models a real organization's data. No DEC currently covers it; if writing this document requires an answer, register one (§36.5, F-22).
+**IDENT-5.** Authorization, when it arrives, is a platform service and never a scientific assumption (§33): nothing about what an experiment *is* may depend on who may see it.
+
+---
+
+## 3. The ownership question — flagged, not answered
+
+The Corpus is described everywhere as **one durable body of evidence** — that framing does real work: coverage claims, search honesty, the accumulated-library argument all lean on it. None of the founding documents says *whose* evidence it is. That was invisible with one user, and stops being invisible the moment a Lab models a real organisation's incident data, or two users disagree about what may be shared.
+
+**IDENT-6.** Until the ownership question is registered and decided, no partitioning of the Corpus is built. Partitioning changes the meaning of every coverage statement — and a Search that silently sees only *your* slice while speaking as if it saw everything violates SEARCH-8 in the worst available way: absence of evidence would quietly mean absence of *permission*.
+
+**IDENT-7.** When partitioning is decided, every coverage, search, and Study statement must say what body of evidence it speaks for. The one-Corpus language in the founding documents becomes conditional the same day, by amendment, not by drift.
+
+This is one of the three registry candidates (`../04-decisions/README.md`); registering it is the owner's call.

@@ -1,24 +1,41 @@
 # Frontend
 
-**Document class:** Level 3 — Requirements (provisional: §37 assigns no level; see `../README.md`) · **Status:** draft
+**Document class:** Level 3 — Requirements · **Status:** draft
 **Path:** `02-platform/frontend.md`
-**Cites:** SCR-F v0.2 §24, §24.1, §33, §39
+**Identifier namespace:** `FRONT-` — reserved to this document. Identifiers are permanent and never reused.
+**Cites:** SCR-F v0.2 §24, §33, §39 · DEC-10 · `../01-core/visualization.md`, `../01-core/readers.md`, `02-platform/transport.md`
+**Standing constraint (§33):** Platform Services support the conceptual platform and must not define its scientific assumptions accidentally.
 
-> **Stub — not written, not adopted.** This file exists so downstream documents have a stable citation target (SCR-F v0.2 §36.2) and so the tree's shape is reviewable before two hundred documents land in it. Per §36.3 a draft may not be relied upon by downstream documents. Per §36.6 a model writing here must cite the specific SCR-F sections it depends on, flag ambiguity rather than smooth it over, refuse to answer a DEC-owned question locally, and keep Lab vocabulary out of this document.
+> The frontend delivers the product; it does not define what the product may show. The truth rules live in `../01-core/visualization.md` and bind every screen this document ships.
 
 ---
 
-## What this document owes
+## 1. Division of labour
 
-- Frontend delivery and the application shell, distinct from `../01-core/visualization.md`, which owns the evidence contract those views must satisfy.
-- The playback interaction model as a first-class product surface: time is directly navigable in every visual Run experience (§24.1).
-- Attribution surfaces — which Reader produced an assertion, and how a claim relates to underlying evidence (§21).
-- Explicit non-inheritance of the current frontend routing system and the current limited renderer (§39).
+**FRONT-1.** Visualization (Level 3, core) owns *what may be shown and on what evidence* — the truth contract, the lens rules, the divergence-context requirement. This document owns *delivery*: the application shell, navigation, performance, and the surfaces where those rules become pixels. A conflict between a screen and the truth contract is a defect in the screen.
 
-## Decisions this document must not resolve locally
+**FRONT-2.** The earlier system's shell — its framework, routing, and component structure — is inheritance, not requirement (§39). Level 3 may name its choices when made; the requirement is what survives them.
 
-None recorded in §40 as blocking this document. If writing it surfaces a consequential choice, the choice is registered as a new DEC record — it is not answered here (F-22, §36.5).
+---
 
-## Standing constraint on this directory
+## 2. Time is the primary control
 
-§33 is explicit: Platform Services support the conceptual platform and **must not define its scientific assumptions accidentally**. The 2.x choices — SQLite, synchronous generation over a streamed HTTP request, local execution, a React frontend — are evidence about what worked at toy scale, not constraints on 3.x (§33, §39). Every conceptual contract in SCR-F must remain meaningful after this directory's answers change.
+**FRONT-3.** The Run player implements the full navigation set as first-class interactions: scrub, step both directions, play/pause, jump-to-event, two-moment comparison, finding marks, and stable references to exact moments (VIS-14). The slider is the instrument a person searches a Run with — it gets the engineering attention an instrument deserves, within transport's immediacy budget (TRANS-1).
+
+**FRONT-4.** No screen implies that a quiet picture is a settled system (VIS-10). Where the visible layer has gone still and recorded state is still evolving, the interface says so.
+
+---
+
+## 3. Attribution is a surface, not a tooltip
+
+**FRONT-5.** Every measurement on every screen names its Reader and version; every important claim can be walked back to its evidence without leaving the interface (READER-13, READER-14). How uncertainty and coverage are presented well is DEC-10's open design question; *that* they are co-presented with the result is not open, and no screen ships without it.
+
+**FRONT-6.** Machine interpretation — repair accounts, generated summaries — is visibly labelled as interpretation, distinct from evidence and from measurements, on the surface where it appears (GEN-14, READER-9).
+
+---
+
+## 4. Honest degradation
+
+**FRONT-7.** A view that cannot run on the viewer's hardware, or that needs data the record lacks, states what it needs (VIS-9) — it never silently substitutes a lesser rendering presented as the real one (TRANS-4's rule, at the screen).
+
+**FRONT-8.** The public-reader assumption applies to screens: labels, empty states, and error text follow the expert-reader standard (`../00-start-here/language-rules.md`) — no platform vocabulary required to understand what a screen is saying, no talking down to the professional reading it.

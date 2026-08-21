@@ -1,23 +1,35 @@
 # Transport
 
-**Document class:** Level 3 — Requirements (provisional: §37 assigns no level; see `../README.md`) · **Status:** draft
+**Document class:** Level 3 — Requirements · **Status:** draft
 **Path:** `02-platform/transport.md`
-**Cites:** SCR-F v0.2 §24, §33, §39
+**Identifier namespace:** `TRANS-` — reserved to this document. Identifiers are permanent and never reused.
+**Cites:** SCR-F v0.2 §33, §39 · DEC-13 · `../01-core/runs.md`, `../01-core/visualization.md`, `02-platform/storage.md`
+**Standing constraint (§33):** Platform Services support the conceptual platform and must not define its scientific assumptions accidentally.
 
-> **Stub — not written, not adopted.** This file exists so downstream documents have a stable citation target (SCR-F v0.2 §36.2) and so the tree's shape is reviewable before two hundred documents land in it. Per §36.3 a draft may not be relied upon by downstream documents. Per §36.6 a model writing here must cite the specific SCR-F sections it depends on, flag ambiguity rather than smooth it over, refuse to answer a DEC-owned question locally, and keep Lab vocabulary out of this document.
+> Transport's one product is a feeling: that scrubbing through a finished experiment is **navigation, not loading.** Everything here serves that, or serves getting long-running work's progress to a watcher honestly.
 
 ---
 
-## What this document owes
+## 1. Playback
 
-- How Run evidence reaches a viewer efficiently enough for scrubbing to feel instant.
-- Streaming for long-running Generation and Study work.
-- What advanced Views require of the wire format, so 3D and time-mapped Views do not force server-side re-execution.
+**TRANS-1.** Stepping, scrubbing, and jumping through a completed Run feel immediate. The budget is shared with storage (STORE-9): reconstruction plus delivery, together, inside the threshold where a person perceives response rather than wait.
 
-## Decisions this document must not resolve locally
+**TRANS-2.** Playback transport reads finished history and nothing else (RUN-21). No playback interaction executes anything server-side — a view that would need to is flagged by the view layer (VIS-9), not smuggled through transport.
 
-- **DEC-13 — Visualization scale.** *Open.* Its answer largely determines this document.
+**TRANS-3.** State payloads use a compact, versioned, framed binary encoding. The earlier system demonstrated both sides of this: framed binary held up; state nested inside general-purpose text encoding did not survive contact with real payload sizes. Recorded as evidence; the specific framing is revisable behind the version field.
 
-## Standing constraint on this directory
+**TRANS-4.** Wide payloads degrade deliberately: a client that cannot take a full-resolution frame gets a declared reduction (subsampling, region, fewer properties) that names itself — never a silently degraded frame presented as the record.
 
-§33 is explicit: Platform Services support the conceptual platform and **must not define its scientific assumptions accidentally**. The 2.x choices — SQLite, synchronous generation over a streamed HTTP request, local execution, a React frontend — are evidence about what worked at toy scale, not constraints on 3.x (§33, §39). Every conceptual contract in SCR-F must remain meaningful after this directory's answers change.
+---
+
+## 2. Progress
+
+**TRANS-5.** Long-running work streams progress to its watcher (API-6). Progress events are operational telemetry with one job — keeping a person informed — and the permanent record is identical whether anyone watched or not (API-7).
+
+**TRANS-6.** Whether work rides one long-lived request or a queued job with a subscribed watcher is `jobs-and-workers.md`'s concern, not a transport commitment. The earlier system's single-streamed-request design is inheritance (§39); transport owes progress delivery under either shape.
+
+---
+
+## 3. The formats deadline
+
+**TRANS-7.** What the planned advanced views require on the wire — time-mapped geometry, multi-Run comparison payloads, similarity-map data — is DEC-13's question, and transport shares its deadline: answered before the large-scale formats freeze. A view too expensive to feed is a view that never ships, and the expense is set here and in storage, now.

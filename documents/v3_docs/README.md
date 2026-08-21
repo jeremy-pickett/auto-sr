@@ -3,16 +3,21 @@
 **Status:** draft (scaffold) · **Date:** 2026-08-20
 **Implements:** SCR-F v0.2 §37 (initial documentation tree), §36 (authority, lifecycle, citation)
 
-This directory is the `docs/` root described in SCR-F v0.2 §37. Every file below the numbered
-directories is currently a **stub**: it carries the correct name, its document class, the SCR-F
-sections it depends on, what it owes, and which DEC records it must not resolve locally. None of
-them is written and none is adopted.
+This directory is the `docs/` root described in SCR-F v0.2 §37. It began (2026-08-20) as a
+scaffold of stubs — stable citation targets carrying what each document owes and which DEC records
+it must not resolve locally. As of 2026-08-21, **every numbered directory is written**: Level 1
+foundations in `00-start-here/`, production requirements across `01-core/` (twelve documents; the
+five core-contract seam passes preserved as `*.seams.md`), `02-platform/` (eight), and
+`03-quality/` (five), with the Decision Registry in `04-decisions/` holding all records in the
+plain-question format. Everything remains **draft** — adoption is a human act (§36.3) and none has
+happened yet.
 
-The stubs exist for one reason. Roughly two hundred documents are expected in this tree, most of
-them machine-written, and §36 makes the failure mode explicit: a human-written tree drifts at the
-leaves, a model-written tree drifts at the **root**, silently, one plausibly-interpreted ambiguity
-at a time. Stable citation targets and pre-recorded DEC blocks exist so a writer arriving at any
-file already knows which questions are not theirs to answer.
+The discipline the scaffold established still governs every future edit. Roughly two hundred
+documents are expected in this tree, most of them machine-written, and §36 makes the failure mode
+explicit: a human-written tree drifts at the leaves, a model-written tree drifts at the **root**,
+silently, one plausibly-interpreted ambiguity at a time. Stable identifiers and the Decision
+Registry exist so a writer arriving at any file already knows which questions are not theirs to
+answer.
 
 ## Layout
 
@@ -89,5 +94,9 @@ the tree holding an undecided decision as settled fact.
   is a pointer explaining what must happen before it moves here.
 - **SCR-F is *in review*, not adopted.** Downstream documents may cite it; they may not yet rely
   on it (§36.3).
-- **Three unregistered candidate decisions** are flagged in the stubs and listed in
+- **Three unregistered candidate decisions** are flagged in the documents and listed in
   `04-decisions/README.md` — exploration strategy, cost and budget, and ownership of evidence.
+- **DEC-2 is decided** (2026-08-21; replay promises) and **DEC-16 is narrowed** (obligations are
+  requirements in `02-platform/execution-safety.md`; the mechanism waits for a real deployment).
+- **After documentation: real data, per Lab.** These documents are expected to be stressed by it;
+  amendment with the evidence attached is the intended response (§36.5), not a sign of failure.
