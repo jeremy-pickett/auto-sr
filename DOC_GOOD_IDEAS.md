@@ -81,3 +81,35 @@ Three shapes, roughly in order of leverage:
 - **A tenth §30 question — the reducibility audit.** §30 asks about domain fit, world fit, mechanism fit, time, evidence, accuracy, failure boundaries, comparison to tools, transfer limits. None asks *"where does this domain already have a formula?"* §30.8 is adjacent but not the same — the established tool might be another simulation. Two briefs invented this question independently; that's the signal it belongs in the platform. Amending §30 is an SCR-F amendment, so it's a DEC-shaped move, not an edit.
 - **A Level 1 document on irreducibility and what "cellular" means** — idea 1 and idea 5, in `00-start-here/`. It's the missing intellectual spine: the tree currently explains what the components are and never explains why local mechanisms are the right instrument at all.
 - **Two new DEC records** — the reach question, and possibly Reader-coverage-as-finding.
+
+---
+
+# Addendum (2026-08-21): data — ingestion, and synthetic first
+
+## Ingestion, turned the right way around
+
+"How do we generate cells from unstructured data" points backwards. **The Lab declares what a Cell is (fit question §30.2), before any data arrives; ingestion fits data into the declared schema.** Where the data won't fit, that is the fit review being tested empirically — the misfit is the finding, not an ingestion failure.
+
+"Ingestion" is four pipelines with four existing homes:
+
+1. **World structure** — for relational worlds, the data *is* the layout: an auth log is the connection graph. Grid worlds choose resolution; data supplies values.
+2. **Starting State, via a recipe** — an ingestion procedure is a start recipe (DEC-23) whose input is a dataset instead of a seed. Same binding: recipe + realized values + source, all on the Run.
+3. **External inputs** — recorded wind, tide tables, scheduled expiries: literally the tape WORLD-7 was written for. No cells involved.
+4. **Reference cases** — most real data never enters the simulation at all; it is the comparison target (REFCASE-1). The accuracy story needs far less ingestion than it appears.
+
+The real work is **the collapse, recorded**: the semantic ceiling makes ingestion lossy by design (the wildfire brief's one-moisture-scalar-for-four-classes case). Contract is provenance-shaped, same as GEN-16: source identity (hashed), the mapping including resolution, what was dropped, gaps and their handling. *An interpolated value presented as observed is a fabrication.*
+
+Open: who owns shared ingestion machinery (it is the fifth member of DEC-5's translation family); recipes with enough power to be mechanisms in disguise (DEC-23 question 3, sharpened). The hunt list is already half-written — every Lab brief's §30.6 accuracy section names its datasets.
+
+## Synthetic before wild
+
+Order of operations: fixtures (exist) → clean synthetic → degraded synthetic → real data. Rationale from the owner: test user stories, use cases, integration resiliency, code dependencies, and rapid feature development before hunting.
+
+**The killer property: ground truth by construction.** Plant a known mechanism → generate its data → ingest → Study → does the platform recover what was planted? Tests the whole evidence chain on a subject where the answer is known in advance — REFCASE-8's calibration purpose without waiting for real data. A synthetic dataset is (generator version, parameters, seed): a recipe, provenance-native, regenerable rather than archived.
+
+**Tier 2 (degraded) tests ingestion honesty**, which real data never can: synthesize the known pathologies — gaps, the high-degree hub (WORLD-15), malformed records, duplicates, unit drift — and assert the collapse machinery told the truth about what it dropped and where the gaps were, because for once we know.
+
+**Two rules, set early, non-negotiable:**
+
+1. Synthetic is marked synthetic in provenance, permanently. It never drifts into looking like an observed reference case.
+2. **Never confirm a Lab against its own synthetic data.** Generator-is-a-cellular-mechanism → SCR-finds-a-cellular-mechanism is planting the answer; it will look exactly like successful confirmation and it proves nothing about any subject. Recovery tests are evidence about the platform (ACCURACY-10 at maximum strength). Subject claims begin at real data, not before.
