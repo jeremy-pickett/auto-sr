@@ -1,3 +1,6 @@
+> **Superseded by v0.6** (2026-08-21), which now lives at `documents/v3_docs/scr-manifesto-v0.6.md`
+> and as the repository `README.md`. Kept per house practice: earlier drafts stay readable.
+
 # Semantic Cellular Ruliology
 
 *A manifesto. The name is pretentious. Nothing else here is allowed to be.*
