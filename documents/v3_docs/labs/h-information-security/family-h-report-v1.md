@@ -10,13 +10,22 @@
 **Conventions:** `../README.md`
 **Reviewed against:** `../../01-core/labs.md` — LAB-5's ten fit questions, LAB-4 (no relaxation for hostile subjects), LAB-6/LAB-7
 **Supersedes:** first-pass briefs 47–56 in `../short-lab-definitions/`, and `47-lateral-movement-lab.fit-frame.md`
-**Responds to:** `../../critiques/SCR_Labs_51-60_Critique_v0.1.md` (entries 51–56)
+**Responds to:** `../../critiques/SCR_Labs_41-50_Critique_v0.1.md` (47–50), `../../critiques/SCR_Labs_51-60_Critique_v0.1.md` (51–56)
 **Cites:** SCR-F v0.2 §11, §15, §18.4, §18.5, §20.1, §25.3, §29, §30, §41–43; F-9, F-14, F-17, **F-20** · LAB-4 to LAB-8, LAB-16 · DEC-1, DEC-3, DEC-16, DEC-21, DEC-24
 **Fit reviews (§30):** none performed. **Nothing here establishes fit.**
 
-> ## ⚠ Partial critique coverage
->
-> Entries **51–56** are reviewed against `SCR_Labs_51-60_Critique_v0.1.md`. Entries **47–50 have no critique** — `SCR_Labs_41-50_Critique` does not exist. Their assessments are first opinions and should be revised when it lands.
+## Revision record — v1 first draft → v1 reviewed
+
+Entries 47–50 were written before `SCR_Labs_41-50_Critique_v0.1.md` existed. It arrived afterward and this revision incorporates it. Two of its corrections change claims the first draft made, not merely their emphasis.
+
+| Change | Nature |
+| :--- | :--- |
+| **"Undecidable, therefore run it" corrected** (48) | **A real error.** Undecidability means no algorithm decides every instance of the *unrestricted* problem. It does **not** mean simulation answers the general question. Execution supplies evidence about bounded experiments, never proofs of safety — and in a security family that distinction is load-bearing. |
+| **"Non-stationarity is disqualifying" withdrawn** (49) | **A real error.** Immutable evidence remains valid as *historical* evidence — model X version Y under protocol Z on date D. The problem is **generalization lifetime**, not evidence immutability, and a model backend is just another versioned dependency. The verdict stays weak; the reasoning was wrong. |
+| **A "static analysis owns this" section is now mandatory** (all entries) | Without it, Family H becomes a weaker attack-path product with prettier playback. The useful question begins where static closure stops. |
+| **Semantic-state sufficiency test added** (49, 50) | The central fit question for the AI entries is not topology but whether a scalar can carry the semantics without erasing the mechanism. A sufficiency test is now required rather than assumed. |
+| **Fit-frame documents recommended for high-overclaim Labs** (§findings) | The preserved `47-lateral-movement-lab.fit-frame.md` is retroactively vindicated: a document whose explicit job is to make rejection possible. |
+| **Identity named the flagship decision case for dynamic Connections** (48) | Not incidental as in entry 18 — here dynamic topology **is** the mechanism under study. If SCR cannot express it safely, the Lab does not fit. |
 
 > ## Security scope statement
 >
@@ -77,7 +86,13 @@ Every entry here has supported and unsupported question classes, and the distinc
 | 55 Segmentation | Timed containment Study | Static bridge and min-cut |
 | 56 Supply chain | Maintainer ecosystem evolution | Dependency closure |
 
-### 6. Two anti-patterns this family names
+### 6. Every entry begins by conceding what static analysis owns
+
+If the question is static monotone reachability, existing graph tooling answers it. **Without that concession stated explicitly and first, Family H becomes a weaker attack-path product with prettier playback**, and marketing gravity swallows the research question.
+
+The useful question begins where static closure stops — where credentials expire, response removes capability, path order changes what becomes available, attacker and defender act concurrently, observation is stale, grants create future grant capability, and long-lived practices change the graph itself.
+
+### 7. Two anti-patterns this family names
 
 **Operational difficulty is not irreducibility.** A domain is not a mechanism-supply opportunity merely because organizations cannot measure the real state. Simulation cannot repair missing observation.
 
@@ -87,7 +102,7 @@ Every entry here has supported and unsupported question classes, and the distinc
 
 ---
 
-## Lab 47 — Lateral Movement *(no critique coverage)*
+## Lab 47 — Lateral Movement 
 
 | | |
 | :--- | :--- |
@@ -111,11 +126,17 @@ Every entry here has supported and unsupported question classes, and the distinc
 
 **The ceiling problem, shared with entry 40.** An attacker's accumulated knowledge is naturally unbounded and is exactly the state driving behaviour. If the Lab needs open-ended memory to be itself, §13.1 says it fails. **Fit-review this together with Degraded-Information Evacuation** — they share the bounded-belief question.
 
-**Assessment.** *(first opinion, no critique review, no standing)* Second-strongest in the family under the narrow framing. Three standing hazards: topology ground truth does not exist and the model cannot detect its absence; **"no path found" reads as "secure"** when it means *no route in the modelled topology*; and a propagation rule explores while an adversary chooses.
+**What static analysis owns here.** Static monotone reachability, shortest path to a target principal, and effective permissions at a moment. Concede all of it.
+
+**The framing to adopt, and the one to refuse.** The defensible formulation is narrow: **study what monotone attack-path closure throws away.** A particularly strong Study computes the monotone closure, executes non-monotone attacker and defender mechanisms, compares reachable positions, and Small-Change Tests revocation timing, segmentation, credential expiry, and response delay. The result is not *here is the attack path in your network* but *under these synthetic conditions, monotone closure and timed non-monotone execution diverge in this way.*
+
+> **Refuse the "real enterprise attack simulation" framing.** It is scientifically cleaner and commercially less attractive, which is a compliment.
+
+**Assessment.** *(judgment, no standing)* Second-strongest in the family under the narrow framing. Three standing hazards: topology ground truth does not exist and the model cannot detect its absence; **"no path found" reads as "secure"** when it means *no route in the modelled topology*; and a propagation rule explores while an adversary chooses.
 
 ---
 
-## Lab 48 — Identity and Privilege *(no critique coverage)*
+## Lab 48 — Identity and Privilege 
 
 | | |
 | :--- | :--- |
@@ -141,11 +162,19 @@ Every entry here has supported and unsupported question classes, and the distinc
 
 **The architectural requirement.** **The mechanism modifies the World's Connections.** A principal exercising the right to add a member creates an edge. That is the same dynamic-topology need as entries 18, 56, and 58 — and here it is the mechanism that makes the domain's safety problem hard in the first place. A platform that cannot express a mechanism creating Connections cannot express this Lab.
 
-**Assessment.** *(first opinion, no critique review, no standing)* **Strongest in Family H.** The HRU result gives a principled reason for the platform to exist here: when the general question is undecidable, *run it and see* is not a fallback but the only remaining method, and the field's own literature says so.
+**A correction the first draft got wrong, and it matters in a security family.** The first draft argued that because the general safety problem is undecidable, *run it and see* is the only remaining method. **That inference does not hold.** Undecidability means no algorithm decides every instance of the unrestricted problem; it does not mean simulation answers the general question.
+
+A finite simulation can show that a bad state occurred, that a trajectory exists under the tested mechanism, and that a practice generated dangerous compositions in the Runs performed. It **cannot** show that the bad state can never occur, that the system is safe, or that all future trajectories are covered.
+
+> **Hardness explains why exhaustive static answers disappear. Execution supplies evidence about bounded experiments, not proofs of safety.**
+
+Use the result to justify *mechanism exploration*, never as a theoretical guarantee that execution solves the safety problem. In a family where "no path found" already reads as "secure", the difference between evidence and proof is the whole discipline.
+
+**Assessment.** *(judgment, no standing)* **Strongest in Family H**, and the **flagship decision case for dynamic Connection creation.** Unlike entry 18, where constructed topology is incidental, here it *is* the mechanism under study — grants create the capability to grant. **If SCR cannot express controlled Connection proposals safely and clearly, this Lab does not fit.** The mechanism families worth generating are organizational: team creation, nested group practices, role inheritance, service-account lifecycle, delegation, periodic review, revocation, and abandonment.
 
 ---
 
-## Lab 49 — Prompt Injection *(no critique coverage)*
+## Lab 49 — Prompt Injection 
 
 | | |
 | :--- | :--- |
@@ -163,17 +192,25 @@ Every entry here has supported and unsupported question classes, and the distinc
 
 **Irreducible in principle.** Multi-hop propagation through summarization, storage, and retrieval. Persistence and re-emergence from a shared store. Trust topology nobody drew. Amplification versus decay — a branching-process structure with a threshold.
 
-**Why it grades weak, and the reason is a category the catalog now names.** **The substrate is non-stationary**: susceptibility to a technique is a property of a model version being actively reduced by its developers. Stated carefully — as the critique framing requires — historical evidence remains valid; **what decays is external validity.** For a platform built on permanent evidence, findings whose generalization has a months-long half-life are a poor investment.
+**Why it grades weak — with the first draft's reasoning corrected.** The first draft argued that non-stationarity is disqualifying for a platform built on immutable evidence. **That was wrong, and the correction is worth stating precisely.** Immutable evidence remains perfectly valid as *historical* evidence: *model X version Y behaved this way under protocol Z on date D.* SCR already versions Plugins, Reactor, Readers, and Worlds; **a model backend is simply another versioned dependency.**
+
+The actual problem is narrower and still serious:
+
+> **Model-specific findings have short external validity and must not be promoted to stable mechanism claims without cross-version evidence.**
+
+So: findings age quickly, behaviour may not transfer across model versions, Corpus retrieval must respect substrate version, and broad mechanism conclusions drawn from one substrate are likely invalid. The verdict stays weak. The reason is **generalization lifetime, not evidence immutability.**
 
 Compounding it: **representation destroys the mechanism.** "Contaminated" as a scalar stands in for a text payload transformed at every hop, and whether an injection survives summarization is a property of the text and the model, not of a flag.
 
 **The narrow salvage.** Framed as **contamination dynamics on agent trust topologies, parameterized by a survival probability nobody has to measure**, the Lab becomes stationary again — the topology is the subject and the model is a parameter. That is defensible, useful, and considerably less exciting than what people would want this Lab to be.
 
-**Assessment.** *(first opinion, no critique review, no standing)* **Weak — an uncomfortable verdict for the most fashionable entry in the catalog.** Dual-use character is direct; publication discipline matters more than the technical risk suggests.
+**The salvage, stated as the Lab it should actually be.** Treat the model as an **externally measured or assumed transition operator**, and study *contamination propagation over authority-bearing read/write graphs* — rather than *simulate prompt injection in a named model*. That is structural, stationary enough to study, requires no pretence that a scalar faithfully represents text semantics, and connects cleanly to entry 50, provenance loss, and tool authority.
+
+**Assessment.** *(judgment, no standing)* **Weak as a literal substrate Lab; retain a topology-level propagation sub-Lab.** An uncomfortable verdict for the most fashionable entry in the catalog. Dual-use character is direct; publication discipline matters more than the technical risk suggests.
 
 ---
 
-## Lab 50 — Agent Memory *(no critique coverage)*
+## Lab 50 — Agent Memory 
 
 | | |
 | :--- | :--- |
@@ -195,7 +232,9 @@ Compounding it: **representation destroys the mechanism.** "Contaminated" as a s
 
 **The reflexive value, worth stating.** SCR itself has a corpus, machine-written documents, and a stated worry (§36) about a mostly model-written tree drifting at the root. This Lab studies that mechanism. **A platform that models its own failure mode, honestly, is a stronger platform** — and the finding would apply to SCR's own tree as much as to anyone's.
 
-**Assessment.** *(first opinion, no critique review, no standing)* **Weak-to-plausible**, and the better of the two AI entries. The retrieval-reinforcement feedback loop is specific, under-examined, answerable in the abstract, and would inform how these systems are built — a decision people are making now with no evidence.
+**Assessment.** *(judgment, no standing)* **Keep as a research and architecture Lab even though empirical standing is weak** — and it is the more scientifically interesting of the two AI entries, because its core mechanism is **more stationary**: repeated retrieval and re-summarization recursively transforming the store that future retrieval depends on is a genuine feedback system independent of any specific attack or model version. The strongest question is not *does memory become poisoned* but **under which retrieval and rewrite mechanisms does a shared store converge, drift, or concentrate?**
+
+It may eventually become an internal **dogfooding** Lab: SCR has machine-written summaries, a persistent Corpus, repeated interpretation, provenance, and potential semantic drift. The retrieval-reinforcement feedback loop is specific, under-examined, answerable in the abstract, and would inform how these systems are built — a decision people are making now with no evidence.
 
 ---
 
@@ -392,6 +431,16 @@ That turns *what depends on package X?* into:
 | **Rejection reasons recorded, not just grades** | **DEC-15** | 51 (observation), 53 (planned process) — two distinct categories |
 | **Provenance inside high-risk Views** | *unregistered* | 52, 55 |
 | **Execution boundary for adversarial Labs** | **DEC-16** | The whole family (F-20, §18.4, LAB-4) |
+| **Semantic-state sufficiency test** | *unregistered* | 49, 50. **The central fit question for the AI entries.** A malicious instruction survives because of its meaning in context, not because a bit stays high; a summary drifts in a *direction*, not merely by an amount. A fit review must compare scalar-model behaviour against a real text-transform pipeline, test whether different semantic errors with equal scalar "distortion" produce materially different downstream outcomes, and document which questions survive the abstraction. **If the scalar cannot preserve the relevant behaviour, the Lab fails rather than promoting opaque embeddings as fake precision.** |
+| **Evidence external-validity metadata** | *unregistered* | 49. Findings over a versioned model substrate are historical evidence with a short generalization lifetime; Corpus retrieval must respect substrate version. |
+
+### Fit frames for high-overclaim Labs
+
+`47-lateral-movement-lab.fit-frame.md` was written before that entry's Knowledge Brief and is preserved alongside it. That turns out to have been the right instinct, and worth generalizing:
+
+> **For Labs whose commercial attraction is likely to bias the fit review, write a "fit frame" before the Knowledge Brief** — a document whose explicit job is to make rejection possible.
+
+It made several problems harder to dodge in entry 47: host versus identity versus account as the Cell, bounded attacker memory, Network versus Identity World, calendar-time ambiguity, stale defensive observation, and the danger of confusing path *existence* with adversary *behaviour*. Candidate future uses: AI security, critical infrastructure, medical, and financial-market Labs if they appear.
 
 ### Build priority within the family
 
@@ -425,4 +474,4 @@ That turns *what depends on package X?* into:
 
 ## Non-claims
 
-This report performs no fit reviews and establishes no fit. **Nothing in this family assesses the security of any real environment, organization, network, package, ecosystem, or AI system; identifies attack paths, vulnerable dependencies, or fragile components; predicts attacker behaviour; evaluates detection or response products; or supports compliance, audit, or regulatory claims** (§41, §43). F-20 applies throughout: studying hostile behaviour never justifies a more permissive execution surface for generated code (§18.4, LAB-4, DEC-16). No mechanism-generation objective here may optimize propagation efficiency or offensive effectiveness. Entries 47–50 have received no critique review; their assessments are first opinions. The family is ungraded and may fail its fit review.
+This report performs no fit reviews and establishes no fit. **Nothing in this family assesses the security of any real environment, organization, network, package, ecosystem, or AI system; identifies attack paths, vulnerable dependencies, or fragile components; predicts attacker behaviour; evaluates detection or response products; or supports compliance, audit, or regulatory claims** (§41, §43). F-20 applies throughout: studying hostile behaviour never justifies a more permissive execution surface for generated code (§18.4, LAB-4, DEC-16). No mechanism-generation objective here may optimize propagation efficiency or offensive effectiveness. The family is ungraded and may fail its fit review.

@@ -23,7 +23,7 @@
 
 **SCR-F §37 correspondence:** falls under §37's trailing `...`. All six entries are covered by `family-g-report-v1.md`.
 
-> **Written without critique coverage.** `SCR_Labs_41-50_Critique` does not exist. Entries 41–46 have had no external review pass; their assessments are first opinions and should be revised when it lands.
+Reviewed against `SCR_Labs_41-50_Critique_v0.1.md`; the report carries a revision record for what that pass changed.
 
 This family holds the largest concentration of the **globally-computed-driver** boundary (42 power flow, 43 hydraulics — both likely mechanism-fit failures) and, at the opposite extreme, two entries where the local rule is **specified, human-written, and running in production**: 45 retry policies and 46 the BGP decision process. Those sit in the *mechanism-analysis* mode rather than mechanism-discovery — nothing needs inferring, and the many-participant consequences still require simulation.
 

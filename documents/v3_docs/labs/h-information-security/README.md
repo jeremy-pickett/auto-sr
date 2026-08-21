@@ -27,7 +27,7 @@
 
 **SCR-F §37 correspondence:** completes the illustrative `security/` entry.
 
-All ten entries are covered by `family-h-report-v1.md`, with **entries 47–50 written without critique coverage** (`SCR_Labs_41-50_Critique` does not exist).
+All ten entries are covered by `family-h-report-v1.md`, reviewed against the 41–50 and 51–60 critiques. The report carries a revision record; the 41–50 pass corrected two substantive claims in entries 48 and 49.
 
 **Three structural findings shape this family.** It is **one World with several mechanisms**, not ten Labs — 47, 48, 52, 54, and 55 share an enterprise-security World and differ by mechanism package and Study. Three mechanisms must not be blended: *autonomous propagation* (worms), *directed adaptive action* (lateral movement), and *coordinated deployment* (ransomware, patch scheduling) — a large share of bad "cyber contagion" modelling comes from treating all three as epidemics. And the family's **first engineering deliverable is probably not a Lab** but a versioned **synthetic enterprise reference World** with known ground truth and deliberately seeded traps.
 

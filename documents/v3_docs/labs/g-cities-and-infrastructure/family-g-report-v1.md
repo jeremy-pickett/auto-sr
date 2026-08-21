@@ -8,22 +8,46 @@
 **Catalog:** SCR Lab Catalog v0.1, Family G (entries 41–46)
 **Framework:** `../../00-start-here/irreducibility-and-what-cellular-means.md`
 **Conventions:** `../README.md`
+**Responds to:** `../../critiques/SCR_Labs_41-50_Critique_v0.1.md`
 **Reviewed against:** `../../01-core/labs.md` — LAB-5's ten fit questions, including LAB-6/LAB-7
 **Supersedes:** first-pass briefs 41–46 in `../short-lab-definitions/`
 **Cites:** SCR-F v0.2 §11, §15, §18.5, §29, §30, §41–43; F-7, F-9, F-17 · LAB-5 to LAB-8, LAB-16 · DEC-1, DEC-3, DEC-21, DEC-24
 **Fit reviews (§30):** none performed. **Nothing here establishes fit.**
 
-> ## ⚠ Written without critique coverage
->
-> Every other family report in this tree responds to a numbered critique. **`SCR_Labs_41-50_Critique` does not exist**, so entries 41–46 have had no external review pass. The framework, taxonomies, and corrections applied here are inherited from the critiques of Families A–F and I, which cover neighbouring entries and shared platform questions.
->
-> **Treat the per-entry assessments below as first opinions, not reviewed ones.** When the 41–50 critique lands, this report should be revised and its revision recorded rather than silently replaced.
+## Revision record — v1 first draft → v1 reviewed
+
+The first draft of this report was written before `SCR_Labs_41-50_Critique_v0.1.md` existed, and said so. The critique arrived afterward and this revision incorporates it. Recorded rather than silently applied.
+
+| Change | Nature |
+| :--- | :--- |
+| **The Network World fit test is two questions, not one** (§What this family is for) | The batch's central lesson. *Is the graph real?* and *does each transition depend on bounded relational information?* are independent, and this family answers them differently in different entries. |
+| **Water Distribution's rejection reason sharpened** (43) | The first draft grouped it loosely with entry 42. It fails for a **different** reason than Fracture, and the distinction is cleaner: not that the physics is non-local, but that **"needs computation" is not the same as "needs SCR."** |
+| **Power Grid reclassified from weak to dangerous** (42) | The first draft called it weak. The critique is right that it is worse: an abstract cascade model produces convincing shapes, heavy-tailed distributions, and apparently scientific conclusions **while representing the wrong causal system.** A visualization policy is now attached. |
+| **Service Cascade promoted to flagship** (45) | The first draft called it the strongest ungraded entry. The critique goes further and I have adopted it: a plausible **near-term commercial** Lab, and possibly better than the security-branded ones. |
+| **Routing named as an acceptance-test Lab** (46) | Not merely blocked on DEC-3 — the cleanest acceptance case *for* it. |
+| **DEC-3 given an execution vocabulary** (§findings) | Step / delayed effect / message / scheduled event / phase. **Do not resolve DEC-3 with a boolean such as "supports async."** |
+| **Urban Growth reframed as a benchmark** (41) | Against a mature operational CA tradition, not as a new methodology. Its open questions are now stated as benchmark questions. |
+| **Multiple Connection classes per World** (41, §findings) | Urban Growth needs spatial adjacency *and* road connectivity *and* jurisdiction membership. The answer is not a HybridWorld abstraction but **a World declaring more than one Connection class**, with a Plugin declaring which it reads. |
+| **Connection state as first-class and bounded** (§findings) | Direction, type, latency, capacity, visibility, state — under the same readable, bounded, declared discipline as Cell state. |
 
 ---
 
 ## What this family is for
 
 Family G is where the **globally-computed-driver boundary** — established decisively by Fracture in Family E — meets its largest concentration of test cases, and where two entries turn out to be among the strongest ungraded Labs in the catalog for exactly the opposite reason.
+
+### The Network World fit test is two questions
+
+This family makes a recurring mistake impossible to ignore: **a graph being the correct World Layout does not tell you whether local propagation is the correct mechanism.** The contrast within these six entries is stark.
+
+| Entry | Is the graph real? | Does each transition depend on bounded relational information? |
+| :--- | :--- | :--- |
+| 42 Power grid | Yes — the transmission graph is engineered | **No.** Line loading comes from a whole-network electrical solve. |
+| 43 Water | Yes — the pipe graph is documented | **No.** Flow is a simultaneous hydraulic solution over the whole network. |
+| 45 Service cascade | Yes — emitted by telemetry | **Yes.** A service decides from its own queue, its timeout, replies from immediate dependencies, and its local breaker state. |
+| 46 Routing | Yes — the AS graph is public | **Yes.** Each participant selects and advertises from local policy and neighbour announcements. |
+
+> **A Network World fit review must answer both questions separately.** They are different requirements, and this is one of the most important lessons of the sixty-Lab exercise.
 
 The family splits cleanly:
 
@@ -68,7 +92,16 @@ The corresponding weakness: a calibrated coefficient is a regularity of a partic
 
 **Cell state.** *Persistent:* developed state, land use class, time since development. *Static:* slope, exclusion status. *Derived:* road access, neighbourhood development pressure.
 
-**Assessment.** *(first opinion, no critique review, no standing)* **Calibration is genuinely achievable here, which is rare.** A Run's output is a map, the reference is a map, and the SLEUTH community already has goodness-of-fit measures. This may be the best domain in the catalog for showing that generated mechanisms can be **scored against real data quantitatively** rather than qualitatively. The policy counterfactual is a clean Small-Change Test on a question planners argue about with limited evidence.
+**Frame it as a benchmark, not a new methodology.** The strongest argument for this Lab is **not** that local development decisions imply a CA — human decision-making is not inherently local, and the brief concedes it. The argument is empirical: *a cellular model in this domain has already been calibrated against historical maps and used operationally.* SCR therefore does not have to win the philosophical argument first; it can be benchmarked against a working modelling tradition. The open questions become benchmark questions:
+
+- Can SCR generate mechanism variants whose map-level fit is competitive?
+- Can it identify **alternate rule families with equal aggregate fit but different policy sensitivity**?
+- Can it expose which assumptions drive leapfrog versus infill?
+- Does it systematically retain the failed rule families?
+
+**A hybrid Layout, and the cheap answer to it.** The World is raster-like, roads are network-like, and developers and planning authorities act at different scales again. This does not need a HybridWorld abstraction. It needs **a World that declares more than one Connection class** — spatial adjacency, road connectivity, jurisdiction membership, service reach — with a Plugin declaring which relation it reads. That likely resolves several Labs without inventing a World type per combination, and it helps entry 47, where network reachability and identity trust coexist.
+
+**Assessment.** *(judgment, no standing)* **Calibration is genuinely achievable here, which is rare.** A Run's output is a map, the reference is a map, and the SLEUTH community already has goodness-of-fit measures. This may be the best domain in the catalog for showing that generated mechanisms can be **scored against real data quantitatively** rather than qualitatively. The policy counterfactual is a clean Small-Change Test on a question planners argue about with limited evidence.
 
 ---
 
@@ -97,7 +130,13 @@ The corresponding weakness: a calibrated coefficient is a regularity of a partic
 
 **Cell state.** *Persistent:* tripped state, protection state. *Static:* capacity. *Globally computed:* loading — which is the entire problem.
 
-**Assessment.** *(first opinion, no critique review, no standing)* **Weak for core local-mechanism fit; valuable as a boundary case.** Two honest positions exist. Study the **cascade statistics question as a methodological one** — since both real grids and abstract sandpiles produce heavy tails, does matching an exponent tell you anything about mechanism? Probably not, and demonstrating that clearly would serve a literature that has repeatedly over-read exponent matches. Or admit the global solve explicitly and treat the Lab as a test of whether SCR can express that division — DEC-1 territory.
+**This entry is more dangerous than merely weak, and that is the critique's sharpest point about it.** The hazard is not that an abstract local cascade model is inaccurate. It is that such a model produces **convincing cascade shapes, heavy-tailed blackout distributions, plausible network visualizations, and apparently scientific conclusions — while representing the wrong causal system.** That is precisely the failure §12 and §26 exist to prevent, and the Buldyrev episode is the documented precedent.
+
+> **Power Grid must not become a brochure visualization Lab.** Either the execution includes physically valid power flow, or the visualization is **explicitly labelled as an abstract cascade experiment.** There is no third option that is honest.
+
+And if power flow *is* included, SCR's role must be reframed accordingly: Study orchestration, failure-sequence exploration, operator-information experiments, and comparison of protection and response policies. **Not "local rules explain the grid."**
+
+**Assessment.** *(judgment, no standing)* **Weak for core local-mechanism fit, and hazardous rather than merely weak.** Two honest positions exist. Study the **cascade statistics question as a methodological one** — since both real grids and abstract sandpiles produce heavy tails, does matching an exponent tell you anything about mechanism? Probably not, and demonstrating that clearly would serve a literature that has repeatedly over-read exponent matches. Or admit the global solve explicitly and treat the Lab as a test of whether SCR can express that division — DEC-1 territory.
 
 The genuinely under-modelled thread is **hidden failures and operator stale information**, which fall between the power engineers' tools and the network scientists', and which are local, discrete, and documented in public post-incident reports.
 
@@ -124,11 +163,15 @@ The genuinely under-modelled thread is **hidden failures and operator stale info
 
 > **"There is no formula" and "it is irreducible" are different statements, and the difference disqualifies this Lab.**
 
+**The rejection reason differs from entry 42's and from Fracture's, and the distinction is worth preserving.** Fracture fails because the actual physics is non-local in a way a local mechanism cannot preserve honestly. Water Distribution fails on a shorter list: the hydraulic equations are known, the numerical solution is standard, the solver is free, practitioners already use it, and the questions are operationally answered. That is **an even cleaner disqualification**, and it yields a methodological lesson the omnibus should state explicitly:
+
+> **"Needs computation" is not the same thing as "needs SCR."** A deterministic solver may require iteration, simulation, or numerical methods and still leave no useful mechanism-supply problem.
+
 Every criterion points down: hydraulic coupling is global rather than adjacent; the phenomenon is the solution of a determinate system rather than emergent; the incumbent is exact, free, and standard; and there is no live scientific controversy about the mechanism.
 
 **The narrow residue, which belongs elsewhere.** Biofilm and disinfectant residual in stagnant low-flow zones is a genuine local biological process on a substrate whose flow field is *given* rather than computed by the mechanism. That connects to entry 25 and belongs to the biofilm Lab with a water-network World — not to a water distribution Lab.
 
-**Assessment.** *(first opinion, no critique review, no standing)* **Reject, and record the reason.** This entry contributes a rejection category distinct from the others: not *the agents use global information* (entry 60), not *the driving physics is a global solve* alone (entry 42), but **the mathematics is already solved by a mature free tool and the real problem is not open.** A catalog that can articulate distinct rejection reasons is a better instrument than one that only says "poor fit". Also worth noting: network topology and contamination modelling are security-restricted in many jurisdictions, so a public Lab here carries dual-use concerns independent of its fit.
+**Assessment.** *(judgment, no standing)* **Reject, and record the reason.** This entry contributes a rejection category distinct from the others: not *the agents use global information* (entry 60), not *the driving physics is a global solve* alone (entry 42), but **the mathematics is already solved by a mature free tool and the real problem is not open.** A catalog that can articulate distinct rejection reasons is a better instrument than one that only says "poor fit". Also worth noting: network topology and contamination modelling are security-restricted in many jurisdictions, so a public Lab here carries dual-use concerns independent of its fit.
 
 ---
 
@@ -157,7 +200,7 @@ Every criterion points down: hydraulic coupling is global rather than adjacent; 
 
 **The genuinely interesting residue.** Deadlock, where trains cannot move because moving requires someone else to move first — the same structure as counterflow deadlock (38) and robot deadlock (39). **Recovery hysteresis**, where a congested network unwinds far more slowly than it congested, and the path depends on the specific arrangement of stranded equipment and expired crews.
 
-**Assessment.** *(first opinion, no critique review, no standing)* **Weak.** The capacity cliff is a genuine bistability with hysteresis, and hysteresis is a natural SCR subject — but as a *mechanism class* it is better studied in entry 45, which has the same structure with public data and no coordinator problem.
+**Assessment.** *(judgment, no standing)* **Keep as a DEC-3 and discrete-event stress case; do not prioritize as a Lab build.** The residual questions are real but appear more cleanly elsewhere — deadlock in entries 38 and 39, metastability in 45, scheduling and asynchrony in 46. **Its architecture lessons can be harvested without making rail a product commitment.**
 
 ---
 
@@ -188,7 +231,9 @@ This is the catalog's clearest instance of the **mechanism-analysis mode**: noth
 
 **Cell state.** *Location (service):* queue depth, in-flight requests, circuit breaker state, health. *Static:* capacity, timeout, retry policy. Connections are **directed and latency-bearing** — a call one way, a response the other, with a delay that is load-bearing because it is what makes timeouts meaningful.
 
-**Assessment.** *(first opinion, no critique review, no standing)* **Strong — and I would rank it the strongest ungraded entry in the catalog.** The headline capability is what operators want and cannot get: *is my system currently in a vulnerable state?* Answering requires exploring what a trigger would do, which is running the mechanism. A Small-Change Test over a production-derived topology, asking which single timeout moves the system from resilient to fragile, is SCR's Study machinery aimed at a real operational question with a budget behind it.
+**On mechanism-analysis mode, made concrete.** A user might literally paste a retry policy, a timeout, and circuit breaker rules, and ask *under what dependency topologies does this become metastable?* **That is SCR even if Generation writes nothing** — which is why the platform's identity should not be defined too narrowly around mechanism generation. Study orchestration over known mechanisms is equally native.
+
+**Assessment.** *(judgment, no standing)* **Flagship candidate — and plausibly a better near-term commercial Lab than the explicitly security-branded ones.** Operators have budget, the domain is measurable, misuse risk is low, the causal semantics are clear, and — unusually — **the audience is capable of critiquing the model**, which lowers the credibility risk that afflicts entry 42. The headline capability is what operators want and cannot get: *is my system currently in a vulnerable state?* Answering requires exploring what a trigger would do, which is running the mechanism. A Small-Change Test over a production-derived topology, asking which single timeout moves the system from resilient to fragile, is SCR's Study machinery aimed at a real operational question with a budget behind it.
 
 Two caveats. Shared infrastructure — a database, a network fabric, an availability zone — couples services that are not adjacent in the dependency graph, which is a partial global-driver problem. And **timing is the mechanism**, so lockstep with a uniform tick fits poorly: this Lab needs DEC-3 more than it needs anything else.
 
@@ -221,7 +266,11 @@ Convergence delay is measured: BGP can take minutes rather than seconds after a 
 
 **Cell state.** *Persistent:* selected route per tracked destination, routes announced by neighbours, pending announcements. *Static:* local preference policy. Bounded **only if the number of tracked destinations is small** — a substantive restriction, since real routers hold near a million prefixes.
 
-**Assessment.** *(first opinion, no critique review, no standing)* **Plausible-to-strong, and intellectually the most rigorous entry in the catalog.** The exciting thread is **policy composition**: nobody can check whether the internet's current global configuration is stable, because nobody sees all the policies and the decision is NP-complete anyway. But asking *which classes of local policy, composed at scale, produce oscillation, and how the probability of a dispute wheel scales with size and diversity* is a statistical question about mechanism space — open, practically consequential, and unattacked because it requires running many mechanisms.
+**Assessment.** *(judgment, no standing)* **Plausible-to-strong, and intellectually the most rigorous entry in the catalog.** The exciting thread is **policy composition**: nobody can check whether the internet's current global configuration is stable, because nobody sees all the policies and the decision is NP-complete anyway. But asking *which classes of local policy, composed at scale, produce oscillation, and how the probability of a dispute wheel scales with size and diversity* is a statistical question about mechanism space — open, practically consequential, and unattacked because it requires running many mechanisms.
+
+**This is the strongest acceptance case for asynchronous Reactor semantics in the catalog** — cleaner than rail, because the local protocol is explicitly specified, the topology is relational, message semantics are natural, and public historical data exists. Asynchrony here is not realism garnish; **it is the mechanism**, and a lockstep approximation risks changing exactly the behaviour under Study.
+
+> **If SCR implements asynchronous or discrete-event Reactor semantics, Routing Instability should be one of the acceptance-test Labs.**
 
 Blocked hard on **DEC-3**: lockstep would model a protocol that does not exist. And dual-use care applies — work identifying destabilizing policy configurations warrants the same handling as Family H (F-20).
 
@@ -239,6 +288,23 @@ Blocked hard on **DEC-3**: lockstep would model a protocol that does not exist. 
 | **Mechanism analysis as a distinct mode** | *unregistered* | 45 and 46 — the rule is known, the consequences are not |
 | **Coordinator semantics** | **DEC-1** | 44 dispatch |
 | **Bounded state under realistic scale** | **CELL ceiling** | 46 — a real routing table is a million prefixes |
+| **Global-driver dependency declared in fit review** | *unregistered* | 42, 43. A Lab must state whether critical transition values come from bounded local information, a generic global helper, or a **subject-specific global solver** — and if the last, justify what SCR adds beyond orchestrating that solver. |
+| **Multiple Connection classes in one World** | *unregistered* | 41 (spatial + road + jurisdiction). Treat Grid, Network, Identity, and Agent as common *patterns* rather than mutually exclusive boxes. |
+| **Connection state as first-class and bounded** | *unregistered* | 45 (latency, direction, in-flight), 46 (announcement delay). Same readable-bounded-declared discipline as Cell state; a Connection must not become an object with unlimited hidden logic. |
+
+### DEC-3 needs a vocabulary, not a boolean
+
+Five entries in this family and Family F pressure temporal semantics, and they need different things. **Do not resolve DEC-3 with a single flag such as "supports async."** The Reactor needs a small, explicit, still-deterministic execution vocabulary:
+
+| Term | Meaning |
+| :--- | :--- |
+| **Step** | All current participants evaluate against one declared view of state |
+| **Delayed effect** | A proposal becomes eligible after a declared offset |
+| **Message** | A bounded payload traverses a Connection with deterministic delay |
+| **Scheduled event** | A World- or Study-owned event occurs at a defined logical time |
+| **Phase** | A named execution mode changes which transitions or inputs apply |
+
+Entry 46 is the natural acceptance case for *message*; entry 44 for *scheduled event*; entry 34 in Family E for *phase*.
 
 ### Build priority within the family
 
@@ -270,4 +336,4 @@ Blocked hard on **DEC-3**: lockstep would model a protocol that does not exist. 
 
 ## Non-claims
 
-This report performs no fit reviews and establishes no fit. Nothing here projects growth for any city, assesses grid reliability or vulnerability, models any water system, evaluates rail capacity, predicts outages for any service, or assesses routing stability for any network or operator. **No output described here is suitable for planning, investment, operational, engineering, public health, or security decisions** (§41, §43). Entries 41–46 have received no critique review; assessments are first opinions, carry no standing, and do not promote any entry.
+This report performs no fit reviews and establishes no fit. Nothing here projects growth for any city, assesses grid reliability or vulnerability, models any water system, evaluates rail capacity, predicts outages for any service, or assesses routing stability for any network or operator. **No output described here is suitable for planning, investment, operational, engineering, public health, or security decisions** (§41, §43). Assessments are the author's judgment, carry no standing, and do not promote any entry.
