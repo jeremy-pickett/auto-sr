@@ -39,6 +39,6 @@ repository soon; until then, `CLAUDE.md` is the 2.x operating guide and the link
 3.x entrance.
 
 - **What this is, carefully:** [`documents/v3_docs/00-start-here/what-is-scr.md`](documents/v3_docs/00-start-here/what-is-scr.md)
-- **The foundations (SCR-F v3.x):** [`documents/v3_docs/00-start-here/foundations-and-platform-architecture.md`](documents/v3_docs/00-start-here/foundations-and-platform-architecture.md)
+- **The foundations (SCR-F v3.x):** [`documents/v3_docs/SCR_Foundations_and_Platform_Architecture_v3.md`](documents/v3_docs/SCR_Foundations_and_Platform_Architecture_v3.md)
 - **The open decisions, in plain language:** [`documents/v3_docs/04-decisions/`](documents/v3_docs/04-decisions/)
 - **The Lab catalog — sixty candidate domains:** [`documents/v3_docs/labs/`](documents/v3_docs/labs/)

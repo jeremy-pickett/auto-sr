@@ -6,8 +6,8 @@
 This directory is the `docs/` root described in SCR-F v0.2 §37. It began (2026-08-20) as a
 scaffold of stubs — stable citation targets carrying what each document owes and which DEC records
 it must not resolve locally. As of 2026-08-21, **every numbered directory is written**: Level 1
-foundations in `00-start-here/` — six documents, including SCR-F v3.x itself and the
-irreducibility paper — production requirements across `01-core/` (twelve documents; the five
+foundations — SCR-F v3.x at this directory's root, with the orientation documents (including
+the irreducibility paper) in `00-start-here/` — production requirements across `01-core/` (twelve documents; the five
 core-contract seam passes preserved as `*.seams.md`), `02-platform/` (eight), and `03-quality/`
 (six, the synthetic-data suite having joined the original five), with the Decision Registry in
 `04-decisions/` holding all records in the plain-question format. Everything remains **draft** — adoption is a human act (§36.3) and none has
@@ -24,7 +24,8 @@ answer.
 
 ```
 documents/v3_docs/
-├── 00-start-here/     Level 1 — Foundations, including SCR-F v3.x (draft)
+├── SCR_Foundations_and_Platform_Architecture_v3.md   SCR-F v3.x (draft)
+├── 00-start-here/     Level 1 — orientation documents
 ├── 01-core/           the twelve components (+ preserved *.seams.md passes)
 ├── 02-platform/       Platform Services (§33)
 ├── 03-quality/        testing, repeatability, accuracy, references, human review,
@@ -100,9 +101,8 @@ the tree holding an undecided decision as settled fact.
 
 ## Known state
 
-- **SCR-F v3.x (draft) lives in this tree** at `00-start-here/foundations-and-platform-architecture.md`
-  (moved 2026-08-21, replacing the former pointer; version label corrected from v0.3 per the
-  standing rule in `CLAUDE.md`). **v0.2 remains the governing Foundations text** — still at
+- **SCR-F v3.x (draft) lives at this tree's root**: `SCR_Foundations_and_Platform_Architecture_v3.md`
+  (moved 2026-08-21; version label corrected from v0.3 per the standing rule in `CLAUDE.md`). **v0.2 remains the governing Foundations text** — still at
   `../SCR_Foundations_and_Platform_Architecture_v0_2.md`, status *in review* — until v3.x is
   adopted. The five recorded disagreements between them are indexed in `outstanding.md`.
 - **Nothing is adopted.** Every document here is draft; adoption is a human act (§36.3), per
