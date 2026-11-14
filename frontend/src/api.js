@@ -16,7 +16,9 @@ async function authorizedFetch(path, options = {}) {
   const token = await getIdToken()
   const headers = new Headers(options.headers || {})
   if (token) headers.set('Authorization', `Bearer ${token}`)
-  return fetch(path, { ...options, headers })
+  // BASE_URL is Vite's `base` ('/' by default, '/v2/' when served under
+  // hwtn.io/v2/), so API calls follow the app to wherever it is mounted.
+  return fetch(import.meta.env.BASE_URL.replace(/\/$/, '') + path, { ...options, headers })
 }
 
 export const listRules = (params = {}) => {

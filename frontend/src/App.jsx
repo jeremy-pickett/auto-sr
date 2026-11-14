@@ -100,7 +100,7 @@ export default function App() {
           reproduction of it, and claiming no coverage of any rule space.
         </span>
         <span>rules are invented by a machine; the library is the product</span>
-        <a href="/library/feed.rss" target="_blank" rel="noopener noreferrer">RSS — watch the library grow</a>
+        <a href={`${import.meta.env.BASE_URL}library/feed.rss`} target="_blank" rel="noopener noreferrer">RSS — watch the library grow</a>
       </footer>
     </>
   )
