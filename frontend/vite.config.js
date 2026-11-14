@@ -1,7 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-const backend = 'http://localhost:8000'
+// ASR_BACKEND lets the API live elsewhere when :8000 is taken (on the hwtn
+// droplet, hwtn.io's own API holds it, so auto-sr runs on :8100 there).
+const backend = process.env.ASR_BACKEND || 'http://localhost:8000'
 
 // xfwd: true makes the proxy add X-Forwarded-For (and X-Forwarded-Port)
 // with the real browser's address -- without it, every request the
