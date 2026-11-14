@@ -37,12 +37,27 @@ class Settings:
     simplicity_limit: int
     lineage_chance: float
     run_cache_budget_mb: int
+    llm_provider: str
     anthropic_model: str
+    openai_model: str
+    generator_model: str
     shape_model: str
     database_path: str
     firebase_project_id: str
     frontend_url: str
 
+
+# Which company's model writes the rules. OpenAI is the default;
+# LLM_PROVIDER=anthropic switches back to the original Claude path.
+_provider = _text("LLM_PROVIDER", "openai").strip().lower()
+if _provider not in ("openai", "anthropic"):
+    raise ValueError(f"LLM_PROVIDER must be 'openai' or 'anthropic', got {_provider!r}")
+_anthropic_model = _text("ANTHROPIC_MODEL", "claude-opus-5")
+# A fast, current OpenAI model; override with OPENAI_MODEL.
+_openai_model = _text("OPENAI_MODEL", "gpt-5.4-mini")
+_generator_model = _openai_model if _provider == "openai" else _anthropic_model
+# The small classifier call behind observed_shape (REQ-8.2.1).
+_shape_default = "gpt-5.4-nano" if _provider == "openai" else "claude-haiku-4-5"
 
 settings = Settings(
     grid_width=_int("GRID_WIDTH", 200),
@@ -54,9 +69,12 @@ settings = Settings(
     simplicity_limit=_int("SIMPLICITY_LIMIT", 40),
     lineage_chance=_float("LINEAGE_CHANCE", 0.0),
     run_cache_budget_mb=_int("RUN_CACHE_BUDGET_MB", 512),
-    anthropic_model=_text("ANTHROPIC_MODEL", "claude-opus-5"),
-    # The small classifier call behind observed_shape (REQ-8.2.1).
-    shape_model=_text("SHAPE_MODEL", "claude-haiku-4-5"),
+    llm_provider=_provider,
+    anthropic_model=_anthropic_model,
+    openai_model=_openai_model,
+    # The model that actually writes rules, whichever provider is on.
+    generator_model=_generator_model,
+    shape_model=_text("SHAPE_MODEL", _shape_default),
     database_path=_text("DATABASE_PATH", "./library.db"),
     # Not a secret -- the same value that ships in the frontend's
     # public Firebase web config. Used only to check a verified

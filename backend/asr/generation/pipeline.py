@@ -11,6 +11,7 @@ layer turns them into the SSE stream.
 """
 
 import json
+import os
 import logging
 import random as random_module
 import time
@@ -69,7 +70,44 @@ class GenerationFailed(Exception):
 
 
 def default_model_call():
-    """The real Anthropic call. Streamed so a long, thoughtful response
+    """The real model call, for whichever provider is configured
+    (OpenAI by default, Anthropic with LLM_PROVIDER=anthropic)."""
+    if settings.llm_provider == "openai":
+        return _openai_model_call()
+    return _anthropic_model_call()
+
+
+def _openai_model_call():
+    """The OpenAI call. Reads OPENAI_API_KEY from the environment.
+    A refusal is a generation failure, not an error."""
+    import openai
+
+    client = openai.OpenAI(timeout=300.0)
+    effort = os.environ.get("OPENAI_REASONING_EFFORT", "low")
+
+    def call(prompt: str, model: str | None = None) -> str:
+        response = client.chat.completions.create(
+            model=model or settings.generator_model,
+            max_completion_tokens=GENERATION_MAX_TOKENS,
+            reasoning_effort=effort,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        call.last_served_model = response.model
+        choice = response.choices[0]
+        message = choice.message
+        if getattr(message, "refusal", None) or choice.finish_reason == "content_filter":
+            raise GenerationFailed(
+                "model_refused",
+                "the model declined this prompt"
+                + (f": {message.refusal}" if getattr(message, "refusal", None) else ""),
+            )
+        return message.content or ""
+
+    return call
+
+
+def _anthropic_model_call():
+    """The Anthropic call. Streamed so a long, thoughtful response
     cannot hit the HTTP timeout; the pipeline only needs the final
     text. A safety refusal is a generation failure, not an error."""
     import anthropic
@@ -148,7 +186,7 @@ def generate_rule(
     # sites. tick_progress is skipped: it fires every few ticks during the
     # canonical run and never changes the pipeline stage, so writing it
     # would just be write amplification for no observable benefit.
-    db.insert_generation_session(conn, gen_id, owner_uid, settings.anthropic_model)
+    db.insert_generation_session(conn, gen_id, owner_uid, settings.generator_model)
     raw_emit = emit
 
     def emit(name, payload):
@@ -282,7 +320,7 @@ def generate_rule(
         "prompt_set_hash": templates.prompt_set_hash(),
         "modifier_catalog_hash": catalog.catalog_hash(),
         "helper_version": HELPER_VERSION,
-        "model_id": settings.anthropic_model,
+        "model_id": settings.generator_model,
         # served_models records what actually answered each stage — it
         # differs from model_id only when a refusal fallback stepped in.
         "model_params_json": json.dumps({
